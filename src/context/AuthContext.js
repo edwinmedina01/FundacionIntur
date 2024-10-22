@@ -27,9 +27,11 @@ export const AuthProvider = ({ children }) => {
 
     const login = (token) => {
         localStorage.setItem('token', token);
+        document.cookie = `token=${token}; path=/`; // Guarda el token en las cookies
         const decoded = jwt.decode(token);
         setUser({ id: decoded.id });
     };
+    
 
     const logout = () => {
         localStorage.removeItem('token');
