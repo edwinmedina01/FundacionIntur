@@ -84,7 +84,7 @@ const RolesManagement = () => {
 
   const handleDelete = async (Id_Rol) => {
     try {
-      const response = await fetch('http://localhost:3000/api/roles', {
+      const response = await fetch('/api/roles', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
