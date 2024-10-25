@@ -2,10 +2,14 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/roles": "pages/roles.js",
   "/usuarios": "pages/usuarios.js",
+  "/inicio": "pages/inicio.js",
+  "/api/usuarios": "pages/api/usuarios.js",
+  "/perfil": "pages/perfil.js",
+  "/api/roles": "pages/api/roles.js",
+  "/api/estadousuario": "pages/api/estadousuario.js",
+  "/api/logout": "pages/api/logout.js",
   "/": "pages/index.js",
   "/api/login": "pages/api/login.js",
-  "/inicio": "pages/inicio.js",
-  "/api/logout": "pages/api/logout.js"
+  "/api/profile": "pages/api/profile.js"
 }

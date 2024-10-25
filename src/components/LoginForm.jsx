@@ -29,7 +29,7 @@ const LoginForm = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="p-8 bg-white rounded-lg shadow-lg w-full max-w-sm">
-                <img src="/img/intur1.png" className="App-logo mb-6 mx-auto" alt="logo" />
+                <img src="/img/intur.png" className="App-logo mb-6 mx-auto" alt="logo" />
                 <h2 className="mb-4 text-2xl font-semibold text-center text-blue-700">Iniciar Sesión</h2>
                 {mensaje && <p className="mb-4 text-red-500 text-center">{mensaje}</p>}
                 <form onSubmit={handleSubmit}>
@@ -40,20 +40,22 @@ const LoginForm = () => {
                             </svg>
                         </div>
                         <input
-                            type="text"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="block py-2 pl-10 pr-2 w-full text-sm text-gray-900 bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-600"
-                            placeholder=" "
-                            required
-                        />
-                        <label
-                            htmlFor="email"
-                            className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
-                        >
-                            Ingresa tu Usuario *
-                        </label>
+    type="text"
+    id="email"
+    value={email.toUpperCase()} // Muestra el texto siempre en mayúsculas
+    onChange={(e) => setEmail(e.target.value.toUpperCase())} // Guarda el valor en mayúsculas
+    className="block py-2 pl-10 pr-2 w-full text-sm text-gray-900 bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-600"
+    placeholder=" "
+    required
+    style={{ textTransform: 'uppercase' }} // Visualiza el texto en mayúsculas
+/>
+<label
+    htmlFor="email"
+    className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
+>
+    Ingresa tu Usuario *
+</label>
+
                     </div>
                     <div className="mb-4 relative">
                         <div className="absolute inset-y-3 left-3 flex items-center">
@@ -100,7 +102,7 @@ const LoginForm = () => {
                         Entrar
                     </button>
                     <div className="mt-4 text-center">
-        <a href='/' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a>
+        <a href='/forgot-password' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a>
     </div>
                 </form>
             </div>

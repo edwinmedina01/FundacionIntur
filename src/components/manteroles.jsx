@@ -84,7 +84,7 @@ const RolesManagement = () => {
 
   const handleDelete = async (Id_Rol) => {
     try {
-      const response = await fetch('/api/roles', {
+      const response = await fetch('http://localhost:3000/api/roles', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -122,6 +122,9 @@ const RolesManagement = () => {
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
        <center> <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Rol' : 'Agregar Rol'}</h2></center>
         <form onSubmit={handleSubmit}>
+        <label htmlFor="" className="block mb-2 text-sm font-medium text-gray-700">
+  Nombre del Rol
+</label>
           <input
             type="text"
             name="Rol"
@@ -131,6 +134,9 @@ const RolesManagement = () => {
             required
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+                              <label htmlFor="" className="block mb-2 text-sm font-medium text-gray-700">
+  Descripcion
+</label>
           <input
             type="text"
             name="Descripcion"
@@ -140,6 +146,9 @@ const RolesManagement = () => {
             required
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+                    <label htmlFor="" className="block mb-2 text-sm font-medium text-gray-700">
+  Estado
+</label>
           <select
             name="Estado"
             value={formData.Estado}
@@ -190,18 +199,23 @@ const RolesManagement = () => {
                 <td className="py-4 px-6">{role.Descripcion}</td>
                 <td className="py-4 px-6">{convertEstado(role.Estado)}</td>
                 <td className="py-4 px-6 flex justify-center space-x-2">
-                  <button
-                    onClick={() => handleEdit(role)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(role.Id_Rol)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  >
-                        ‌ ‌ ‌ ‌X ‌ ‌ ‌ ‌
-                  </button>
+                  
+                <div className="flex items-center">
+    {/* BOTON DE EDITAR */}
+    <button 
+      onClick={() => handleEdit(role)} 
+      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+    >
+      Editar
+    </button>
+        {/* BOTON DE ELIMINAR */}
+        <button 
+      onClick={() => handleDelete(role.Id_Rol)} 
+      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+    >
+      X
+    </button>
+                  </div>
                 </td>
               </tr>
             ))}

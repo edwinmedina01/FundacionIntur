@@ -14,34 +14,43 @@ export default async function handler(req, res) {
 
     const { email, password } = req.body;
 
-    // Modificación aquí: incluir el rol en la consulta
     const usuario = await Usuario.findOne({ where: { Usuario: email } });
 
-    // Verificación del usuario
     if (!usuario) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
     }
-
+    if (password) {
+        const salt = await bcrypt.genSalt(10);
+        usuario.Contrasena = await bcrypt.hash(password, salt);
+    }
     const esValida = await bcrypt.compare(password, usuario.Contrasena);
 
     if (!esValida) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
     }
 
-    // Modificación aquí: incluir el rol en el token
-    const token = jwt.sign({ id: usuario.id, role: usuario.Id_Rol }, SECRET_KEY, { expiresIn: '1h' });
+    // Crear el token incluyendo los campos requeridos
+    const token = jwt.sign(
+        { 
+            id: usuario.Id_Usuario, // id del usuario
+            role: usuario.Rol, // rol del usuario
+            email: usuario.Correo, // correo del usuario
+            estado: usuario.Id_EstadoUsuario, // estado del usuario
+   //         password: usuario.Contrasena, // contraseña del usuario (considera los riesgos de seguridad)
+            nombre: usuario.Usuario
+        }, 
+        SECRET_KEY, 
+        { expiresIn: '1h' }
+    );
 
     const serialized = serialize('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Solo asegura la cookie con HTTPS en producción
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 3600, // 1 hora en segundos
-        path: '/', // Hacer la cookie accesible desde cualquier parte del sitio
+        maxAge: 3600, 
+        path: '/',
     });
 
-    // Añadir la cookie a la respuesta
     res.setHeader('Set-Cookie', serialized);
-
-    // Modificación aquí: incluir el rol en la respuesta
-    res.status(200).json({ token, role: usuario.Id_Rol }); // Responder con el rol
+    res.status(200).json({ token, role: usuario.Id_Rol });
 }

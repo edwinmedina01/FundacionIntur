@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import AuthContext from '../context/AuthContext'; //usuario
+
 
 const Layout = ({ children }) => {
+    const { user } = useContext(AuthContext); // usuario desde el contexto de autenticación
     const [menuOpen, setMenuOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const router = useRouter();
@@ -19,7 +22,7 @@ const Layout = ({ children }) => {
     const handleLogout = async () => {
         try {
             await axios.post('/api/logout');
-            router.push('');
+            router.push('/');
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
         }
@@ -28,13 +31,15 @@ const Layout = ({ children }) => {
     return (
         <div>
             <nav className="flex justify-between items-center bg-blue-700 p-4 shadow-md">
+                <img 
+                    src="/img/intur.png" 
+                    alt="logo" 
+                />
                 <ul className="flex space-x-8 text-white mx-auto">
                     <li>
                         <Link href="/inicio" className="hover:text-blue-300 transition duration-300">Inicio</Link>
                     </li>
-                    <li>
-                        <Link href="/" className="hover:text-blue-300 transition duration-300">Login</Link>
-                    </li>
+
                     <li className="relative">
                         <button
                             onClick={toggleDropdown}
@@ -53,14 +58,14 @@ const Layout = ({ children }) => {
                             </div>
                         )}
                     </li>
-
                 </ul>
                 <div className="relative">
                     <button
                         onClick={toggleMenu}
                         className="text-white focus:outline-none hover:text-blue-300 transition duration-300"
                     >
-                        Usuario <span className="ml-2">▼</span>
+                        {/* Mostrar el nombre del usuario, o 'Usuario' si no está logueado */}
+                        {user?.nombre || 'Usuario'} <span className="ml-2">▼</span>
                     </button>
                     {menuOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-10">
