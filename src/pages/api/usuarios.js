@@ -1,11 +1,9 @@
-
-import bcrypt from 'bcryptjs';
+import { cryptPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
 const sequelize = require('../../../database/database');
 const { QueryTypes } = require('sequelize');
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // Obtener usuarios
     try {
       const usuarios = await sequelize.query('SELECT * FROM tbl_usuario', {
         type: QueryTypes.SELECT,
@@ -16,11 +14,9 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Error al obtener los usuarios' });
     }
   } else if (req.method === 'POST') {
-    // Crear nuevo usuario
     const { Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo } = req.body;
 
     try {
-      // Verificar si el nombre de usuario ya existe
       const existingUser = await sequelize.query('SELECT * FROM tbl_usuario WHERE Usuario = ?', {
         replacements: [Usuario],
         type: QueryTypes.SELECT,
@@ -30,8 +26,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'El nombre de usuario ya existe' });
       }
 
-      // Hashear la contraseña
-      const hashedPassword = await bcrypt.hash(Contrasena, 10); // Usando un salto de 10
+      // Usar cryptPassword para hashear la contraseña
+      const hashedPassword = await cryptPassword(Contrasena);
 
       await sequelize.query('INSERT INTO tbl_usuario (Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, Contrasena, Correo) VALUES (?, ?, ?, ?, ?, ?)', {
         replacements: [Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, hashedPassword, Correo],
@@ -43,11 +39,9 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Error al crear el usuario' });
     }
   } else if (req.method === 'PUT') {
-    // Actualizar un usuario
     const { Id_Usuario, Id_Rol, Id_EstadoUsuario, Id_Persona, Usuario, Nombre_Usuario, Contrasena, Intentos_Fallidos, Fecha_Ultima_Conexion, Preguntas_Contestadas, Primer_Ingreso, Fecha_Vencimiento, Correo, Modificado_Por, Fecha_Modificacion } = req.body;
 
     try {
-        // Verificar si el nombre de usuario ya existe, excluyendo el usuario actual
         const existingUser = await sequelize.query('SELECT * FROM tbl_usuario WHERE Usuario = ? AND Id_Usuario != ?', {
             replacements: [Usuario, Id_Usuario],
             type: QueryTypes.SELECT,
@@ -57,13 +51,11 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'El nombre de usuario ya existe' });
         }
 
-        // Obtener el valor actual de la contraseña si no se ha proporcionado una nueva
+        // Si hay una nueva contraseña, encriptarla con cryptPassword
         let hashedPassword;
         if (Contrasena) {
-            // Si se proporciona una nueva contraseña, hashearla
-            hashedPassword = await bcrypt.hash(Contrasena, 10);
+            hashedPassword = await cryptPassword(Contrasena);
         } else {
-            // Si no se proporciona una nueva contraseña, usar la actual
             const usuarioActual = await sequelize.query('SELECT Contrasena FROM tbl_usuario WHERE Id_Usuario = ?', {
                 replacements: [Id_Usuario],
                 type: QueryTypes.SELECT,
@@ -71,7 +63,6 @@ export default async function handler(req, res) {
             hashedPassword = usuarioActual[0].Contrasena;
         }
 
-        // Actualizar el usuario con o sin cambio de contraseña
         await sequelize.query('UPDATE tbl_usuario SET Id_Rol = ?, Id_EstadoUsuario = ?, Id_Persona = ?, Usuario = ?, Nombre_Usuario = ?, Contrasena = ?, Intentos_Fallidos = ?, Fecha_Ultima_Conexion = ?, Preguntas_Contestadas = ?, Primer_Ingreso = ?, Fecha_Vencimiento = ?, Correo = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Usuario = ?', {
             replacements: [Id_Rol, Id_EstadoUsuario, Id_Persona, Usuario, Nombre_Usuario, hashedPassword, Intentos_Fallidos, Fecha_Ultima_Conexion, Preguntas_Contestadas, Primer_Ingreso, Fecha_Vencimiento, Correo, Modificado_Por, Fecha_Modificacion, Id_Usuario],
             type: QueryTypes.UPDATE,
@@ -82,11 +73,10 @@ export default async function handler(req, res) {
         res.status(500).json({ error: 'Error al actualizar el usuario' });
     }
   } else if (req.method === 'DELETE') {
-    // Eliminar un usuario
     const { Id_Usuario } = req.body;
 
     try {
-      const result = await sequelize.query('DELETE FROM tbl_usuario WHERE Id_Usuario = ?', {
+      await sequelize.query('DELETE FROM tbl_usuario WHERE Id_Usuario = ?', {
         replacements: [Id_Usuario],
         type: QueryTypes.DELETE,
       });

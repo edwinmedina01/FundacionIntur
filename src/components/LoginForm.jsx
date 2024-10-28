@@ -47,6 +47,7 @@ const LoginForm = () => {
     className="block py-2 pl-10 pr-2 w-full text-sm text-gray-900 bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-600"
     placeholder=" "
     required
+    maxLength={20}
     style={{ textTransform: 'uppercase' }} // Visualiza el texto en mayúsculas
 />
 <label
@@ -72,6 +73,7 @@ const LoginForm = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            maxLength={40}
                         />
                         <label
                             htmlFor="password"

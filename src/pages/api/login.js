@@ -1,7 +1,7 @@
 // pages/api/login.js
 
 import { serialize } from 'cookie';
-import bcrypt from 'bcryptjs';
+import { matchPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
 import jwt from 'jsonwebtoken';
 const Usuario = require('../../../models/Usuario');
 
@@ -14,16 +14,15 @@ export default async function handler(req, res) {
 
     const { email, password } = req.body;
 
+    // Verificamos si el usuario existe en la base de datos
     const usuario = await Usuario.findOne({ where: { Usuario: email } });
 
     if (!usuario) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
     }
-    if (password) {
-        const salt = await bcrypt.genSalt(10);
-        usuario.Contrasena = await bcrypt.hash(password, salt);
-    }
-    const esValida = await bcrypt.compare(password, usuario.Contrasena);
+
+    // Comparamos la contraseña en texto plano con la encriptada en la base de datos
+    const esValida = await matchPassword(password, usuario.Contrasena);
 
     if (!esValida) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
@@ -32,11 +31,10 @@ export default async function handler(req, res) {
     // Crear el token incluyendo los campos requeridos
     const token = jwt.sign(
         { 
-            id: usuario.Id_Usuario, // id del usuario
-            role: usuario.Rol, // rol del usuario
-            email: usuario.Correo, // correo del usuario
-            estado: usuario.Id_EstadoUsuario, // estado del usuario
-   //         password: usuario.Contrasena, // contraseña del usuario (considera los riesgos de seguridad)
+            id: usuario.Id_Usuario,
+            role: usuario.Rol,
+            email: usuario.Correo,
+            estado: usuario.Id_EstadoUsuario,
             nombre: usuario.Usuario
         }, 
         SECRET_KEY, 
@@ -52,5 +50,5 @@ export default async function handler(req, res) {
     });
 
     res.setHeader('Set-Cookie', serialized);
-    res.status(200).json({ token, role: usuario.Id_Rol });
+    res.status(200).json({ token, role: usuario.Rol });
 }

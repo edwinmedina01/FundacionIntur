@@ -45,7 +45,7 @@ const Layout = ({ children }) => {
                             onClick={toggleDropdown}
                             className="text-white focus:outline-none hover:text-blue-300 transition duration-300"
                         >
-                            Mantenimiento <span className="ml-2">▼</span>
+                            Seguridad <span className="ml-2">▼</span>
                         </button>
                         {dropdownOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-10">

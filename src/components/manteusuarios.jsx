@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import bcrypt from 'bcryptjs';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
@@ -87,9 +86,9 @@ const UsersManagement = () => {
 
         // Verifica si se está editando o si se está creando un nuevo usuario
         if (isEditing) {
-            // Si se está editando, solo hashea la contraseña si se cambió
+            // Si se está editando, solo asigna la contraseña si se cambió
             if (formData.Contrasena) {
-                formData.Contrasena = await bcrypt.hash(formData.Contrasena, 10);
+                // Aquí ya no se hashea la contraseña
             } else {
                 // Eliminar la contraseña del objeto formData si no se ha cambiado
                 delete formData.Contrasena;
@@ -132,8 +131,7 @@ const UsersManagement = () => {
                 throw new Error('Error al crear el usuario');
             }
 
-            // Solo después de que el usuario se haya creado exitosamente, se puede hashear la contraseña
-            formData.Contrasena = await bcrypt.hash(formData.Contrasena, 10);
+            // Ya no se hashea la contraseña aquí
             setNotification('Usuario agregado exitosamente');
             setTimeout(() => {
                 setNotification('');
@@ -150,12 +148,16 @@ const UsersManagement = () => {
         }, 3000);
     }
 };
+
+
+
   
 
 const handleEdit = (user) => {
   // Carga los datos del usuario, pero deja la contraseña vacía
   setFormData({
-    ...user// Mantén la contraseña vacía
+    ...user,
+    Contrasena: ('')// Mantén la contraseña vacía
   });
   setIsEditing(true);
 };
