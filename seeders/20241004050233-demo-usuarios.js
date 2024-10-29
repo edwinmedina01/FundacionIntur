@@ -1,12 +1,15 @@
 'use strict';
 const bcrypt = require('bcryptjs');
 
+//node init.js //crear base de datos
+//npx sequelize-cli db:seed:all // crear usuarios
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const hashedPassword1 = await bcrypt.hash('password1', 10); // Ajusta 'password1' con la contraseña deseada
     const hashedPassword2 = await bcrypt.hash('password2', 10); // Ajusta 'password2' con la contraseña deseada
     const hashedPassword3 = await bcrypt.hash('password3', 10);
-
+    
     return queryInterface.bulkInsert('tbl_usuario', [
       {
         Id_Rol: 1,
