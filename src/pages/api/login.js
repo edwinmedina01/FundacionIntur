@@ -8,6 +8,7 @@ const Usuario = require('../../../models/Usuario');
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
 export default async function handler(req, res) {
+    //return  res.status(405).json({ mensaje: 'Método no permitido' });
     if (req.method !== 'POST') {
         return res.status(405).json({ mensaje: 'Método no permitido' });
     }
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
     }
 
+    console.log(SECRET_KEY)
     // Crear el token incluyendo los campos requeridos
     const token = jwt.sign(
         { 
@@ -50,5 +52,5 @@ export default async function handler(req, res) {
     });
 
     res.setHeader('Set-Cookie', serialized);
-    res.status(200).json({ token, role: usuario.Rol });
+    res.status(200).json({ token, role: usuario.Rol, primerLogin: usuario.Primer_Login });
 }

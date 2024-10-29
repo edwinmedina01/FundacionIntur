@@ -58,6 +58,9 @@ const Usuario = sequelize.define('tbl_Usuario', {
     Fecha_Modificacion: {
       type: DataTypes.DATE,
     },
+    Primer_Login: {
+      type: DataTypes.BOOLEAN,
+    },
   }, {
     tableName: 'tbl_Usuario',
     timestamps: false, // Desactiva los campos automáticos de createdAt y updatedAt

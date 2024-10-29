@@ -2,7 +2,7 @@
 const { Sequelize } = require('sequelize');
 
 // Crea una nueva instancia de Sequelize
-const sequelize = new Sequelize('gestion_academica_db', 'root', 'MiiguelinCZ98', {
+const sequelize = new Sequelize('gestion_academica_db', 'root', process.env.dbPassword , {
     host: 'localhost',
     dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
 });

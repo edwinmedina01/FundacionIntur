@@ -18,9 +18,11 @@ const LoginForm = () => {
         e.preventDefault();
         try {
             const respuesta = await axios.post('/api/login', { email, password });
+            console.log(respuesta);
             login(respuesta.data.token);
             setMensaje('Login exitoso');
-            router.push('/inicio');
+            if(!respuesta.data.primerLogin) router.push('/inicio');
+            else router.push('/change-password')
         } catch (error) {
             setMensaje(error.response?.data?.mensaje || 'Error en el login');
         }
