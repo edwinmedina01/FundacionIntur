@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "soren1",
+    "password": "MiiguelinCZ98",
     "database": "gestion_academica_db",
     "host": "127.0.0.1",
     "dialect": "mysql"

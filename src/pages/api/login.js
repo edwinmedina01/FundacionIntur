@@ -1,12 +1,11 @@
 // pages/api/login.js
 
-import {serialize} from 'cookie';
-import bcrypt from 'bcryptjs';
+import { serialize } from 'cookie';
+import { matchPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
 import jwt from 'jsonwebtoken';
 const Usuario = require('../../../models/Usuario');
 
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
-
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -15,27 +14,41 @@ export default async function handler(req, res) {
 
     const { email, password } = req.body;
 
-    const usuario = await Usuario.findOne({where: {Usuario: email}})
-   
+    // Verificamos si el usuario existe en la base de datos
+    const usuario = await Usuario.findOne({ where: { Usuario: email } });
 
-    const esValida = await bcrypt.compare(password, usuario.Contrasena);
-
-    if (!usuario || !esValida) {
+    if (!usuario) {
         return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
     }
 
-    const token = jwt.sign({ id: usuario.id }, SECRET_KEY, { expiresIn: '1h' });
+    // Comparamos la contraseña en texto plano con la encriptada en la base de datos
+    const esValida = await matchPassword(password, usuario.Contrasena);
+
+    if (!esValida) {
+        return res.status(400).json({ mensaje: 'El usuario y/o contraseña que especificaste no son correctos' });
+    }
+
+    // Crear el token incluyendo los campos requeridos
+    const token = jwt.sign(
+        { 
+            id: usuario.Id_Usuario,
+            role: usuario.Rol,
+            email: usuario.Correo,
+            estado: usuario.Id_EstadoUsuario,
+            nombre: usuario.Usuario
+        }, 
+        SECRET_KEY, 
+        { expiresIn: '1h' }
+    );
 
     const serialized = serialize('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Solo asegura la cookie con HTTPS en producción
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 3600, // 1 hora en segundos
-        path: '/', // Hacer la cookie accesible desde cualquier parte del sitio
+        maxAge: 3600, 
+        path: '/',
     });
-  
-      // Añadir la cookie a la respuesta
-    res.setHeader('Set-Cookie', serialized);
 
-    res.status(200).json({ token });
+    res.setHeader('Set-Cookie', serialized);
+    res.status(200).json({ token, role: usuario.Rol });
 }
