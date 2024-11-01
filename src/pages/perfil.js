@@ -17,7 +17,7 @@ const ProfilePage = () => {
 
     return (
         <Layout>
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-200">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-white-300">
                 
                 <Profile /> {/* Componente de perfil */}
             </div>
