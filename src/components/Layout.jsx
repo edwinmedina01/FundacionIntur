@@ -156,22 +156,22 @@ const Layout = ({ children }) => {
                             </ul>
                         )}
                     </li>
-                    {/*  Apartado2 
+                       
                     <li>
                         <button
                             onClick={toggleApartadoDosNavbar}
                             className="w-full text-left py-2 px-4 rounded hover:bg-blue-700 focus:outline-none"
                         >
-                            Apartado2
+                            Tutores/Padres
                         </button>
                         {showApartadoDosNavbar && (
                             <ul className="ml-4 mt-2 space-y-2 text-blue-200">
                                 <li>
                                     <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
-                                        1
+                                        Listado de Tutores/Padres
                                     </Link>
                                 </li>
-                                <li>
+                              {/*  <li>
                                     <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         2
                                     </Link>
@@ -180,10 +180,10 @@ const Layout = ({ children }) => {
                                     <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         3
                                     </Link>
-                                </li>
+                                </li> */}
                             </ul>
                         )}
-                    </li>*/}
+                    </li>
                     {/*  Apartado3 */}
                     <li>
                         <button
