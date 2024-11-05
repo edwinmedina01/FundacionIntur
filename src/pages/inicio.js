@@ -46,7 +46,7 @@ const Inicio = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Estudiantes</h2>
             <p className="text-gray-600 mb-4">Ver y administrar la información de los estudiantes.</p>
-            <Link href="/">
+            <Link href="/estudiante">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Estudiantes
               </button>
