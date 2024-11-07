@@ -167,7 +167,7 @@ const Layout = ({ children }) => {
                         {showApartadoDosNavbar && (
                             <ul className="ml-4 mt-2 space-y-2 text-blue-200">
                                 <li>
-                                    <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
+                                    <Link href="/tutorpadre" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         Listado de Tutores/Padres
                                     </Link>
                                 </li>

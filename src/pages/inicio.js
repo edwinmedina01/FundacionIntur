@@ -68,7 +68,7 @@ const Inicio = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Tutores/Padres</h2>
             <p className="text-gray-600 mb-4">Administra la informacion de los tutores/padres.</p>
-            <Link href="/">
+            <Link href="/tutorpadre">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Tutores
               </button>
