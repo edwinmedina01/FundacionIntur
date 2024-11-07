@@ -56,7 +56,7 @@ const LoginForm = () => {
     htmlFor="email"
     className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
 >
-    Ingresa tu Usuario *
+     Usuario *
 </label>
 
                     </div>
@@ -81,7 +81,7 @@ const LoginForm = () => {
                             htmlFor="password"
                             className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
                         >
-                            Ingresa tu contraseña *
+                            contraseña *
                         </label>
                         <span
                             className="absolute inset-y-0 right-3 flex items-center cursor-pointer"

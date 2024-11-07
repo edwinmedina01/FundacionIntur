@@ -57,45 +57,45 @@ const Inicio = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Benefactores</h2>
             <p className="text-gray-600 mb-4">Ver y Administrar la informacion de los benefactores</p>
-            <Link href="/usuarios">
+            <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Usuarios
+                Ir a Benefactores
               </button>
             </Link>
           </div>
 
           {/* Botón 4 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Roles</h2>
-            <p className="text-gray-600 mb-4">Administra los roles y permisos.</p>
-            <Link href="/roles">
+            <h2 className="text-xl font-semibold mb-2">Tutores/Padres</h2>
+            <p className="text-gray-600 mb-4">Administra la informacion de los tutores/padres.</p>
+            <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Roles
+                Ir a Tutores
               </button>
             </Link>
           </div>
 
-          {/* Botón 5 
+          {/* Botón 5 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Reportes</h2>
-            <p className="text-gray-600 mb-4">Generar y ver reportes del sistema.</p>
-            <Link href="/reportes">
+            <h2 className="text-xl font-semibold mb-2">Matricula General</h2>
+            <p className="text-gray-600 mb-4">aqui se presenta el registro general de matricula.</p>
+            <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Reportes
+                Ir a Matricula
               </button>
             </Link>
-          </div>*/}
+          </div>
 
-          {/* Botón 6 
+          {/* Botón 6 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Configuración</h2>
-            <p className="text-gray-600 mb-4">Ajustes del sistema y preferencias.</p>
-            <Link href="/configuracion">
+            <h2 className="text-xl font-semibold mb-2">Estadistica General</h2>
+            <p className="text-gray-600 mb-4">Dashboard general de los estudiantes por modalidad</p>
+            <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Configuración
+                Ir a Estadisticas
               </button>
             </Link>
-          </div>*/}
+          </div>
         </div>
       </div>
     </Layout>

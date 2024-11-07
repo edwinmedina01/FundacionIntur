@@ -153,7 +153,7 @@ const handleSubmit = async (e) => {
       {/* Columna izquierda: Formulario */}
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
         <center>
-          <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Permiso' : 'Agregar Permiso'}</h2>
+          <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Permiso' : 'Asignar Permisos'}</h2>
         </center>
         <form onSubmit={handleSubmit}>
           {/* Selector de Rol */}

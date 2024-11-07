@@ -204,11 +204,11 @@ const Layout = ({ children }) => {
                                         Municipios
                                     </Link>
                                 </li>
-                                <li>
+                              {/*  <li>
                                     <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         Tipo de Persona
                                     </Link>
-                                </li>
+                                </li>*/}
                             </ul>
                         )}
                     </li>
