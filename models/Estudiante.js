@@ -2,7 +2,10 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 
-const Persona = require('./Persona')
+const Persona = require('./Persona');
+const Instituto = require('./Instituto');
+const Beneficio = require('./Beneficio');
+const Area = require('./Area');
 
 const Estudiante = sequelize.define('Tbl_Estudiante', {
     Id_Estudiante: {
@@ -50,6 +53,9 @@ const Estudiante = sequelize.define('Tbl_Estudiante', {
     }
 );
   
-Estudiante.belongsTo(Persona, { foreignKey: 'Id_Persona', as: 'Persona' })
+Estudiante.belongsTo(Persona, { foreignKey: 'Id_Persona', as: 'Persona' });
+Estudiante.belongsTo(Instituto, { foreignKey: 'Id_Instituto', as: 'Instituto' });
+Estudiante.belongsTo(Beneficio, { foreignKey: 'Id_Beneficio', as: 'Beneficio' });
+Estudiante.belongsTo(Area, { foreignKey: 'Id_Area', as: 'Area' });
 
 module.exports = Estudiante;

@@ -11,7 +11,7 @@ const Inicio = () => {
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    document.title = "Inicio";
+    document.title = "Menu";
     // Extraer el nombre de usuario del token o establecer un valor predeterminado
     const token = localStorage.getItem('token');
     if (token) {
@@ -26,27 +26,27 @@ const Inicio = () => {
     <Layout>
       <div className="min-h-screen bg-gray-100 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold">Menu</h1>
+          <h1 className="text-4xl font-bold">Agregar nuevos registros</h1>
         </div>
 
         {/* Contenedor de Acciones Rápidas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Botón 1 */}
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+          {/* <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">+ Nuevo Registro</h2>
             <p className="text-gray-600 mb-4">Agregar un Nuevo Registro al Sistema acerca de el alumno,su benefactor,su tutor.</p>
-            <Link href="/menu-create">
+            <Link href="/nuevoregistro">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Nuevo Registro
               </button>
             </Link>
-          </div>
+          </div> */}
 
           {/* Botón 2 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Estudiantes</h2>
-            <p className="text-gray-600 mb-4">Ver y administrar la información de los estudiantes.</p>
-            <Link href="/estudiante/reporte">
+            <p className="text-gray-600 mb-4">Crear la información de los estudiantes.</p>
+            <Link href="/estudiante">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Estudiantes
               </button>
@@ -56,7 +56,7 @@ const Inicio = () => {
           {/* Botón 3 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Benefactores</h2>
-            <p className="text-gray-600 mb-4">Ver y Administrar la informacion de los benefactores</p>
+            <p className="text-gray-600 mb-4">Crear la informacion de los benefactores</p>
             <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Benefactores
@@ -67,7 +67,7 @@ const Inicio = () => {
           {/* Botón 4 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Tutores/Padres</h2>
-            <p className="text-gray-600 mb-4">Administra la informacion de los tutores/padres.</p>
+            <p className="text-gray-600 mb-4">Crear la informacion de los tutores/padres.</p>
             <Link href="/tutorpadre">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Tutores

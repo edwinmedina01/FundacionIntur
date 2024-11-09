@@ -53,10 +53,12 @@ export default async function handler(req, res) {
     case 'DELETE':
       try {
         const estudiante = await Estudiante.findByPk(id);
-        if (!estudiante) {
+        const persona = await Persona.findByPk(estudiante.Id_Persona);
+        if (!estudiante || !persona) {
           return res.status(404).json({ message: 'Estudiante no encontrado' });
         }
         await estudiante.destroy();
+        await persona.destroy();
         return res.status(200).json({ message: 'Estudiante eliminado' });
       } catch (error) {
         return res.status(500).json({ error: 'Error al eliminar estudiante' });
