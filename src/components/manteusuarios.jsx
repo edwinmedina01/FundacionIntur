@@ -5,6 +5,9 @@ const UsersManagement = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [userStates, setUserStates] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 8;  // cantidad de usuarios por pagina
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     Id_Usuario: '',
     Id_Rol: '',
@@ -28,7 +31,33 @@ const UsersManagement = () => {
   const [updateNotification, setUpdateNotification] = useState('');
   const [deleteNotification, setDeleteNotification] = useState('');
   const [visibleDetails, setVisibleDetails] = useState({}); 
-  
+  const indexOfLastUser = currentPage * usersPerPage;
+const indexOfFirstUser = indexOfLastUser - usersPerPage;
+
+
+{/* Filtros del buscador por usuario/nombre o correo */}
+const filteredUsers = users.filter(user =>
+  user.Usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  user.Correo.toLowerCase().includes(searchQuery.toLowerCase())||
+  user.Nombre_Usuario.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+
+const nextPage = () => {
+  if (currentPage < Math.ceil(users.length / usersPerPage)) {
+    setCurrentPage(currentPage + 1);
+  }
+};
+
+const prevPage = () => {
+  if (currentPage > 1) {
+    setCurrentPage(currentPage - 1);
+  }
+};
+
+const setPage = (pageNumber) => {
+  setCurrentPage(pageNumber);
+};
 
   useEffect(() => {
     fetchUsers();
@@ -38,7 +67,7 @@ const UsersManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/usuarios'); // Asegúrate de que la API devuelva todos los usuarios
+      const response = await axios.get('/api/usuarios'); // API  usuarios
       // Filtrar solo los usuarios activos
       const activeUsers = response.data.filter(user => user.Id_EstadoUsuario === 1);
       setUsers(activeUsers);
@@ -352,8 +381,21 @@ const handleEdit = (user) => {
     {/* Columna derecha: Tabla de Usuarios */}
     <div className="w-2/3">
   <h2 className="text-2xl font-semibold mb-4 text-center">Listado de Usuarios</h2>
+  <div className="mb-4">
+ {/*Barra de busqueda */}
+ <center> <input
+  type="text"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+  placeholder="Buscar por nombre o correo"
+/></center>
+
+
+</div>
+
   <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-    <thead className="bg-slate-200">
+  <thead className="bg-slate-200">
     <tr>
     <th className="py-4 px-6 text-left">ID</th>
     <th className="py-4 px-6 text-left">Usuario</th>
@@ -363,9 +405,9 @@ const handleEdit = (user) => {
     <th className="py-4 px-6 text-left">Estado</th>
     <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
+            </thead>
+  <tbody>
+  {filteredUsers.slice(indexOfFirstUser, indexOfLastUser).map((user) => (
               <React.Fragment key={user.Id_Usuario}>
                 <tr className="hover:bg-gray-100">
                 <td className="py-4 px-6">{user.Id_Usuario}</td>
@@ -423,7 +465,39 @@ const handleEdit = (user) => {
             ))}
           </tbody>
         </table>
+  <div className="flex justify-between mt-4">
+  <button
+    onClick={prevPage}
+    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+  >
+    Anterior
+  </button>
 
+  {/* Páginas */}
+  <div className="flex space-x-2">
+    {Array.from({ length: Math.ceil(users.length / usersPerPage) }, (_, index) => (
+      <button
+        key={index + 1}
+        onClick={() => setPage(index + 1)}
+        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+          currentPage === index + 1
+            ? 'bg-white-600 text-black shadow-lg scale-105'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
+        }`}
+      >
+        {index + 1}
+      </button>
+    ))}
+  </div>
+
+  {/* Botón "Siguiente" */}
+  <button
+    onClick={nextPage}
+    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+  >
+    Siguiente
+  </button>
+</div>
 </div>
     </div>
   );
