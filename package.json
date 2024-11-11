@@ -16,9 +16,12 @@
     "nodemailer": "^6.9.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-loading": "^2.0.3",
+    "react-toastify": "^10.0.6",
     "sequelize": "^6.37.3",
     "sequelize-cli": "^6.6.2",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "dev": "next dev",

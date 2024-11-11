@@ -26,13 +26,28 @@ const Layout = ({ children }) => {
         if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
     };
 
-    const toggleseguridadNavbar = () => {
-        setShowseguridadNavbar(!showseguridadNavbar);
-        if (showMaintenanceNavbar) setShowMaintenanceNavbar(false);
-        if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
-        if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
-        if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
+    // const toggleseguridadNavbar = () => {
+    //     setShowseguridadNavbar(!showseguridadNavbar);
+    //     if (showMaintenanceNavbar) setShowMaintenanceNavbar(false);
+    //     if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
+    //     if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
+    //     if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
+    // };
+
+        const toggleseguridadNavbar = () => {
+        // Verificar si el usuario tiene el rol adecuado (por ejemplo, "admin")
+        // if (user && user.role === 'admin') {  // Solo muestra si el rol es 'admin'
+            setShowseguridadNavbar(!showseguridadNavbar);
+            if (showMaintenanceNavbar) setShowMaintenanceNavbar(false);
+            if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
+            if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
+            if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
+        // } else {
+        //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
+        //     console.log("No tienes permisos para ver esta sección.");
+        // }
     };
+
 
     const toggleApartadoUnoNavbar = () => {
         setShowApartadoUnoNavbar(!showApartadoUnoNavbar);
@@ -66,6 +81,10 @@ const Layout = ({ children }) => {
             console.error('Error al cerrar sesión:', error);
         }
     };
+  // Verifica si el usuario tiene el rol necesario para acceder a "Seguridad"
+  const hasSecurityRole = user?.role === 'admin' || user?.role === 'superadmin'; // Ajusta esto según tu lógica de roles
+
+
 
     return (
         <div className="flex min-h-screen bg-blue-50">

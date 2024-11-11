@@ -171,49 +171,87 @@ const EstudiantesCrud = () => {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Filtrar los estudiantes basados en el término de búsqueda
+  // const filteredEstudiantes = estudiantes.filter(estudiante =>
+  //   `${estudiante.Persona?.Primer_Nombre} ${estudiante.Persona?.Primer_Apellido}`
+  //     .toLowerCase()
+  //     .includes(searchTerm.toLowerCase())
+  // );
+  // const filteredEstudiantes = estudiantes.filter(estudiante =>
+  //   `${estudiante.Persona?.Primer_Nombre} ${estudiante.Persona?.Segundo_Nombre || ''} ${estudiante.Persona?.Primer_Apellido} ${estudiante.Persona?.Segundo_Apellido || ''} ${estudiante.Persona?.Identidad} ${estudiante.Persona?.Lugar_Nacimiento} ${estudiante.Instituto?.Nombre_Instituto} ${estudiante.Area?.Nombre_Area} ${estudiante.Beneficio?.Nombre_Beneficio} ${estudiante.Persona?.Municipio?.Nombre_Municipio}`
+  //     .toLowerCase()
+  //     .includes(searchTerm.toLowerCase())
+  // );
+
+  const filteredEstudiantes = estudiantes.filter((estudiante) => {
+    const fullText = `
+      ${estudiante.Persona?.Identidad || ''} 
+      ${estudiante.Persona?.Primer_Nombre || ''} 
+      ${estudiante.Persona?.Segundo_Nombre || ''} 
+      ${estudiante.Persona?.Primer_Apellido || ''} 
+      ${estudiante.Persona?.Segundo_Apellido || ''} 
+      ${estudiante.Persona?.Sexo || ''} 
+      ${estudiante.Persona?.Lugar_Nacimiento || ''} 
+      ${estudiante.Instituto?.Nombre_Instituto || ''} 
+      ${estudiante.Area?.Nombre_Area || ''} 
+      ${estudiante.Beneficio?.Nombre_Beneficio || ''} 
+      ${estudiante.Persona?.Municipio?.Nombre_Municipio || ''}
+    `;
+  
+    // Convertir todo el texto a minúsculas y buscar el término de búsqueda
+    return fullText.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+  
+
+
   return (
     <Layout>
-    <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">Nuevo Registro de Estudiante</h1>
-      
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg mb-10">
-        {/* <h3 className="text-2xl font-semibold mb-6 text-blue-600">Datos de Persona</h3> */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <input
-            type="text"
-            name="Primer_Nombre"
-            placeholder="Primer Nombre"
-            value={personaData.Primer_Nombre}
-            onChange={handlePersonaInputChange}
-            required
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-          <input
-            type="text"
-            name="Segundo_Nombre"
-            placeholder="Segundo Nombre"
-            value={personaData.Segundo_Nombre}
-            onChange={handlePersonaInputChange}
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-          <input
-            type="text"
-            name="Primer_Apellido"
-            placeholder="Primer Apellido"
-            value={personaData.Primer_Apellido}
-            onChange={handlePersonaInputChange}
-            required
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-          <input
-            type="text"
-            name="Segundo_Apellido"
-            placeholder="Segundo Apellido"
-            value={personaData.Segundo_Apellido}
-            onChange={handlePersonaInputChange}
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-          <select
+      <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+        <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">Nuevo Registro de Estudiante</h1>
+
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg mb-10">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <input
+              type="text"
+              name="Primer_Nombre"
+              placeholder="Primer Nombre"
+              value={personaData.Primer_Nombre}
+              onChange={handlePersonaInputChange}
+              required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
+            <input
+              type="text"
+              name="Segundo_Nombre"
+              placeholder="Segundo Nombre"
+              value={personaData.Segundo_Nombre}
+              onChange={handlePersonaInputChange}
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
+            <input
+              type="text"
+              name="Primer_Apellido"
+              placeholder="Primer Apellido"
+              value={personaData.Primer_Apellido}
+              onChange={handlePersonaInputChange}
+              required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
+            <input
+              type="text"
+              name="Segundo_Apellido"
+              placeholder="Segundo Apellido"
+              value={personaData.Segundo_Apellido}
+              onChange={handlePersonaInputChange}
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
+            <select
               name="Sexo"
               value={personaData.Sexo}
               onChange={handlePersonaInputChange}
@@ -226,17 +264,17 @@ const EstudiantesCrud = () => {
                   {sexo.descripcion}
                 </option>
               ))}
-          </select>
-          <input
-            type="date"
-            name="Fecha_Nacimiento"
-            placeholder="Fecha de Nacimiento"
-            value={personaData.Fecha_Nacimiento}
-            onChange={handlePersonaInputChange}
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
+            </select>
+            <input
+              type="date"
+              name="Fecha_Nacimiento"
+              placeholder="Fecha de Nacimiento"
+              value={personaData.Fecha_Nacimiento}
+              onChange={handlePersonaInputChange}
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
 
-          <select
+            <select
               name="Id_Departamento"
               value={personaData.Id_Departamento}
               onChange={handlePersonaInputChange}
@@ -249,9 +287,9 @@ const EstudiantesCrud = () => {
                   {departamento.Nombre_Departamento}
                 </option>
               ))}
-          </select>
-          
-          <select
+            </select>
+
+            <select
               name="Id_Municipio"
               value={personaData.Id_Municipio}
               onChange={handlePersonaInputChange}
@@ -264,131 +302,136 @@ const EstudiantesCrud = () => {
                   {municipio.Nombre_Municipio}
                 </option>
               ))}
-          </select>
+            </select>
 
+            <input
+              type="text"
+              name="Identidad"
+              placeholder="Número de Identidad"
+              value={personaData.Identidad}
+              onChange={handlePersonaInputChange}
+              required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
 
-          <input
-            type="text"
-            name="Lugar_Nacimiento"
-            placeholder="Lugar de Nacimiento"
-            value={personaData.Lugar_Nacimiento}
-            onChange={handlePersonaInputChange}
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-          <input
-            type="text"
-            name="Identidad"
-            placeholder="Identidad"
-            value={personaData.Identidad}
-            onChange={handlePersonaInputChange}
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          />
-        </div>
+            <input
+              type="text"
+              name="Creado_Por"
+              placeholder="Creado Por"
+              value={personaData.Creado_Por}
+              onChange={handlePersonaInputChange}
+              required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
 
-        {/* <h3 className="text-2xl font-semibold mb-6 text-blue-600">Datos de Estudiante</h3> */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <select
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <select
               name="Id_Beneficio"
               value={estudianteData.Id_Beneficio}
               onChange={handleEstudianteInputChange}
-              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
               required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
             >
-              <option value="">Seleccione un Beneficio</option>
+              <option value="">Beneficio</option>
               {beneficios.map((beneficio) => (
                 <option key={beneficio.Id_Beneficio} value={beneficio.Id_Beneficio}>
                   {beneficio.Nombre_Beneficio}
                 </option>
               ))}
-          </select>
-          
-          <select
+            </select>
+
+            <select
               name="Id_Area"
               value={estudianteData.Id_Area}
               onChange={handleEstudianteInputChange}
-              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
               required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
             >
-              <option value="">Seleccione un Área</option>
+              <option value="">Área</option>
               {areas.map((area) => (
                 <option key={area.Id_Area} value={area.Id_Area}>
                   {area.Nombre_Area}
                 </option>
               ))}
-          </select>
+            </select>
 
             <select
               name="Id_Instituto"
               value={estudianteData.Id_Instituto}
               onChange={handleEstudianteInputChange}
-              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
               required
+              className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
             >
-              <option value="">Seleccione un Instituto</option>
+              <option value="">Instituto</option>
               {institutos.map((instituto) => (
                 <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>
                   {instituto.Nombre_Instituto}
                 </option>
               ))}
             </select>
-          {/* <input
+          </div>
+
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
+            >
+              {editId ? 'Actualizar Estudiante' : 'Registrar Estudiante'}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-gray-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+
+        <div className="mb-6">
+          <input
             type="text"
-            name="Creado_Por"
-            placeholder="Creado Por"
-            value={estudianteData.Creado_Por}
-            onChange={handleEstudianteInputChange}
-            required
-            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300"
-          /> */}
+            placeholder="Buscar estudiante "
+            value={searchTerm}
+            onChange={handleSearch}
+            className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
+          />
+          <table className="min-w-full table-auto">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="p-3">Nombre</th>
+                <th className="p-3">Instituto</th>
+                <th className="p-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEstudiantes.map((estudiante) => (
+                <tr key={estudiante.Id_Estudiante}>
+                  <td className="p-3">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
+                  <td className="p-3">{estudiante.Instituto.Nombre_Instituto}</td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleEdit(estudiante)}
+                      className="bg-yellow-500 text-white p-2 rounded mr-2"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(estudiante.Id_Estudiante)}
+                      className="bg-red-500 text-white p-2 rounded"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        <button type="submit" className="w-1/4 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors mr-4">
-          {editId ? 'Actualizar' : 'Agregar'}
-        </button>
-
-        <button  type="button" onClick={() => handleCancel()} className="w-1/4 bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition-colors">Cancelar</button>
-        
-      </form>
-
-      <table className="min-w-full bg-white shadow-lg rounded-lg mb-6">
-        <thead>
-          <tr>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">ID</th>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre</th>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Lugar Nacimiento</th>
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {estudiantes.map((estudiante) => (
-            <tr key={estudiante.Id_Estudiante} className="hover:bg-blue-50">
-              <td className="py-4 px-6 border-b">{estudiante.Id_Estudiante}</td>
-              <td className="py-4 px-6 border-b">{estudiante.Persona?.Identidad}</td>
-              <td className="py-4 px-6 border-b">
-                {`${estudiante.Persona?.Primer_Nombre || ''} ${estudiante.Persona?.Primer_Apellido || ''}`}
-              </td>
-              <td className="py-4 px-6 border-b">{estudiante.Persona?.Sexo === '1' ? 'Masculino' : 'Femenino'}</td>
-              <td className="py-4 px-6 border-b">{estudiante.Persona?.Lugar_Nacimiento}</td>
-              <td className="py-4 px-6 border-b">
-                <div className="flex gap-2">
-                  <button onClick={() => handleEdit(estudiante)} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors">
-                    Editar
-                  </button>
-                  <button onClick={() => handleDelete(estudiante.Id_Estudiante)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">
-                    Eliminar
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>  
+      </div>
     </Layout>
   );
-
 };
 
 export default EstudiantesCrud;
