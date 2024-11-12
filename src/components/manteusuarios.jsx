@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
@@ -255,6 +256,29 @@ const handleEdit = (user) => {
       [userId]: !prevState[userId] // Alterna la visibilidad del usuario correspondiente
     }));
   };
+
+    // Función para exportar a Excel
+    const exportToExcel = () => {
+      const exportData = users.map(user => ({
+        ID: user.Id_Usuario,
+        Usuario: user.Usuario,
+        Nombre: user.Nombre_Usuario,
+        Correo: user.Correo,
+        Rol: getRoleNameById(user.Id_Rol),
+        Estado: getUserStateNameById(user.Id_EstadoUsuario),
+        FechaUltimaConexion: user.Fecha_Ultima_Conexion,
+        CreadoPor: user.Creado_Por,
+        FechaCreacion: user.Fecha_Creacion,
+        ModificadoPor: user.Modificado_Por,
+        FechaModificacion: user.Fecha_Modificacion,
+      }));
+  
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
+  
+      XLSX.writeFile(workbook, 'Usuarios.xlsx');
+    };
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
       {/* Columna izquierda: Formulario */}
@@ -391,6 +415,13 @@ const handleEdit = (user) => {
   placeholder="Buscar por nombre o correo"
 /></center>
 
+ {/* Botón para exportar */}
+ <button
+          onClick={exportToExcel}
+          className="mb-4 bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
+        >
+          Exportar a Excel
+        </button>
 
 </div>
 
