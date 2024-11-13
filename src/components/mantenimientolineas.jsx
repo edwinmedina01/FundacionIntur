@@ -1,42 +1,42 @@
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 
-const UsersManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [userStates, setUserStates] = useState([]);
+const LineaBeneficioManagement = () => {
+  const [beneficios, setBeneficios] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 8;
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
-
-    Id_Tipo_Persona:'',
-    Tipo_Persona:'',
-    Descripcion:'',
-    Creado_Por:'',
-    Fecha_Creacion:'',
-    Modificado_Por:'',
-    Fecha_Modificacion:'',
-    Estado:''
-
+    Id_Beneficio: "",
+    Nombre_Beneficio: "",
+    Tipo_Beneficio: "",
+    Monto_Beneficio: "",
+    Responsable_Beneficio: "",
+    Creado_Por: "",
+    Fecha_Creacion: "",
+    Modificado_Por: "",
+    Fecha_Modificacion: "",
+    Estado: "",
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [visibleDetails, setVisibleDetails] = useState({}); 
+  const [notification, setNotification] = useState("");
+  const [updateNotification, setUpdateNotification] = useState("");
+  const [deleteNotification, setDeleteNotification] = useState("");
+  const [visibleDetails, setVisibleDetails] = useState({});
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 
-  {/* Filtros del buscador */}
-  const filteredUsers = users.filter(user =>
-    user.Tipo_Persona.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.Descripcion.toLowerCase().includes(searchQuery.toLowerCase())
+  {/* Filtros del buscador por Nombre, Tipo, Monto o Responsable */}
+const filteredUsers = beneficios.filter(user =>
+    user.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.Tipo_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.Monto_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.Responsable_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const nextPage = () => {
-    if (currentPage < Math.ceil(users.length / usersPerPage)) {
+    if (currentPage < Math.ceil(beneficios.length / usersPerPage)) {
       setCurrentPage(currentPage + 1);
     }
   };
@@ -50,35 +50,22 @@ const UsersManagement = () => {
   const setPage = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
   useEffect(() => {
-    fetchUsers();
-    console.log('Estado de users:', users);
-    fetchRoles();
+    fetchBeneficios();
   }, []);
 
- const fetchUsers = async () => {
-  try {
-    const response = await axios.get('/api/tutorpadre'); // Cambiar la ruta si es necesario
-    setUsers(response.data); // Simplemente asignar todos los datos
-  } catch (error) {
-    console.error('Error fetching users:', error);
-  }
-};
-
-  const fetchRoles = async () => {
+  const fetchBeneficios = async () => {
     try {
-      const response = await axios.get('/api/roles');
-      setRoles(response.data);
+      const response = await axios.get("/api/lineabeneficio"); // Asegúrate de que esta URL sea correcta
+      setBeneficios(response.data);
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      console.error("Error fetching beneficios:", error);
     }
   };
 
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-  
+
     // For the "Usuario" field, enforce uppercase transformation
     if (name === "Usuario") {
       setFormData({ ...formData, [name]: value.toUpperCase() });
@@ -86,11 +73,12 @@ const UsersManagement = () => {
       setFormData({ ...formData, [name]: value });
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const currentDate = new Date().toISOString().split("T")[0]; // Formato YYYY-MM-DD
     let dataToSubmit = { ...formData };
+    console.log(currentDate);
     // Si no estamos editando, asignamos la fecha de creación
     if (!isEditing) {
       dataToSubmit.Fecha_Creacion = currentDate;
@@ -104,118 +92,120 @@ const UsersManagement = () => {
       // Verifica si se está editando o creando un nuevo registro de tutor/padre
       if (isEditing) {
         // Lógica para actualizar un tutor/padre existente
-        const response = await fetch(`/api/tutorpadre`, {
-          method: 'PUT',
+        const response = await fetch(`/api/lineabeneficio`, {
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           if (errorData.error) {
             throw new Error(errorData.error); // Mensaje de error específico
           }
-          throw new Error('Error al actualizar el tutor/padre');
+          throw new Error("Error al actualizar el beneficio");
         }
-  
-        setUpdateNotification('Tutor/Padre actualizado exitosamente');
+
+        setUpdateNotification("Beneficio actualizado exitosamente");
         setTimeout(() => {
-          setUpdateNotification('');
+          setUpdateNotification("");
         }, 3000);
       } else {
-        // Lógica para crear un nuevo registro de tutor/padre
-        const response = await fetch('/api/tutorpadre', {
-          method: 'POST',
+        // Lógica para crear un nuevo registro
+        const response = await fetch("/api/lineabeneficio", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           if (errorData.error) {
             throw new Error(errorData.error); // Mensaje de error específico
           }
-          throw new Error('Error al crear el tutor/padre');
+          throw new Error("Error al crear el beneficio");
         }
-  
-        setNotification('Tutor/Padre agregado exitosamente');
+
+        setNotification("Beneficio agregado exitosamente");
         setTimeout(() => {
-          setNotification('');
+          setNotification("");
         }, 3000);
       }
-  
-      fetchUsers(); // Actualiza la lista
+
+      fetchBeneficios(); // Actualiza la lista
       resetForm(); // Resetea el formulario
     } catch (error) {
-      console.error('Error al guardar el tutor/padre:', error);
+      console.error("Error al guardar el beneficio:", error);
       setNotification(error.message);
       setTimeout(() => {
-        setNotification('');
+        setNotification("");
       }, 3000);
     }
   };
-  const handleEdit = (user) => {
-    // Carga los datos del usuario, pero deja la contraseña vacía
-    setFormData({
-      ...user,
-      Contrasena: ('')// Mantén la contraseña vacía
-    });
+
+  const handleEdit = (beneficio) => {
+    setFormData(beneficio);
     setIsEditing(true);
   };
+
   const resetForm = () => {
     setFormData({
-      Id_Tipo_Persona: '',
-      Tipo_Persona: '',
-      Descripcion: '',
-      Creado_Por: '',
-      Fecha_Creacion: '',
-      Modificado_Por: '',
-      Fecha_Modificacion: '',
-      Estado: ''
+      Id_Beneficio: "",
+      Nombre_Beneficio: "",
+      Tipo_Beneficio: "",
+      Monto_Beneficio: "",
+      Responsable_Beneficio: "",
+      Creado_Por: "",
+      Fecha_Creacion: "",
+      Modificado_Por: "",
+      Fecha_Modificacion: "",
+      Estado: "",
     });
     setIsEditing(false);
   };
-  const handleDelete = async (Id_Tipo_Persona) => {
+  const handleDelete = async (Id_Beneficio) => {
     try {
-      const response = await fetch('/api/tutorpadre', {
-        method: 'DELETE',
+      const response = await fetch("/api/lineabeneficio", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ Id_Tipo_Persona }),
+        body: JSON.stringify({ Id_Beneficio }),
       });
-  
+
       if (!response.ok) {
-        throw new Error('Error al eliminar el tutor/padre');
+        throw new Error("Error al eliminar el beneficio:");
       }
-  
-      fetchUsers(); // Actualiza la lista
+
+      fetchBeneficios(); // Actualiza la lista
       resetForm(); // Resetea el formulario
-      setDeleteNotification('Tutor/Padre eliminado exitosamente');
+      setDeleteNotification("Beneficio eliminado exitosamente");
       setTimeout(() => {
-        setDeleteNotification('');
+        setDeleteNotification("");
       }, 3000);
     } catch (error) {
-      console.error('Error al eliminar el tutor/padre:', error);
+      console.error("Error al eliminar el beneficio", error);
     }
   };
-    
 
-  const toggleDetails = (userId) => {
+  const toggleDetails = (beneficioId) => {
     setVisibleDetails((prevState) => ({
       ...prevState,
-      [userId]: !prevState[userId] // Alterna la visibilidad del usuario correspondiente
+      [beneficioId]: !prevState[beneficioId],
     }));
   };
   const exportToExcel = () => {
-    const exportData = users.map(user => ({
-      ID: user.Id_Tipo_Persona,
-      Tipo_Persona: user.Tipo_Persona,
-      Descripcion: user.Descripcion,
+    const exportData = beneficios.map(user => ({
+      ID: user.Id_Beneficio,
+      Tipo_Beneficio: user.Tipo_Beneficio,
+      Nombre: user.Nombre_Beneficio,
+      Monto: user.Monto_Beneficio,
+      Responsable: user.Responsable_Beneficio,
+      // Otros campos que desees incluir
     }));
   
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -224,21 +214,22 @@ const UsersManagement = () => {
     XLSX.writeFile(workbook, 'Linea_Beneficio.xlsx');
   };
   
+
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
         <center>
           <h2 className="text-2xl font-semibold mb-4">
-            {isEditing ? "Editar Tipo de Persona" : "Agregar Tipo de Persona"}
+            {isEditing ? "Editar Beneficio" : "Agregar Beneficio"}
           </h2>
         </center>
         <form onSubmit={handleSubmit}>
-          {/* Campo: Tipo Persona */}
+          {/* Campo: Nombre del Beneficio */}
           <div className="relative mb-4">
             <input
               type="text"
-              name="Tipo_Persona"
-              value={formData.Tipo_Persona}
+              name="Nombre_Beneficio"
+              value={formData.Nombre_Beneficio}
               onChange={handleInputChange}
               required
               className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
@@ -246,21 +237,21 @@ const UsersManagement = () => {
             />
             <label
               className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Tipo_Persona
+                formData.Nombre_Beneficio
                   ? "text-gray-1200 -translate-y-4 scale-100"
                   : "text-gray-400"
               }`}
             >
-              Tipo Persona
+              Nombre del Beneficio
             </label>
           </div>
 
-          {/* Campo: Descripción */}
+          {/* Campo: Tipo de Beneficio */}
           <div className="relative mb-4">
             <input
               type="text"
-              name="Descripcion"
-              value={formData.Descripcion}
+              name="Tipo_Beneficio"
+              value={formData.Tipo_Beneficio}
               onChange={handleInputChange}
               required
               className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
@@ -268,12 +259,56 @@ const UsersManagement = () => {
             />
             <label
               className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Descripcion
+                formData.Tipo_Beneficio
                   ? "text-gray-1200 -translate-y-4 scale-100"
                   : "text-gray-400"
               }`}
             >
-              Descripción
+              Tipo de Beneficio
+            </label>
+          </div>
+
+          {/* Campo: Monto de Beneficio */}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="Monto_Beneficio"
+              value={formData.Monto_Beneficio}
+              onChange={handleInputChange}
+              required
+              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
+              placeholder=" "
+            />
+            <label
+              className={`absolute left-1 top-1 transition-all duration-200 transform ${
+                formData.Monto_Beneficio
+                  ? "text-gray-1200 -translate-y-4 scale-100"
+                  : "text-gray-400"
+              }`}
+            >
+              Monto del Beneficio
+            </label>
+          </div>
+
+          {/* Campo: Responsable del Beneficio */}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="Responsable_Beneficio"
+              value={formData.Responsable_Beneficio}
+              onChange={handleInputChange}
+              required
+              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
+              placeholder=" "
+            />
+            <label
+              className={`absolute left-1 top-1 transition-all duration-200 transform ${
+                formData.Responsable_Beneficio
+                  ? "text-gray-1200 -translate-y-4 scale-100"
+                  : "text-gray-400"
+              }`}
+            >
+              Responsable
             </label>
           </div>
 
@@ -287,20 +322,19 @@ const UsersManagement = () => {
               className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Seleccione Estado</option>
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
             </select>
             <label className="block mb-2 text-sm font-medium text-gray-700">
               Estado
             </label>
           </div>
 
-          {/* Campo: Fecha de Creación */}
-       
-          {/* Campo: Fecha de Modificación */}
-          
+          {/* Fecha de Creación */}
 
-          {/* Campo: Creado Por */}
+          {/* Fecha de Modificación */}
+
+          {/* Creado Por */}
           <div className="relative mb-4">
             <input
               type="text"
@@ -322,7 +356,7 @@ const UsersManagement = () => {
             </label>
           </div>
 
-          {/* Campo: Modificado Por */}
+          {/* Modificado Por */}
           <div className="relative mb-4">
             <input
               type="text"
@@ -344,6 +378,7 @@ const UsersManagement = () => {
             </label>
           </div>
 
+          {/* Botón de Guardar */}
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
@@ -357,24 +392,29 @@ const UsersManagement = () => {
           >
             Cancelar
           </button>
-
-          {notification && (
-            <p className="mt-2 text-green-500">{notification}</p>
-          )}
-          {updateNotification && (
-            <p className="mt-2 text-green-500">{updateNotification}</p>
-          )}
-          {deleteNotification && (
-            <p className="mt-2 text-red-500">{deleteNotification}</p>
-          )}
         </form>
+
+        {/* Notificaciones */}
+        {notification && (
+          <div className="mt-4 text-center text-green-600">{notification}</div>
+        )}
+        {updateNotification && (
+          <div className="mt-4 text-center text-yellow-600">
+            {updateNotification}
+          </div>
+        )}
+        {deleteNotification && (
+          <div className="mt-4 text-center text-red-600">
+            {deleteNotification}
+          </div>
+        )}
       </div>
 
-      {/* Columna derecha: Tabla de Usuarios */}
-      <div className="w-2/3">
-        <h2 className="text-2xl font-semibold mb-4 text-center">
-          Listado de tipos de personas
-        </h2>
+      {/* Listado de Beneficios */}
+      <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
+        <center>
+          <h2 className="text-2xl font-semibold mb-4">Beneficios Existentes</h2>
+        </center>
         <div className="mb-4">
           {/*Barra de busqueda */}
           <center>
@@ -397,48 +437,58 @@ const UsersManagement = () => {
           </button>
         </div>
         <table className="min-w-full table-auto">
-          <thead className="bg-slate-200">
+          <thead>
             <tr>
-              <th className="py-4 px-6 text-center">ID Tipo persona</th>
-              <th className="py-4 px-6 text-center">Tipo persona</th>
-              <th className="py-4 px-6 text-center">Descripcion</th>
-              <th className="py-4 px-6 text-center">Acciones</th>
+              <th className="px-4 py-2 border-b">Nombre</th>
+              <th className="px-4 py-2 border-b">Tipo</th>
+              <th className="px-4 py-2 border-b">Monto</th>
+              <th className="px-4 py-2 border-b">Responsable</th>
+              <th className="px-4 py-2 border-b">Estado</th>
+              <th className="px-4 py-2 border-b">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers
               .slice(indexOfFirstUser, indexOfLastUser)
-              .map((user) => (
-                <React.Fragment key={user.Id_Tipo_Persona}>
+              .map((beneficio) => (
+                <React.Fragment key={beneficio.Id_Beneficio}>
                   <tr className="hover:bg-gray-100">
-                    <td className="py-4 px-6">{user.Id_Tipo_Persona}</td>
-                    <td className="border-b border-gray-200 p-2">
-                      {user.Tipo_Persona}
+                    <td className="px-4 py-2 border-b">
+                      {beneficio.Nombre_Beneficio}
                     </td>
-                    <td className="border-b border-gray-200 p-2">
-                      {user.Descripcion}
+                    <td className="px-4 py-2 border-b">
+                      {beneficio.Tipo_Beneficio}
                     </td>
-                    <td className="border-b border-gray-200 p-2">
+                    <td className="px-4 py-2 border-b">
+                      {beneficio.Monto_Beneficio}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {beneficio.Responsable_Beneficio}
+                    </td>
+                    <td className="px-4 py-2 border-b">
+                      {beneficio.Estado === 1 ? "Activo" : "Inactivo"}
+                    </td>
+                    <td className="px-4 py-2 border-b">
                       <div className="flex items-center">
                         {/* BOTON DE EDITAR */}
                         <button
-                          onClick={() => handleEdit(user)}
+                          onClick={() => handleEdit(beneficio)}
                           className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
                         >
                           Editar
                         </button>
                         {/* BOTON DE VER */}
                         <button
-                          onClick={() => toggleDetails(user.Id_Tipo_Persona)}
+                          onClick={() => toggleDetails(beneficio.Id_Beneficio)}
                           className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 ml-2"
                         >
-                          {visibleDetails[user.Id_Tipo_Persona]
+                          {visibleDetails[beneficio.Id_Beneficio]
                             ? "Ocultar"
                             : "Ver"}
                         </button>
                         {/* BOTON DE ELIMINAR */}
                         <button
-                          onClick={() => handleDelete(user.Id_Tipo_Persona)}
+                          onClick={() => handleDelete(beneficio.Id_Beneficio)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
                         >
                           X
@@ -446,27 +496,24 @@ const UsersManagement = () => {
                       </div>
                     </td>
                   </tr>
-                  {visibleDetails[user.Id_Tipo_Persona] && (
+                  {visibleDetails[beneficio.Id_Beneficio] && (
                     <tr className="bg-gray-50">
-                      <td colSpan="4" className="border-b border-gray-200 p-2">
+                      <td colSpan="6" className="border-b border-gray-200 p-2">
                         <div>
                           <p>
-                            <strong>Creado Por:</strong> {user.Creado_Por}
-                          </p>
-                          <p>
                             <strong>Fecha de Creación:</strong>{" "}
-                            {user.Fecha_Creacion}
-                          </p>
-                          <p>
-                            <strong>Modificado Por:</strong>{" "}
-                            {user.Modificado_Por}
+                            {beneficio.Fecha_Creacion}
                           </p>
                           <p>
                             <strong>Fecha de Modificación:</strong>{" "}
-                            {user.Fecha_Modificacion}
+                            {beneficio.Fecha_Modificacion}
                           </p>
                           <p>
-                            <strong>Estado:</strong> {user.Estado}
+                            <strong>Creado Por:</strong> {beneficio.Creado_Por}
+                          </p>
+                          <p>
+                            <strong>Modificado Por:</strong>{" "}
+                            {beneficio.Modificado_Por}
                           </p>
                         </div>
                       </td>
@@ -487,7 +534,7 @@ const UsersManagement = () => {
           {/* Páginas */}
           <div className="flex space-x-2">
             {Array.from(
-              { length: Math.ceil(users.length / usersPerPage) },
+              { length: Math.ceil(beneficios.length / usersPerPage) },
               (_, index) => (
                 <button
                   key={index + 1}
@@ -517,4 +564,4 @@ const UsersManagement = () => {
   );
 };
 
-export default UsersManagement;
+export default LineaBeneficioManagement;

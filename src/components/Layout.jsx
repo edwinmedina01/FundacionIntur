@@ -168,7 +168,7 @@ const Layout = ({ children }) => {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
+                                    <Link href="lineabeneficio" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         Lineas de Beneficios
                                     </Link>
                                 </li>
@@ -221,6 +221,11 @@ const Layout = ({ children }) => {
                                 <li>
                                     <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
                                         Municipios
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/lineabeneficio" className="block py-1 px-4 rounded hover:bg-blue-600">
+                                        Beneficios
                                     </Link>
                                 </li>
                               {/*  <li>
