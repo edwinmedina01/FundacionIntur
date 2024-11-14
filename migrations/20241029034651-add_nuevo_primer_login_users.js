@@ -9,7 +9,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.addColumn('tbl_usuario', 'Primer_Login', {
+    await queryInterface.addColumn('tbl_Usuario', 'Primer_Login', {
       type: Sequelize.BOOLEAN,  // Define el tipo de dato
       allowNull: false,         // Configura si el campo permite valores nulos
       defaultValue: true       // Puedes definir un valor por defecto
@@ -24,6 +24,6 @@ module.exports = {
      * await queryInterface.dropTable('users');
      */
 
-    await queryInterface.removeColumn('tbl_usuario', 'Primer_Login');
+    await queryInterface.removeColumn('tbl_Usuario', 'Primer_Login');
   }
 };

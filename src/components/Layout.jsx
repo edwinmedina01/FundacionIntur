@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const Layout = ({ children }) => {
     const { user } = useContext(AuthContext);
@@ -13,7 +14,7 @@ const Layout = ({ children }) => {
     const [showApartadoDosNavbar, setShowApartadoDosNavbar] = useState(false); // Nuevo
     const [showApartadoTresNavbar, setShowApartadoTresNavbar] = useState(false); // Nuevo
     const router = useRouter();
-
+    console.log("Estado actual del usuario en el contexto:", user);
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
     };
@@ -36,16 +37,25 @@ const Layout = ({ children }) => {
 
         const toggleseguridadNavbar = () => {
         // Verificar si el usuario tiene el rol adecuado (por ejemplo, "admin")
-        // if (user && user.role === 'admin') {  // Solo muestra si el rol es 'admin'
+         if (user && user.rol ==1) {  // Solo muestra si el rol es 'admin'
             setShowseguridadNavbar(!showseguridadNavbar);
             if (showMaintenanceNavbar) setShowMaintenanceNavbar(false);
             if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
             if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
             if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
-        // } else {
+         } else {
         //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
-        //     console.log("No tienes permisos para ver esta sección.");
-        // }
+             console.log("No tienes permisos para ver esta sección.");
+             console.log(user);
+             toast.error("No tienes permisos para ver esta sección.", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+            });
+         }
     };
 
 

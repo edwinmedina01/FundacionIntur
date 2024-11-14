@@ -20,10 +20,10 @@ export const AuthProvider = ({ children }) => {
                 // Guardar todos los campos que necesitas en el estado del usuario
                 setUser({
                     id: decoded.id,
-                    rol: decoded.rol, // Cambia aquí a decoded.rol para obtener el ROL
+                    rol: decoded.role, // Cambia aquí a decoded.rol para obtener el ROL
                     email: decoded.email,
                     estado: decoded.estado,
-                    usuario: decoded.usuario // Asegúrate de que el campo 'usuario' esté presente en el token
+                    usuario: decoded.nombre // Asegúrate de que el campo 'usuario' esté presente en el token
                 });
             } catch (error) {
                 localStorage.removeItem('token');
@@ -36,14 +36,14 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         document.cookie = `token=${token}; path=/`; // Guarda el token en las cookies
         const decoded = jwt.decode(token);
-        console.log('token decodificado en login es:', decoded);
+        console.log('token decodificado en login es: test', decoded);
         // Guardar todos los campos que necesitas en el estado del usuario
         setUser({
             id: decoded.id,
-            rol: decoded.rol, // Cambia aquí a decoded.rol para obtener el ROL
+            rol: decoded.role, // Cambia aquí a decoded.rol para obtener el ROL
             email: decoded.email,
             estado: decoded.estado,
-            usuario: decoded.usuario // Asegúrate de que el campo 'usuario' esté presente en el token
+            usuario: decoded.nombre // Asegúrate de que el campo 'usuario' esté presente en el token
         });
     };
 

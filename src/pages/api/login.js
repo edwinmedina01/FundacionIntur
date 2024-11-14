@@ -30,11 +30,11 @@ export default async function handler(req, res) {
     }
 
     console.log(SECRET_KEY)
-    // Crear el token incluyendo los campos requeridos
+    // Crear el token incluyendo los campos requeridos TEST
     const token = jwt.sign(
         { 
             id: usuario.Id_Usuario,
-            role: usuario.Rol,
+            role: usuario.Id_Rol,
             email: usuario.Correo,
             estado: usuario.Id_EstadoUsuario,
             nombre: usuario.Usuario
