@@ -228,10 +228,11 @@ const handleSubmit = async (e) => {
               <th className="py-4 px-6 text-left">Id Permiso</th>
               <th className="py-4 px-6 text-left">Rol</th>
               <th className="py-4 px-6 text-left">Objeto</th> {/* Nueva columna para objeto */}
+              <th className="py-4 px-6 text-left">Consultar</th>
               <th className="py-4 px-6 text-left">Insertar</th>
               <th className="py-4 px-6 text-left">Actualizar</th>
               <th className="py-4 px-6 text-left">Eliminar</th>
-              <th className="py-4 px-6 text-left">Consultar</th>
+     
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
@@ -241,10 +242,11 @@ const handleSubmit = async (e) => {
       <td className="py-4 px-6">{permiso.Id_Permiso}</td>
       <td className="py-4 px-6"><strong>{roleMap[permiso.Id_Rol]}</strong></td> {/* Mostrar nombre del rol */}
       <td className="py-4 px-6">{objectMap[permiso.Id_Objeto]}</td> {/* Mostrar nombre del objeto correctamente */}
+      <td className="py-4 px-6">{permiso.Permiso_Consultar === '1' ? 'Sí' : 'No'}</td>
       <td className="py-4 px-6">{permiso.Permiso_Insertar === '1' ? 'Sí' : 'No'}</td>
       <td className="py-4 px-6">{permiso.Permiso_Actualizar === '1' ? 'Sí' : 'No'}</td>
       <td className="py-4 px-6">{permiso.Permiso_Eliminar === '1' ? 'Sí' : 'No'}</td>
-      <td className="py-4 px-6">{permiso.Permiso_Consultar === '1' ? 'Sí' : 'No'}</td>
+
       <td className="py-4 px-6 flex justify-center space-x-2">
         <button onClick={() => handleEdit(permiso)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Editar</button>
         <button onClick={() => handleDelete(permiso.Id_Permiso)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Eliminar</button>

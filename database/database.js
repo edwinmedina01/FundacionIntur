@@ -2,10 +2,17 @@
 const { Sequelize } = require('sequelize');
 
 //Crea una nueva instancia de Sequelize
-const sequelize = new Sequelize('sql3744863', 'sql3744863', 'LIi2cJvQgS' , {
-    host: 'sql3.freemysqlhosting.net',
+// const sequelize = new Sequelize('sql3744863', 'sql3744863', 'LIi2cJvQgS' , {
+//     host: 'sql3.freemysqlhosting.net',
+//     dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
+// });
+
+
+// Crea una nueva instancia de Sequelize
+const sequelize = new Sequelize('gestion_academica_db', 'root', process.env.dbPassword , {
+    host: 'localhost',
     dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
-});
+ });
 
 
 // Verifica la conexión

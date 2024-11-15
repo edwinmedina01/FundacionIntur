@@ -2,14 +2,16 @@
 
 import Layout from '../components/Layout';
 import jwt from 'jsonwebtoken';
-import { useEffect, useState } from 'react';
+import { useEffect, useState,useContext } from 'react';
 import Link from 'next/link';
-
+import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
 const Inicio = () => {
   const [userName, setUserName] = useState('');
-
+  const { user } = useContext(AuthContext);
+  const [permisos, setPermisos] = useState([]);
   useEffect(() => {
     document.title = "Inicio";
     // Extraer el nombre de usuario del token o establecer un valor predeterminado
@@ -20,7 +22,29 @@ const Inicio = () => {
         setUserName(decoded.nombre); // Asumiendo que el nombre se guarda en el token
       }
     }
-  }, []);
+    fetchPermisos(user.rol);
+  }, [user]);
+
+  const fetchPermisos = async (rolId) => {
+    try {
+      const response = await axios.get(`/api/permisos?rolId=${rolId}`);
+      // Convierte la lista de permisos en un objeto de permisos
+      console.log("permisos")
+      console.log(response)
+      const permisosMap = response.data.reduce((acc, permiso) => {
+        acc[permiso.Id_Objeto] = {
+          insertar: permiso.Permiso_Insertar === "1",
+          actualizar: permiso.Permiso_Actualizar === "1",
+          eliminar: permiso.Permiso_Eliminar === "1",
+          consultar: permiso.Permiso_Consultar === "1",
+        };
+        return acc;
+      }, {});
+      setPermisos(permisosMap);
+    } catch (error) {
+      console.error("Error al obtener permisos", error);
+    }
+  };
 
   return (
     <Layout>
@@ -32,6 +56,7 @@ const Inicio = () => {
         {/* Contenedor de Acciones Rápidas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Botón 1 */}
+          {permisos[1]?.insertar && (
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">+ Nuevo Registro</h2>
             <p className="text-gray-600 mb-4">Agregar un Nuevo Registro al Sistema acerca de el alumno,su benefactor,su tutor.</p>
@@ -40,7 +65,7 @@ const Inicio = () => {
                 Nuevo Registro
               </button>
             </Link>
-          </div>
+          </div>)}
 
           {/* Botón 2 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
