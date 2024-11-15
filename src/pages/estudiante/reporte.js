@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import Link from 'next/link';
 import * as XLSX from 'xlsx'; // Importar la librería xlsx
 import AuthContext from '../../context/AuthContext';
+
 const EstudiantesReporte = () => {
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
