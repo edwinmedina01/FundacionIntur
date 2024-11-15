@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useContext } from 'react';
 import axios from 'axios';
 import Layout from '../../components/Layout';
+import AuthContext from '../../context/AuthContext';
 
 const EstudiantesCrud = () => {
+
+  const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
   const [institutos, setInstitutos] = useState([]);
   const [areas, setAreas] = useState([]);
   const [beneficios, setBeneficios] = useState([]);
+  const [permisos, setPermisos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [sexos, setSexos] = useState([{id: 1, descripcion: 'Masculino'}, {id: 0, descripcion: 'Femenino'}]);
@@ -39,7 +43,8 @@ const EstudiantesCrud = () => {
     fetchAreas();
     fetchBeneficios();
     fetchDepartamentos();
-  }, []);
+    fetchPermisos(user.rol);
+  },[user]);
 
   const fetchEstudiantes = async () => {
     try {
@@ -76,6 +81,26 @@ const EstudiantesCrud = () => {
       console.error('Error al obtener estudiantes', error);
     }
   };
+
+  const fetchPermisos = async (rolId) => {
+    try {
+      const response = await axios.get(`/api/permisos?rolId=${rolId}`);
+      // Convierte la lista de permisos en un objeto de permisos
+      const permisosMap = response.data.reduce((acc, permiso) => {
+        acc[permiso.Id_Objeto] = {
+          insertar: permiso.Permiso_Insertar === "1",
+          actualizar: permiso.Permiso_Actualizar === "1",
+          eliminar: permiso.Permiso_Eliminar === "1",
+          consultar: permiso.Permiso_Consultar === "1",
+        };
+        return acc;
+      }, {});
+      setPermisos(permisosMap);
+    } catch (error) {
+      console.error("Error al obtener permisos", error);
+    }
+  };
+
 
   const fetchDepartamentos = async () => {
     try {
@@ -411,18 +436,20 @@ const EstudiantesCrud = () => {
                   <td className="p-3">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
                   <td className="p-3">{estudiante.Instituto.Nombre_Instituto}</td>
                   <td className="p-3">
+                  {permisos[1]?.actualizar && (
                     <button
                       onClick={() => handleEdit(estudiante)}
                       className="bg-yellow-500 text-white p-2 rounded mr-2"
                     >
                       Editar
-                    </button>
+                    </button>   )}
+                    {permisos[1]?.eliminar && (
                     <button
                       onClick={() => handleDelete(estudiante.Id_Estudiante)}
                       className="bg-red-500 text-white p-2 rounded"
                     >
                       Eliminar
-                    </button>
+                    </button>)}
                   </td>
                 </tr>
               ))}

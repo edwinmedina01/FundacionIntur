@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         }
 
         // Obtener el rol del usuario
-        const [rol] = await sequelize.query('SELECT ROL FROM tbl_roles WHERE Id_Rol = ?', {
+        const [rol] = await sequelize.query('SELECT ROL FROM Tbl_Roles WHERE Id_Rol = ?', {
             replacements: [usuario.Id_Rol],
             type: QueryTypes.SELECT,
         });

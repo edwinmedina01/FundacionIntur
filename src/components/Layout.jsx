@@ -294,7 +294,7 @@ const Layout = ({ children }) => {
                             onClick={toggleMenu}
                             className="text-Black-900 focus:outline-none hover:text-gray-500"
                         >
-                            Menú
+                          Usuario:  {user.usuario}
                         </button>
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-200">

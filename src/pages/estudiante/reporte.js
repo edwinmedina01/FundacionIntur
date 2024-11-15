@@ -1,21 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useContext } from 'react';
 import axios from 'axios';
 import Layout from '../../components/Layout';
 import Link from 'next/link';
 import * as XLSX from 'xlsx'; // Importar la librería xlsx
-
+import AuthContext from '../../context/AuthContext';
 const EstudiantesReporte = () => {
+  const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);  // Página actual
   const [recordsPerPage] = useState(10);  // Registros por página
-
+  const [permisos, setPermisos] = useState([]);
 
 
 
   useEffect(() => {
     fetchEstudiantes();
-  }, []);
+    fetchPermisos(user.rol);
+  }, [user]);
 
   const fetchEstudiantes = async () => {
     try {
@@ -23,6 +25,25 @@ const EstudiantesReporte = () => {
       setEstudiantes(response.data);
     } catch (error) {
       console.error('Error al obtener estudiantes', error);
+    }
+  };
+
+  const fetchPermisos = async (rolId) => {
+    try {
+      const response = await axios.get(`/api/permisos?rolId=${rolId}`);
+      // Convierte la lista de permisos en un objeto de permisos
+      const permisosMap = response.data.reduce((acc, permiso) => {
+        acc[permiso.Id_Objeto] = {
+          insertar: permiso.Permiso_Insertar === "1",
+          actualizar: permiso.Permiso_Actualizar === "1",
+          eliminar: permiso.Permiso_Eliminar === "1",
+          consultar: permiso.Permiso_Consultar === "1",
+        };
+        return acc;
+      }, {});
+      setPermisos(permisosMap);
+    } catch (error) {
+      console.error("Error al obtener permisos", error);
     }
   };
 
@@ -196,9 +217,10 @@ const totalPages = Math.ceil(filteredEstudiantes.length / recordsPerPage);
       <td className="py-4 px-6 border-b">
         <div className="flex gap-2">
           <Link href={`/estudiantes/${estudiante.Id_Estudiante}`}>
+          {permisos[1]?.actualizar && (
             <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors">
               Editar
-            </button>
+            </button>)}
           </Link>
         </div>
       </td>

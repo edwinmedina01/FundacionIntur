@@ -3,14 +3,31 @@ const { QueryTypes } = require('sequelize');
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
+    const { rolId } = req.query;
     // Obtener todos los permisos
     try {
-      const permisos = await sequelize.query(
-        'SELECT Id_Permiso, Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar FROM tbl_permisos',
-        {
-          type: QueryTypes.SELECT,
-        }
-      );
+      let permisos;
+
+      if (rolId) {
+        // Obtener permisos filtrados por rolId
+        permisos = await sequelize.query(
+          `SELECT Id_Permiso, Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar 
+           FROM tbl_permisos WHERE Id_Rol = ?`,
+          {
+            replacements: [rolId],
+            type: QueryTypes.SELECT,
+          }
+        );
+      } else {
+        // Obtener todos los permisos si no se proporciona rolId
+        permisos = await sequelize.query(
+          'SELECT Id_Permiso, Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar FROM tbl_permisos',
+          {
+            type: QueryTypes.SELECT,
+          }
+        );
+      }
+
       res.status(200).json(permisos);
     } catch (error) {
       console.error('Error al obtener los permisos:', error);
