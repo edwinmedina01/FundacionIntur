@@ -10,7 +10,7 @@ const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
 const Inicio = () => {
   const [userName, setUserName] = useState('');
-  const { user } = useContext(AuthContext);
+  const { user ,loading } = useContext(AuthContext);
   const [permisos, setPermisos] = useState([]);
   useEffect(() => {
     document.title = "Inicio";
@@ -22,7 +22,12 @@ const Inicio = () => {
         setUserName(decoded.nombre); // Asumiendo que el nombre se guarda en el token
       }
     }
-    fetchPermisos(user.rol);
+    // Llama a fetchPermisos solo si user está disponible
+    if (!loading && user) {
+    //  setUserName(user.usuario); // Configura el nombre de usuario desde el contexto
+      fetchPermisos(user.rol); // Obtiene permisos según el rol del usuario
+    }
+    //fetchPermisos(user.rol);
   }, [user]);
 
   const fetchPermisos = async (rolId) => {

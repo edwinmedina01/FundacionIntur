@@ -38,6 +38,7 @@ const EstudiantesCrud = () => {
   const [editPersonaId, setEditPersonaId] = useState(null);
 
   useEffect(() => {
+
     fetchEstudiantes();
     fetchInstitutos();
     fetchAreas();

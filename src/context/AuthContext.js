@@ -10,13 +10,14 @@ const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY || 'tu_clave_secreta';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true); // Estado inicial de carga
     const router = useRouter();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const decoded = jwt.verify(token, SECRET_KEY);
+                const decoded = jwt.decode (token, SECRET_KEY);
                 // Guardar todos los campos que necesitas en el estado del usuario
                 setUser({
                     id: decoded.id,
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }) => {
                 setUser(null);
             }
         }
+        setLoading(false); // Finaliza la carga
     }, []);
 
     const login = (token) => {

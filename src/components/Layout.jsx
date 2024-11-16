@@ -1,19 +1,52 @@
-import { useContext, useState } from 'react';
+import { useContext, useState,useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import jwt from 'jsonwebtoken';
 
 const Layout = ({ children }) => {
-    const { user } = useContext(AuthContext);
+  //  const { user } = useContext(AuthContext);
+
+  const { user, loading } = useContext(AuthContext);
+  //const [user, setUser] = useState(null); // Inicializa como null
     const [menuOpen, setMenuOpen] = useState(false);
     const [showMaintenanceNavbar, setShowMaintenanceNavbar] = useState(false);
     const [showseguridadNavbar, setShowseguridadNavbar] = useState(false);
     const [showApartadoUnoNavbar, setShowApartadoUnoNavbar] = useState(false); // Nuevo
     const [showApartadoDosNavbar, setShowApartadoDosNavbar] = useState(false); // Nuevo
     const [showApartadoTresNavbar, setShowApartadoTresNavbar] = useState(false); // Nuevo
+
+
+
+
     const router = useRouter();
+
+
+    useEffect(() => {
+        // const token = localStorage.getItem('token');
+        //     if (token) {
+        //         try {
+        //             const decoded = jwt.verify(token, SECRET_KEY);
+        //             // Guardar todos los campos que necesitas en el estado del usuario
+        //             setUser({
+        //                 id: decoded.id,
+        //                 rol: decoded.role, // Cambia aquí a decoded.rol para obtener el ROL
+        //                 email: decoded.email,
+        //                 estado: decoded.estado,
+        //                 usuario: decoded.nombre // Asegúrate de que el campo 'usuario' esté presente en el token
+        //             });
+        //         } catch (error) {
+        //             localStorage.removeItem('token');
+        //             setUser(null);
+        //         }
+        //     }
+       // fetchEstudiantes();
+       // fetchPermisos(user.rol);
+      }, []);
+
+
     console.log("Estado actual del usuario en el contexto:", user);
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -290,12 +323,23 @@ const Layout = ({ children }) => {
                         Gestión Académica
                     </span>
                     <div className="relative">
-                        <button
+                        {/* <button
                             onClick={toggleMenu}
                             className="text-Black-900 focus:outline-none hover:text-gray-500"
                         >
                           Usuario:  {user.usuario}
-                        </button>
+                        </button> */}
+                        {user ? ( // Verifica si user no es null
+                <button
+                    onClick={toggleMenu}
+                    className="text-Black-900 focus:outline-none hover:text-gray-500"
+                >
+                    Usuario: {user.usuario}
+                </button>
+            ) : (
+                <span className="text-gray-500">Cargando usuario...</span> // Indicador de carga
+            )}
+
                         {menuOpen && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-200">
                                 <Link href="/perfil" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
