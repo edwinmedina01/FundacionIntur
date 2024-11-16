@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 const Layout = ({ children }) => {
   //  const { user } = useContext(AuthContext);
 
-  const { user, loading } = useContext(AuthContext);
+  const { user ,loading } = useContext(AuthContext);
   //const [user, setUser] = useState(null); // Inicializa como null
     const [menuOpen, setMenuOpen] = useState(false);
     const [showAcademicoNavBar, setShowAcademicoNavBar] = useState(false);
@@ -44,7 +44,7 @@ const Layout = ({ children }) => {
         //     }
        // fetchEstudiantes();
        // fetchPermisos(user.rol);
-      }, []);
+      }, [user]);
 
 
     console.log("Estado actual del usuario en el contexto:", user);
@@ -250,7 +250,8 @@ Roles
                         onClick={toggleMenu}
                         className="text-Black-900 focus:outline-none hover:text-gray-500"
                     >
-                      Usuario:  {user.usuario}
+                      {/* Usuario:  {user.usuario} */}
+                      {user ? <p>Usuario: {user.usuario}</p> : <p>Cargando...</p>}
                     </button>
                     {menuOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-200">
