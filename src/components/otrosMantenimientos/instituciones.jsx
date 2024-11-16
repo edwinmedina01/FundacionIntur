@@ -1,0 +1,361 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+
+
+const InstitucionManagement = () => {
+
+  const [instituciones, setInstituciones] = useState([]);
+  const [formData, setFormData] = useState({
+    Id_Instituto: '',
+    Nombre_Instituto: '',
+    Direccion: '',
+    Telefono: '',
+    Correo: '',
+    Director: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [notification, setNotification] = useState('');
+  const [updateNotification, setUpdateNotification] = useState('');
+  const [deleteNotification, setDeleteNotification] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const institucionesPerPage = 8;  // cantidad de instituciones por página
+  const [searchQuery, setSearchQuery] = useState('');
+
+
+
+  // Filtros del buscador por nombre
+  const filteredInstituciones = instituciones.filter(instituto =>
+    instituto.Nombre_Instituto.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Lógica de paginación para instituciones filtradas
+  const indexOfLastInstituto = currentPage * institucionesPerPage;
+  const indexOfFirstInstituto = indexOfLastInstituto - institucionesPerPage;
+  const currentInstituciones = filteredInstituciones.slice(indexOfFirstInstituto, indexOfLastInstituto);
+
+  // Funciones de navegación de páginas
+  const nextPage = () => {
+    if (currentPage < Math.ceil(filteredInstituciones.length / institucionesPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const setPage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    const exportData = currentInstituciones.map(instituto => ({
+      ID: instituto.Id_Instituto,
+      Nombre: instituto.Nombre_Instituto,
+      Dirección: instituto.Direccion,
+      Teléfono: instituto.Telefono,
+      Correo: instituto.Correo,
+      Director: instituto.Director,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Instituciones');
+
+    XLSX.writeFile(workbook, 'Instituciones.xlsx');
+  };
+
+  // Fetch de instituciones desde el backend
+  useEffect(() => {
+    fetchInstituciones();
+  }, []);
+
+  const fetchInstituciones = async () => {
+    try {
+      const response = await axios.get('/api/apis_mantenimientos/instituciones');
+      setInstituciones(response.data);
+    } catch (error) {
+      console.error('Error fetching instituciones:', error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isEditing) {
+        const response = await fetch('/api/apis_mantenimientos/instituciones', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al actualizar la institución');
+        }
+
+        setUpdateNotification('Institución actualizada exitosamente');
+        setTimeout(() => {
+          setUpdateNotification('');
+        }, 3000);
+      } else {
+        const response = await fetch('/api/apis_mantenimientos/instituciones', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al crear la institución');
+        }
+
+        setNotification('Institución agregada exitosamente');
+        setTimeout(() => {
+          setNotification('');
+        }, 3000);
+      }
+
+      fetchInstituciones();
+      resetForm();
+    } catch (error) {
+      console.error('Error al guardar la institución:', error);
+    }
+  };
+
+  const handleEdit = (instituto) => {
+    setFormData(instituto);
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (Id_Instituto) => {
+    try {
+      const response = await fetch('/api/apis_mantenimientos/instituciones', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ Id_Instituto }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar la institución');
+      }
+
+      fetchInstituciones();
+      resetForm();
+      setDeleteNotification('Institución eliminada exitosamente');
+      setTimeout(() => {
+        setDeleteNotification('');
+      }, 3000);
+    } catch (error) {
+      console.error('Error al eliminar la institución:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ Id_Instituto: '', Nombre_Instituto: '', Direccion: '', Telefono: '', Correo: '', Director: '' });
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
+      {/* Columna izquierda: Formulario */}
+      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
+        <center><h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Institución' : 'Agregar Institución'}</h2></center>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="Nombre_Instituto" className="block mb-2 text-sm font-medium text-gray-700">Nombre de la Institución</label>
+          <input
+            type="text"
+            name="Nombre_Instituto"
+            placeholder="Nombre de la Institución"
+            value={formData.Nombre_Instituto}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <label htmlFor="Direccion" className="block mb-2 text-sm font-medium text-gray-700">Dirección</label>
+          <input
+            type="text"
+            name="Direccion"
+            placeholder="Dirección"
+            value={formData.Direccion}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <label htmlFor="Telefono" className="block mb-2 text-sm font-medium text-gray-700">Teléfono</label>
+          <input
+            type="text"
+            name="Telefono"
+            placeholder="Teléfono"
+            value={formData.Telefono}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <label htmlFor="Correo" className="block mb-2 text-sm font-medium text-gray-700">Correo</label>
+          <input
+            type="email"
+            name="Correo"
+            placeholder="Correo"
+            value={formData.Correo}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <label htmlFor="Director" className="block mb-2 text-sm font-medium text-gray-700">Director</label>
+          <input
+            type="text"
+            name="Director"
+            placeholder="Director"
+            value={formData.Director}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <div className="flex justify-end">
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {isEditing ? 'Actualizar' : 'Agregar'}
+            </button>
+            <button
+              type="button"
+              className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              onClick={resetForm}
+              >
+                Cancelar
+            </button>
+          </div>
+        </form>
+
+        {/* Notificación de éxito */}
+        {notification && (
+          <div className="mt-4 text-green-600">{notification}</div>
+        )}
+
+        {/* Notificación de actualización */}
+        {updateNotification && (
+          <div className="mt-4 text-blue-600">{updateNotification}</div>
+        )}
+
+        {/* Notificación de eliminación */}
+        {deleteNotification && (
+          <div className="mt-4 text-red-600">{deleteNotification}</div>
+        )}
+      </div>
+
+      {/* Columna derecha: Tabla de instituciones */}
+      
+      <div className="w-2/3">
+      <button
+          onClick={exportToExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
+        >
+          Exportar a Excel
+        </button>
+        <div className="mb-4 flex justify-between items-center">
+          <input
+            type="text"
+            placeholder="Buscar por nombre"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="p-2 mb-4 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+        </div>
+
+        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <thead className="bg-slate-200">
+            <tr>
+              <th className="p-3 border-b">ID</th>
+              <th className="p-3 border-b">Nombre</th>
+              <th className="p-3 border-b">Dirección</th>
+              <th className="p-3 border-b">Teléfono</th>
+              <th className="p-3 border-b">Correo</th>
+              <th className="p-3 border-b">Director</th>
+              <th className="p-3 border-b text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentInstituciones.map((instituto) => (
+              <tr key={instituto.Id_Instituto}>
+                <td className="p-3 border-b">{instituto.Id_Instituto}</td>
+                <td className="p-3 border-b">{instituto.Nombre_Instituto}</td>
+                <td className="p-3 border-b">{instituto.Direccion}</td>
+                <td className="p-3 border-b">{instituto.Telefono}</td>
+                <td className="p-3 border-b">{instituto.Correo}</td>
+                <td className="p-3 border-b">{instituto.Director}</td>
+                <td className="py-4 px-6 flex justify-center space-x-2">
+                <button
+            onClick={() => handleEdit(instituto)}
+            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+          >
+            Editar
+          </button>
+          <button
+            onClick={() => handleDelete(instituto.Id_Instituto)}
+            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+          >
+            X
+          </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+{/* Paginación */}
+<div className="flex justify-between mt-4">
+  <button
+    onClick={prevPage}
+    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+  >
+    Anterior
+  </button>
+
+  {/* Páginas */}
+  <div className="flex space-x-2">
+    {Array.from({ length: Math.ceil(filteredInstituciones.length / institucionesPerPage) }, (_, index) => (
+      <button
+        key={index + 1}
+        onClick={() => setPage(index + 1)}
+        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+          currentPage === index + 1
+            ? 'bg-white-600 text-black shadow-lg scale-105'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
+        }`}
+      >
+        {index + 1}
+      </button>
+    ))}
+  </div>
+
+  {/* Botón "Siguiente" */}
+  <button
+    onClick={nextPage}
+    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+  >
+    Siguiente
+  </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InstitucionManagement;

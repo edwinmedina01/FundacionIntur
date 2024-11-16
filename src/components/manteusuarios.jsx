@@ -282,7 +282,7 @@ const handleEdit = (user) => {
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
       {/* Columna izquierda: Formulario */}
-      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
+      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md items-center">
         <center>
           <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
         </center>
@@ -414,19 +414,21 @@ const handleEdit = (user) => {
   className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
   placeholder="Buscar por nombre o correo"
 /></center>
-
- {/* Botón para exportar */}
- <button
-          onClick={exportToExcel}
-          className="mb-4 bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-        >
-          Exportar a Excel
-        </button>
+<br></br>
+<div className="flex justify-end space-x-4 mb-4">
+  {/* Botón para exportar */}
+  <button
+    onClick={exportToExcel}
+    className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
+  ><strong>
+    Exportar a Excel
+  </strong></button>
 
 </div>
+</div>
 
-  <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-  <thead className="bg-slate-200">
+  <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">   
+  <thead className="bg-slate-200">   
     <tr>
     <th className="py-4 px-6 text-left">ID</th>
     <th className="py-4 px-6 text-left">Usuario</th>
@@ -496,10 +498,17 @@ const handleEdit = (user) => {
             ))}
           </tbody>
         </table>
-  <div className="flex justify-between mt-4">
+{/* Paginación */}
+<div className="flex justify-between items-center mt-4">
+  {/* Botón "Anterior" */}
   <button
     onClick={prevPage}
-    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+      currentPage === 1
+        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
+    }`}
+    disabled={currentPage === 1}
   >
     Anterior
   </button>
@@ -524,11 +533,17 @@ const handleEdit = (user) => {
   {/* Botón "Siguiente" */}
   <button
     onClick={nextPage}
-    className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+      currentPage === Math.ceil(users.length / usersPerPage)
+        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
+    }`}
+    disabled={currentPage === Math.ceil(users.length / usersPerPage)}
   >
     Siguiente
   </button>
 </div>
+
 </div>
     </div>
   );
