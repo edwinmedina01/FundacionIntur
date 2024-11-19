@@ -1,21 +1,26 @@
 // pages/inicio.js
 
-import Layout from '../components/Layout';
-import jwt from 'jsonwebtoken';
-import { useEffect, useState,useContext } from 'react';
-import Link from 'next/link';
-import axios from 'axios';
-import AuthContext from '../context/AuthContext';
-const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
+import Layout from "../components/Layout";
+import jwt from "jsonwebtoken";
+import { useEffect, useState, useContext } from "react";
+import Link from "next/link";
+import axios from "axios";
+import {
+  ListBulletIcon,
+  PlusIcon,
+  StarIcon,
+} from "@heroicons/react/24/outline";
+import AuthContext from "../context/AuthContext";
+const SECRET_KEY = process.env.SECRET_KEY || "tu_clave_secreta";
 
 const Inicio = () => {
-  const [userName, setUserName] = useState('');
-  const { user ,loading } = useContext(AuthContext);
+  const [userName, setUserName] = useState("");
+  const { user, loading } = useContext(AuthContext);
   const [permisos, setPermisos] = useState([]);
   useEffect(() => {
     document.title = "Inicio";
     // Extraer el nombre de usuario del token o establecer un valor predeterminado
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwt.decode(token);
       if (decoded) {
@@ -24,7 +29,7 @@ const Inicio = () => {
     }
     // Llama a fetchPermisos solo si user está disponible
     if (!loading && user) {
-    //  setUserName(user.usuario); // Configura el nombre de usuario desde el contexto
+      //  setUserName(user.usuario); // Configura el nombre de usuario desde el contexto
       fetchPermisos(user.rol); // Obtiene permisos según el rol del usuario
     }
     //fetchPermisos(user.rol);
@@ -34,8 +39,8 @@ const Inicio = () => {
     try {
       const response = await axios.get(`/api/permisos?rolId=${rolId}`);
       // Convierte la lista de permisos en un objeto de permisos
-      console.log("permisos")
-      console.log(response)
+      console.log("permisos");
+      console.log(response);
       const permisosMap = response.data.reduce((acc, permiso) => {
         acc[permiso.Id_Objeto] = {
           insertar: permiso.Permiso_Insertar === "1",
@@ -62,31 +67,51 @@ const Inicio = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Botón 1 */}
           {permisos[1]?.insertar && (
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">+ Nuevo Registro</h2>
-            <p className="text-gray-600 mb-4">Agregar un Nuevo Registro al Sistema acerca de el alumno,su benefactor,su tutor.</p>
-            <Link href="/menu-create">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-xl font-semibold mb-2">
+                <PlusIcon className="h-6 w-5 mr-6 inline" />
                 Nuevo Registro
-              </button>
-            </Link>
-          </div>)}
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Agregar un Nuevo Registro al Sistema acerca de el alumno,su
+                benefactor,su tutor.
+              </p>
+              <Link href="/estudiante">
+                <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                  Nuevo Registro
+                </button>
+              </Link>
+            </div>
+          )}
 
           {/* Botón 2 */}
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Estudiantes</h2>
-            <p className="text-gray-600 mb-4">Ver y administrar la información de los estudiantes.</p>
-            <Link href="/estudiante/reporte">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Estudiantes
-              </button>
-            </Link>
-          </div>
+          {permisos[1]?.consultar && (
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <h2 className="text-xl font-semibold mb-2">
+                <ListBulletIcon className="h-6 w-6 mr-2 inline" />
+                Estudiantes
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Ver y administrar la información de los estudiantes.
+              </p>
+              <br></br>
+              <Link href="/estudiante/reporte">
+                <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                  Ir a Estudiantes
+                </button>
+              </Link>
+            </div>
+          )}
 
           {/* Botón 3 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Benefactores</h2>
-            <p className="text-gray-600 mb-4">Ver y Administrar la informacion de los benefactores</p>
+            <h2 className="text-xl font-semibold mb-2">
+              <StarIcon className="h-6 w-6 mr-2 inline" />
+              Benefactores
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Ver y Administrar la informacion de los benefactores
+            </p>
             <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Benefactores
@@ -97,7 +122,9 @@ const Inicio = () => {
           {/* Botón 4 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Tutores/Padres</h2>
-            <p className="text-gray-600 mb-4">Administra la informacion de los tutores/padres.</p>
+            <p className="text-gray-600 mb-4">
+              Administra la informacion de los tutores/padres.
+            </p>
             <Link href="/tutorpadre">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Tutores
@@ -108,7 +135,9 @@ const Inicio = () => {
           {/* Botón 5 */}
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Matricula General</h2>
-            <p className="text-gray-600 mb-4">aqui se presenta el registro general de matricula.</p>
+            <p className="text-gray-600 mb-4">
+              aqui se presenta el registro general de matricula.
+            </p>
             <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Matricula
@@ -116,16 +145,18 @@ const Inicio = () => {
             </Link>
           </div>
 
-          {/* Botón 6 */}
+          {/* Botón 6 
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Estadistica General</h2>
-            <p className="text-gray-600 mb-4">Dashboard general de los estudiantes por modalidad</p>
+            <p className="text-gray-600 mb-4">
+              Dashboard general de los estudiantes por modalidad
+            </p>
             <Link href="/">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Estadisticas
               </button>
             </Link>
-          </div>
+          </div>*/}
         </div>
       </div>
     </Layout>
@@ -134,7 +165,7 @@ const Inicio = () => {
 
 export const getServerSideProps = async (context) => {
   const { req } = context;
-  const token = req.cookies.token || '';
+  const token = req.cookies.token || "";
 
   try {
     jwt.verify(token, SECRET_KEY);
@@ -142,7 +173,7 @@ export const getServerSideProps = async (context) => {
   } catch (error) {
     return {
       redirect: {
-        destination: '/',
+        destination: "/",
         permanent: false,
       },
     };

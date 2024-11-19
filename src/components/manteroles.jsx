@@ -155,7 +155,7 @@ const router = useRouter();
   };
 
   return (
-    <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
+    <div className="p-8 mt-4 bg-gray-100 flex space-x-8 items-center">
       {/* Columna izquierda: Formulario */}
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-md items-center">
        <center> <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Rol' : 'Agregar Rol'}</h2></center>
