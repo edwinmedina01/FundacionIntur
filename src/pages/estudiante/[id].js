@@ -39,7 +39,20 @@ const EditarEstudiante = () => {
     Id_Instituto: "",
     Creado_Por: "",
   });
-
+  const [tutorData, setTutorData] = useState({
+    Identidad: '',
+    Nombre_Completo: '',
+    Sexo: '',
+    Direccion: '',
+    Telefono: '',
+  });
+  
+  const [benefactorData, setBenefactorData] = useState({
+    Identidad: '',
+    Nombre_Completo: '',
+    Telefono: '',
+    Direccion: '',
+  });
   const router = useRouter();
   const { id } = router.query; // Obtener el ID desde la URL
 
@@ -156,7 +169,23 @@ const EditarEstudiante = () => {
   const handleEstudianteInputChange = (e) => {
     setEstudianteData({ ...estudianteData, [e.target.name]: e.target.value });
   };
+// Ejemplo para handleTutorInputChange
+const handleTutorInputChange = (event) => {
+  const { name, value } = event.target;
+  setTutorData((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
 
+// Ejemplo para handleBenefactorInputChange
+const handleBenefactorInputChange = (event) => {
+  const { name, value } = event.target;
+  setBenefactorData((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -181,7 +210,7 @@ const EditarEstudiante = () => {
       {permisos[1]?.actualizar ? (
         <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
           <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
-            Editar Estudiante
+            Editar Registro
           </h1>
 
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg mb-10">
