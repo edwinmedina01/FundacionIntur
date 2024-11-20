@@ -1,9 +1,10 @@
 // models/User.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
+const Persona = require('./Persona');
+const TipoPersona = require('./TipoPersona');
 
-//const Persona = require('./Persona');
-//const Estudiante = require('./Estudiante');
+
 
 const Relacion = sequelize.define(
     'tbl_Relacion',
@@ -48,17 +49,18 @@ const Relacion = sequelize.define(
     }
   );
   
-//   Relacion.belongsTo(Estudiante, {
-//     foreignKey: 'Id_estudiante', // Campo en tbl_Relacion
-//     targetKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
-//     as: 'Estudiante',
-// });
-//   // Relación con Persona
-// Relacion.belongsTo(Persona, {
-//     foreignKey: 'Id_persona', // Campo de clave foránea en 
-//     targetKey: 'Id_Persona', // Clave primari
-//     as: 'Persona', // Alias para el eager loading
-//   });
+  Relacion.belongsTo(Persona, {
+    foreignKey: 'Id_persona', // Campo en tbl_Relacion
+    targetKey: 'Id_Persona', // Clave primaria en Tbl_Persona
+    as: 'Persona',           // Alias para consultas
+  });
+
+  Relacion.belongsTo(TipoPersona, {
+    foreignKey: 'Id_tipo_relacion', // Campo en tbl_Relacion
+    targetKey: 'Id_Tipo_Persona', // Clave primaria en Tbl_Persona
+    as: 'TipoPersona',           // Alias para consultas
+  });
+
 
   
   module.exports = Relacion;

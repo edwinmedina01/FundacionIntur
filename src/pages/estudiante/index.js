@@ -42,6 +42,7 @@ const EstudiantesCrud = () => {
     Id_Area: "",
     Id_Instituto: "",
     Creado_Por: "",
+    Relaciones: []
   });
   const [tutorData, setTutorData] = useState({
   Identidad: '',
@@ -81,6 +82,7 @@ const [benefactorData, setBenefactorData] = useState({
     try {
       const response = await axios.get("/api/estudiantes");
       setEstudiantes(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
     }
@@ -225,6 +227,10 @@ const handleBenefactorInputChange = (event) => {
 };
 
 
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -283,6 +289,7 @@ const handleBenefactorInputChange = (event) => {
         Id_Area: "",
         Id_Instituto: "",
         Creado_Por: "",
+        Relaciones: [], 
       });
       fetchEstudiantes();
     } catch (error) {
@@ -310,6 +317,7 @@ const handleBenefactorInputChange = (event) => {
       Id_Area: "",
       Id_Instituto: "",
       Creado_Por: "",
+      Relaciones: [], 
 
     });
   };
@@ -322,6 +330,7 @@ const handleBenefactorInputChange = (event) => {
       Id_Area: estudiante.Id_Area,
       Id_Instituto: estudiante.Id_Instituto,
       Creado_Por: estudiante.Creado_Por,
+      Relaciones:estudiante.Relaciones
     });
 
     setEditPersonaId(estudiante.Persona.Id_Persona);
@@ -653,14 +662,61 @@ const handleBenefactorInputChange = (event) => {
           ))}
         </select>
       </div>
+
+
+
     </div>
   </div>
 </div>
   )}
 {/* Sección Tutor/Padre */}
 {activeTab === 2 && (
+  <div>
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+
+
+
   <div className="flex flex-col">
+  <label htmlFor="Estudiante" className="text-gray-700 font-medium">
+    Seleccionar Estudiante
+  </label>
+  <select
+    id="Estudiante"
+    name="Estudiante"
+    value={tutorData.Estudiante}
+    onChange={(e) => {
+      const selectedEstudiante = filteredEstudiantes.find(
+        (estudiante) => estudiante.Id_Estudiante === parseInt(e.target.value)
+      );
+      handleEdit(selectedEstudiante); // Llama a handleEdit con el estudiante seleccionado
+      setTutorData({ ...tutorData, Estudiante: e.target.value }); // Actualiza el estado
+    }}
+    required
+    className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 w-full transition duration-300"
+  >
+    <option value="">Selecciona un estudiante</option>
+    {filteredEstudiantes.map((estudiante) => (
+      <option
+        key={estudiante.Id_Estudiante}
+        value={estudiante.Id_Estudiante}
+      >
+        {`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido} - ${estudiante.Instituto.Nombre_Instituto}`}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+</div>
+
+
+  <div className="flex flex-col">
+
+
+    
     <label htmlFor="Identidad_Tutor" className="text-gray-700 font-medium">
       Identidad
     </label>
@@ -736,6 +792,46 @@ const handleBenefactorInputChange = (event) => {
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
+
+</div>
+   {/* Tabla de Relaciones */}
+
+
+
+   <div>
+        <h2 className="text-lg font-semibold text-gray-700">Relaciones</h2>
+        <table className="min-w-full mt-4 border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border px-4 py-2 text-left">Tipo de Relación</th>
+              <th className="border px-4 py-2 text-left">Persona Relacionada</th>
+              <th className="border px-4 py-2 text-left">Estado</th>
+              <th className="border px-4 py-2 text-left">Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+  {estudianteData.Relaciones?.length > 0 ? (
+    estudianteData.Relaciones.map((relacion) => (
+      <tr key={relacion.Id} className="hover:bg-gray-50">
+        <td className="border px-4 py-2">{relacion.TipoPersona?.Tipo_Persona}</td>
+        <td className="border px-4 py-2">
+          {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
+        </td>
+        <td className="border px-4 py-2">{relacion.Estado}</td>
+        <td className="border px-4 py-2">{relacion.Observaciones}</td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="4" className="text-center border px-4 py-2">
+        No hay relaciones disponibles.
+      </td>
+    </tr>
+  )}
+</tbody>
+
+        </table>
+      </div>
 </div>
 
 )}

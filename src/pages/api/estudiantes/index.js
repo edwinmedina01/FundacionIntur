@@ -2,12 +2,14 @@ import jwt from 'jsonwebtoken';
 import Instituto from '../../../../models/Instituto';
 import Area from '../../../../models/Area';
 import Beneficio from '../../../../models/Beneficio';
+import TipoPersona from '../../../../models/TipoPersona';
 
 const Departamento = require('../../../../models/Departamento');
 const Estudiante = require('../../../../models/Estudiante');
 const Persona = require('../../../../models/Persona');
 const Municipio = require('../../../../models/Municipio');
-//const Relacion = require('../../../../models/Relacion');
+const Relacion = require('../../../../models/Relacion');
+
 
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
@@ -43,13 +45,22 @@ export default async function handler(req, res) {
               { model: Instituto, as: 'Instituto' },
               { model: Area, as: 'Area' },
               { model: Beneficio, as: 'Beneficio' } ,
-              // { 
-              //   model: Relacion, 
-              //   as: 'Relaciones',  // El alias que usaste en la relación
-              //   include: [
-                
-              //   ]
-              // },
+              { 
+                model: Relacion, 
+                as: 'Relaciones',  // El alias que usaste en la relación
+                include: [
+                  {
+                    model: Persona,
+                    as: 'Persona', // Alias definido en la relación
+                    //attributes: ['Primer_Nombre', 'Primer_Apellido', 'Identidad'], // Campos específicos de Persona
+                  },
+                  {
+                    model: TipoPersona,
+                    as: 'TipoPersona', // Alias definido en la relación
+
+                  }
+                ]
+              },
             ],
           });
           console.log(estudiantes);

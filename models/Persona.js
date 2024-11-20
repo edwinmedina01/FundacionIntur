@@ -4,6 +4,7 @@ const sequelize = require('../database/database'); // Asegúrate de tener la rut
 const Municipio = require('./Municipio');
 //const Relacion = require('./Relacion');
 
+
 const Persona = sequelize.define('Tbl_Persona', {
     Id_Persona: {
       type: DataTypes.INTEGER,
@@ -72,10 +73,14 @@ const Persona = sequelize.define('Tbl_Persona', {
 
 Persona.belongsTo(Municipio, { foreignKey: 'Id_Municipio', as: 'Municipio' });
 
+
+
 // Persona.hasMany(Relacion, {
-//   foreignKey: 'Id_persona', // Campo en tbl_Relacion que apunta a 
-//   sourceKey: 'Id_Persona', // Clave primaria en 
-//   as: 'Relaciones', // Alias para consultas
+//   foreignKey: 'Id_persona', // Clave foránea en tbl_Relacion
+//   sourceKey: 'Id_Persona', // Clave primaria en Tbl_Estudiante
+//   as: 'Relaciones',           // Alias para la relación
 // });
+
+
 
 module.exports = Persona;

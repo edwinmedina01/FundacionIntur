@@ -58,11 +58,13 @@ Estudiante.belongsTo(Persona, { foreignKey: 'Id_Persona', as: 'Persona' });
 Estudiante.belongsTo(Instituto, { foreignKey: 'Id_Instituto', as: 'Instituto' });
 Estudiante.belongsTo(Beneficio, { foreignKey: 'Id_Beneficio', as: 'Beneficio' });
 Estudiante.belongsTo(Area, { foreignKey: 'Id_Area', as: 'Area' });
+// Relación: Un estudiante puede tener muchas relaciones
+Estudiante.hasMany(Relacion, {
+  foreignKey: 'Id_estudiante', // Clave foránea en tbl_Relacion
+  sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
+  as: 'Relaciones',           // Alias para la relación
+});
 
-// Estudiante.hasMany(Relacion, {
-//   foreignKey: 'Id_estudiante', // Campo en tbl_Relacion que apunta a Tbl_Estudiante
-//   sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
-//   as: 'Relaciones', // Alias para consultas
-// });
+
 
 module.exports = Estudiante;

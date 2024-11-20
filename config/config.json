@@ -1,9 +1,16 @@
 {
-  "development": {
+  "developmentold": {
     "username": "root",
     "password": "soren1",
     "database": "gestion_academica_db",
     "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "development": {
+    "username": "sql3744863",
+    "password": "LIi2cJvQgS",
+    "database": "sql3744863",
+    "host": "sql3.freemysqlhosting.net",
     "dialect": "mysql"
   },
   "test": {
