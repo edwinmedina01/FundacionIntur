@@ -3,10 +3,13 @@ import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
 import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { data } from "autoprefixer";
+import { toast } from "react-toastify";
 const EstudiantesCrud = () => {
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
+  const [estudianteTemp, setEstudianteTemp] = useState([]);
   const [institutos, setInstitutos] = useState([]);
   const [areas, setAreas] = useState([]);
   const [beneficios, setBeneficios] = useState([]);
@@ -18,6 +21,7 @@ const EstudiantesCrud = () => {
     { id: 0, descripcion: "Femenino" },
   ]);
 
+ 
   const [personaData, setPersonaData] = useState({
     Primer_Nombre: "",
     Segundo_Nombre: "",
@@ -30,6 +34,8 @@ const EstudiantesCrud = () => {
     Creado_Por: "",
     Id_Departamento: 0,
     Id_Municipio: 0,
+    Id_Tipo_Persona: 1,
+
   });
   const [estudianteData, setEstudianteData] = useState({
     Id_Beneficio: "",
@@ -81,6 +87,42 @@ const [benefactorData, setBenefactorData] = useState({
   };
   const handleTabChange = (tabIndex) => {
     setActiveTab(tabIndex);
+
+    switch(tabIndex){
+      
+      case 1:
+        personaData.esEstudiente=true;
+        personaData.Id_Tipo_Persona=1;
+        
+        handleEdit(estudianteTemp);
+      break;
+   
+      case 2:
+        if (estudianteTemp==null){
+          alert("Favor selecione el estudinate")
+        }
+        personaData.esEstudiente=false;
+        personaData.Estado
+        personaData.Id_Estudiante=estudianteTemp.Id_Estudiante;
+        personaData.Id_Tipo_Persona=2;
+          personaData.observaciones =" Favor ingresar una"
+        setEditId(null)
+      break;
+           
+      case 3:
+        if (estudianteTemp==null){
+          alert("Favor selecione el estudinate")
+        }
+        personaData.esEstudiente=false;
+        personaData.Estado
+        personaData.Id_Estudiante=estudianteTemp.Id_Estudiante;
+        personaData.Id_Tipo_Persona=3;
+        personaData.observaciones =" Favor ingresar una"
+        setEditId(null)
+      break;
+
+
+    }
   };
   
   const fetchInstitutos = async () => {
@@ -187,12 +229,41 @@ const handleBenefactorInputChange = (event) => {
     e.preventDefault();
     try {
       if (editId) {
-        await axios.put(`/api/estudiantes/${editId}`, {
+
+   
+
+     let res= await axios.put(`/api/estudiantes/${editId}`, {
           estudianteData,
           personaData,
-        });
+          
+          
+        })
+        if (res!=null){
+          alert("Registro creado")
+        }
+
         setEditId(null);
       } else {
+
+
+        if(tutorData.Identidad.length>10){
+          personaData.Identidad=tutorData.Identidad;
+          personaData.Nombre_Completo=tutorData.Nombre_Completo;
+          personaData.Primer_Nombre=tutorData.Nombre_Completo.split(" ")[0];;
+          personaData.Primer_Apellido=tutorData.Nombre_Completo.split(" ")[1];
+          personaData.Telefono=tutorData.Telefono;
+          personaData.Direccion=tutorData.Direccion;
+          personaData.sexo=tutorData.Sexo;
+        }
+
+        if(benefactorData.Identidad.length>10){
+          personaData.Identidad=benefactorData.Identidad;
+          personaData.Nombre_Completo=benefactorData.Nombre_Completo;
+          personaData.Telefono=benefactorData.Telefono;
+          personaData.Direccion=benefactorData.Direccion;
+          personaData.sexo=benefactorData.Sexo;
+        }
+
         await axios.post("/api/estudiantes", { personaData, estudianteData });
       }
       setPersonaData({
@@ -205,6 +276,7 @@ const handleBenefactorInputChange = (event) => {
         Lugar_Nacimiento: "",
         Identidad: "",
         Creado_Por: "",
+        esEstudiente:true,
       });
       setEstudianteData({
         Id_Beneficio: "",
@@ -244,6 +316,7 @@ const handleBenefactorInputChange = (event) => {
 
   const handleEdit = (estudiante) => {
     setEditId(estudiante.Id_Estudiante);
+    setEstudianteTemp(estudiante);
     setEstudianteData({
       Id_Beneficio: estudiante.Id_Beneficio,
       Id_Area: estudiante.Id_Area,
@@ -587,84 +660,84 @@ const handleBenefactorInputChange = (event) => {
 {/* Sección Tutor/Padre */}
 {activeTab === 2 && (
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-    <div className="flex flex-col">
-      <label htmlFor="Identidad_Tutor" className="text-gray-700 font-medium">
-        Identidad
-      </label>
-      <input
-        id="Identidad_Tutor"
-        type="text"
-        name="Identidad_Tutor"
-        placeholder="Número de Identidad"
-        value={tutorData.Identidad}
-        onChange={handleTutorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-        Nombre Completo
-      </label>
-      <input
-        id="Nombre_Tutor"
-        type="text"
-        name="Nombre_Tutor"
-        placeholder="Nombre Completo"
-        value={tutorData.Nombre_Completo}
-        onChange={handleTutorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Sexo_Tutor" className="text-gray-700 font-medium">
-        Sexo
-      </label>
-      <select
-        id="Sexo_Tutor"
-        name="Sexo_Tutor"
-        value={tutorData.Sexo}
-        onChange={handleTutorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      >
-        <option value="">Seleccione Sexo</option>
-        <option value="M">Masculino</option>
-        <option value="F">Femenino</option>
-      </select>
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Direccion_Tutor" className="text-gray-700 font-medium">
-        Dirección
-      </label>
-      <input
-        id="Direccion_Tutor"
-        type="text"
-        name="Direccion_Tutor"
-        placeholder="Dirección del Tutor"
-        value={tutorData.Direccion}
-        onChange={handleTutorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
-        Teléfono
-      </label>
-      <input
-        id="Telefono_Tutor"
-        type="text"
-        name="Telefono_Tutor"
-        placeholder="Teléfono del Tutor"
-        value={tutorData.Telefono}
-        onChange={handleTutorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
+  <div className="flex flex-col">
+    <label htmlFor="Identidad_Tutor" className="text-gray-700 font-medium">
+      Identidad
+    </label>
+    <input
+      id="Identidad_Tutor"
+      name="Identidad"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Número de Identidad"
+      value={tutorData.Identidad}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
   </div>
+  <div className="flex flex-col">
+    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
+      Nombre Completo
+    </label>
+    <input
+      id="Nombre_Tutor"
+      type="text"
+      name="Nombre_Completo"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Nombre Completo"
+      value={tutorData.Nombre_Completo}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Sexo_Tutor" className="text-gray-700 font-medium">
+      Sexo
+    </label>
+    <select
+      id="Sexo_Tutor"
+      name="Sexo"  // Asegúrate de que el name coincida con la propiedad del estado
+      value={tutorData.Sexo}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    >
+      <option value="">Seleccione Sexo</option>
+      <option value="M">Masculino</option>
+      <option value="F">Femenino</option>
+    </select>
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Direccion_Tutor" className="text-gray-700 font-medium">
+      Dirección
+    </label>
+    <input
+      id="Direccion_Tutor"
+      type="text"
+      name="Direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Dirección del Tutor"
+      value={tutorData.Direccion}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
+      Teléfono
+    </label>
+    <input
+      id="Telefono_Tutor"
+      type="text"
+      name="Telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Teléfono del Tutor"
+      value={tutorData.Telefono}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+</div>
+
 )}
 
 {/* Sección Benefactor */}

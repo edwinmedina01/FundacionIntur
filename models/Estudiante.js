@@ -6,6 +6,7 @@ const Persona = require('./Persona');
 const Instituto = require('./Instituto');
 const Beneficio = require('./Beneficio');
 const Area = require('./Area');
+const Relacion = require('./Relacion');
 
 const Estudiante = sequelize.define('Tbl_Estudiante', {
     Id_Estudiante: {
@@ -57,5 +58,11 @@ Estudiante.belongsTo(Persona, { foreignKey: 'Id_Persona', as: 'Persona' });
 Estudiante.belongsTo(Instituto, { foreignKey: 'Id_Instituto', as: 'Instituto' });
 Estudiante.belongsTo(Beneficio, { foreignKey: 'Id_Beneficio', as: 'Beneficio' });
 Estudiante.belongsTo(Area, { foreignKey: 'Id_Area', as: 'Area' });
+
+// Estudiante.hasMany(Relacion, {
+//   foreignKey: 'Id_estudiante', // Campo en tbl_Relacion que apunta a Tbl_Estudiante
+//   sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
+//   as: 'Relaciones', // Alias para consultas
+// });
 
 module.exports = Estudiante;

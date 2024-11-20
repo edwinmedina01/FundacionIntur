@@ -201,7 +201,7 @@ const Layout = ({ children }) => {
                 </li>
                 <li>
                   <Link
-                    href="/tutorpadre"
+                    href="/tutores/index"
                     className="block py-1 px-4 rounded hover:bg-blue-600"
                   >
                     <QueueListIcon className="h-5 w-5 mr-1 inline" />

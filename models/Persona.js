@@ -2,6 +2,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 const Municipio = require('./Municipio');
+//const Relacion = require('./Relacion');
 
 const Persona = sequelize.define('Tbl_Persona', {
     Id_Persona: {
@@ -70,5 +71,11 @@ const Persona = sequelize.define('Tbl_Persona', {
 
 
 Persona.belongsTo(Municipio, { foreignKey: 'Id_Municipio', as: 'Municipio' });
+
+// Persona.hasMany(Relacion, {
+//   foreignKey: 'Id_persona', // Campo en tbl_Relacion que apunta a 
+//   sourceKey: 'Id_Persona', // Clave primaria en 
+//   as: 'Relaciones', // Alias para consultas
+// });
 
 module.exports = Persona;
