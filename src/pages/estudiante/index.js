@@ -870,8 +870,8 @@ alert("Registro eliminado")
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     >
       <option value="">Seleccione Sexo</option>
-      <option value="M">Masculino</option>
-      <option value="F">Femenino</option>
+      <option value="1">Masculino</option>
+      <option value="0">Femenino</option>
     </select>
   </div>
   <div className="flex flex-col">
