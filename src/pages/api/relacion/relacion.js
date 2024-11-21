@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import Persona from '../../../../models/Persona';
+const Persona = require('../../../../models/Persona');
+
 import Relacion from '../../../../models/Relacion';
 import TipoPersona from '../../../../models/TipoPersona';
 import Estudiante from '../../../../models/Estudiante';
@@ -72,40 +73,73 @@ export default async function handler(req, res) {
 
     case 'POST':
       try {
-        const relacionData = req.body;
+        const personaRelacion = req.body.personaDataRelacion;
 
         // Validar que la Identidad sea proporcionada
-        if (!relacionData.Identidad) {
-          return res.status(400).json({ error: 'La Identidad es obligatoria' });
-        }
+        // if (personaRelacion.Identidad) {
+        //   return res.status(400).json({ error: 'La Identidad es obligatoria' });
+        // }
 
         // Buscar Persona por Identidad
-        const persona = await Persona.findOne({
-          where: { Identidad: relacionData.Identidad },
-        });
 
-        if (!persona) {
-          return res.status(404).json({ error: 'Persona no encontrada' });
+        if(personaRelacion.esNuevo){
+            personaRelacion.Id_Municipio=personaRelacion.Estudiante.Persona.Id_Municipio;
+            personaRelacion.Id_Departamento=personaRelacion.Estudiante.Persona.Id_Departamento;
+            personaRelacion.Id_estudiante=personaRelacion.Estudiante.Id_Estudiante;
+            personaRelacion.Estudiante=0;
+            const persona = await Persona.create(personaRelacion);
+
+            // Crear la relación con los datos proporcionados
+        const nuevaRelacion = await Relacion.create({
+            Id_estudiante: personaRelacion.Id_estudiante,
+            Id_persona: persona.Id_Persona, // Vincula la persona encontrada
+            Id_tipo_relacion: personaRelacion.Id_Tipo_Persona,
+            Usuarioid: decodedUser.id,
+            Observaciones: personaRelacion.Observaciones || 'Sin observaciones',
+            Estado: 'activo',
+          });
+  
+          return res.status(201).json(nuevaRelacion);
+
+        }
+        else{
+
+            const persona = await Persona.findOne({
+                where: { Id_Persona: personaRelacion.Id_Persona },
+              });
+      
+              if (!persona) {
+                return res.status(404).json({ error: 'Persona no encontrada' });
+              }
+
+              await persona.update(personaRelacion);
+
+              return res.status(201).json(personaRelacion);
+      
         }
 
-        // Crear la relación con los datos proporcionados
-        const nuevaRelacion = await Relacion.create({
-          Id_estudiante: relacionData.Id_estudiante,
-          Id_persona: persona.Id_Persona, // Vincula la persona encontrada
-          Id_tipo_relacion: relacionData.Id_tipo_relacion,
-          Usuarioid: decodedUser.id,
-          Observaciones: relacionData.Observaciones || 'Sin observaciones',
-          Estado: 'activo',
-        });
-
-        return res.status(201).json(nuevaRelacion);
+       
+        
       } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error al crear la relación' });
       }
+      case 'DELETE':
+        try {
+          const estudiante = await Relacion.findByPk(id);
+        
+          if (!estudiante ) {
+            return res.status(404).json({ message: 'Relacion no encontrado' });
+          }
+          await estudiante.destroy();
+   
+          return res.status(200).json({ message: 'Relacion eliminado' });
+        } catch (error) {
+          return res.status(500).json({ error: 'Error al eliminar Relacion' });
+        }
 
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST','DELETE']);
       return res.status(405).end(`Método ${method} no permitido`);
   }
 }

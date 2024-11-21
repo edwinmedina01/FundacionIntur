@@ -74,17 +74,27 @@ export default async function handler(req, res) {
       try {
         const { personaData, estudianteData } = req.body;
         personaData.Creado_Por = decodedUser.nombre;
-if (!personaData.esEstudiante){
-  personaData.Id_Persona=null;
-}
+        
+        
+     //   if (!personaData.esEstudiante){
+      //     personaData.Id_Persona=null;
+      //    }
 
-        const persona = await Persona.create(personaData);
-        if (personaData.esEstudiante){
+
+        
+
+  const persona = await Persona.create(personaData);
+ 
+
+
+     //   if (personaData.esEstudiante){
           estudianteData.Creado_Por = decodedUser.nombre;
           const estudiante = await Estudiante.create({ ...estudianteData, Id_Persona: persona.Id_Persona });
           return res.status(201).json(estudiante);
 
-        }else{
+     //   }
+        
+        //else{
          
           const relacionData = {
             Id_persona: persona.Id_Persona, // ID de la persona recién creada
@@ -100,9 +110,10 @@ if (!personaData.esEstudiante){
 
           //CREAR RELACION
           return res.status(201).json(new Estudiante());
-        }
+       // }
 
       
+    
       } catch (err) {
         console.log(err);
         return res.status(500).json({ error: 'Error al crear estudiante y persona' });

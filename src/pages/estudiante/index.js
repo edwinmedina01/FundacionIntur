@@ -37,6 +37,25 @@ const EstudiantesCrud = () => {
     Id_Tipo_Persona: 1,
 
   });
+
+  const [personaDataRelacion, setPersonaDataRelacion] = useState({
+    Primer_Nombre: "",
+    Segundo_Nombre: "",
+    Primer_Apellido: "",
+    Segundo_Apellido: "",
+    Sexo: "",
+    Fecha_Nacimiento: "",
+    Lugar_Nacimiento: "",
+    Identidad: "",
+    Creado_Por: "",
+    Id_Departamento: 0,
+    Id_Municipio: 0,
+    Id_Tipo_Persona: 1,
+    Id_Estudiante: 0,
+    esNuevo:true
+
+  });
+
   const [estudianteData, setEstudianteData] = useState({
     Id_Beneficio: "",
     Id_Area: "",
@@ -93,34 +112,24 @@ const [benefactorData, setBenefactorData] = useState({
     switch(tabIndex){
       
       case 1:
-        personaData.esEstudiente=true;
-        personaData.Id_Tipo_Persona=1;
+
+      personaData.Id_Tipo_Persona=1;
         
-        handleEdit(estudianteTemp);
+
       break;
    
       case 2:
-        if (estudianteTemp==null){
-          alert("Favor selecione el estudinate")
-        }
-        personaData.esEstudiente=false;
-        personaData.Estado
-        personaData.Id_Estudiante=estudianteTemp.Id_Estudiante;
-        personaData.Id_Tipo_Persona=2;
-          personaData.observaciones =" Favor ingresar una"
-        setEditId(null)
+        
+        personaDataRelacion.Id_Tipo_Persona=2;
+
+
       break;
            
       case 3:
-        if (estudianteTemp==null){
-          alert("Favor selecione el estudinate")
-        }
-        personaData.esEstudiente=false;
-        personaData.Estado
-        personaData.Id_Estudiante=estudianteTemp.Id_Estudiante;
-        personaData.Id_Tipo_Persona=3;
-        personaData.observaciones =" Favor ingresar una"
-        setEditId(null)
+
+      personaDataRelacion.Id_Tipo_Persona=3;
+
+
       break;
 
 
@@ -211,7 +220,7 @@ setPersonaData({
 // Ejemplo para handleTutorInputChange
 const handleTutorInputChange = (event) => {
   const { name, value } = event.target;
-  setTutorData((prevData) => ({
+  setPersonaDataRelacion((prevData) => ({
     ...prevData,
     [name]: value,
   }));
@@ -228,7 +237,38 @@ const handleBenefactorInputChange = (event) => {
 
 
 
+const handlePersonaSubmit = async (e) => {
+  e.preventDefault();
+  try {
 
+
+      let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
+
+
+      if (res!=null){
+        alert("Registro creado")
+      }
+
+   
+    
+    setPersonaDataRelacion({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      esEstudiente:true,
+    });
+    
+    fetchEstudiantes();
+  } catch (error) {
+    console.error("Error al guardar estudiante y persona", error);
+  }
+};
 
 
   const handleSubmit = async (e) => {
@@ -340,12 +380,63 @@ const handleBenefactorInputChange = (event) => {
     }
   };
 
+
+  const handleDeleteRelacion = (id) => {
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.");
+    
+    if (confirmDelete) {
+      // Lógica para eliminar el registro
+      console.log(`Eliminando registro con ID: ${id}`);
+
+      handleDeletRelacion(id);
+      // Aquí iría la llamada al backend para eliminar
+    } else {
+      console.log("Eliminación cancelada.");
+    }
+  };
+
+  const handleEditTutor = (tutor) => {
+    console.log( "handleEditTutor")
+   console.log( tutor)
+   setEditId(tutor.Persona.Id_Estudiante);
+
+setPersonaDataRelacion({
+
+
+  Id_Estudiante:estudianteData.Id_Estudiante,
+  Identidad: tutor.Persona.Identidad,
+  Primer_Nombre:  tutor.Persona.Primer_Nombre ,
+  Primer_Apellido:  tutor.Persona.Primer_Apellido ,
+  Sexo:  tutor.Persona.Sexo,
+  Direccion: tutor.Persona.Direccion,
+  Telefono:  tutor.Persona.Telefono,
+  Id_Persona:tutor.Persona.Id_Persona,
+  Update:true
+
+})
+    
+
+  };
+
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/estudiantes/${id}`);
       fetchEstudiantes();
     } catch (error) {
       console.error("Error al eliminar estudiante", error);
+    }
+  };
+
+  const handleDeletRelacion = async (id) => {
+    try {
+      
+   var res=   await axios.delete(`/api/relacion/${id}`);
+   if(res!=null){
+alert("Registro eliminado")
+   }
+      fetchEstudiantes();
+    } catch (error) {
+      console.error("Error al eliminar relacion", error);
     }
   };
 
@@ -681,32 +772,38 @@ const handleBenefactorInputChange = (event) => {
 
   <div className="flex flex-col">
   <label htmlFor="Estudiante" className="text-gray-700 font-medium">
-    Seleccionar Estudiante
-  </label>
-  <select
-    id="Estudiante"
-    name="Estudiante"
-    value={tutorData.Estudiante}
-    onChange={(e) => {
-      const selectedEstudiante = filteredEstudiantes.find(
-        (estudiante) => estudiante.Id_Estudiante === parseInt(e.target.value)
-      );
-      handleEdit(selectedEstudiante); // Llama a handleEdit con el estudiante seleccionado
-      setTutorData({ ...tutorData, Estudiante: e.target.value }); // Actualiza el estado
-    }}
-    required
-    className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 w-full transition duration-300"
-  >
-    <option value="">Selecciona un estudiante</option>
-    {filteredEstudiantes.map((estudiante) => (
-      <option
-        key={estudiante.Id_Estudiante}
-        value={estudiante.Id_Estudiante}
-      >
-        {`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido} - ${estudiante.Instituto.Nombre_Instituto}`}
-      </option>
-    ))}
-  </select>
+  Seleccionar Estudiante
+</label>
+<select
+  id="Estudiante"
+  name="Estudiante"
+  value={personaDataRelacion.Estudiante?.Id_Estudiante || ''} // Asegura que se use el Id_Estudiante
+  onChange={(e) => {
+    const selectedId = parseInt(e.target.value); // Obtén el ID seleccionado como número
+    const selectedEstudiante = filteredEstudiantes.find(
+      (estudiante) => estudiante.Id_Estudiante === selectedId
+    );
+
+    if (selectedEstudiante) {
+      setPersonaDataRelacion({
+        ...personaDataRelacion,
+        Estudiante: selectedEstudiante, // Guarda el objeto completo del estudiante
+      });
+      handleEdit(selectedEstudiante)
+    }
+  }}
+  required
+  className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 w-full transition duration-300"
+>
+  <option value="" disabled>
+    Selecciona un estudiante
+  </option>
+  {filteredEstudiantes.map((estudiante) => (
+    <option key={estudiante.Id_Estudiante} value={estudiante.Id_Estudiante}>
+      {`${estudiante.Persona.Identidad} - ${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}
+    </option>
+  ))}
+</select>
 </div>
 
 
@@ -724,7 +821,7 @@ const handleBenefactorInputChange = (event) => {
       id="Identidad_Tutor"
       name="Identidad"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Número de Identidad"
-      value={tutorData.Identidad}
+      value={personaDataRelacion.Identidad}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -732,14 +829,29 @@ const handleBenefactorInputChange = (event) => {
   </div>
   <div className="flex flex-col">
     <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-      Nombre Completo
+    Primer_Nombre
     </label>
     <input
-      id="Nombre_Tutor"
+      id="Primer_Nombre"
       type="text"
-      name="Nombre_Completo"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Nombre Completo"
-      value={tutorData.Nombre_Completo}
+      name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Primer_Nombre"
+      value={personaDataRelacion.Primer_Nombre}
+      onChange={handleTutorInputChange}
+      required
+      className="bordPrimer_Nombreer border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
+    Primer Apellido
+    </label>
+    <input
+      id="Primer_Apellido"
+      type="text"
+      name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Primer_Apellido"
+      value={personaDataRelacion.Primer_Apellido}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -752,7 +864,7 @@ const handleBenefactorInputChange = (event) => {
     <select
       id="Sexo_Tutor"
       name="Sexo"  // Asegúrate de que el name coincida con la propiedad del estado
-      value={tutorData.Sexo}
+      value={personaDataRelacion.Sexo}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -771,7 +883,7 @@ const handleBenefactorInputChange = (event) => {
       type="text"
       name="Direccion"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Dirección del Tutor"
-      value={tutorData.Direccion}
+      value={personaDataRelacion.Direccion}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -786,12 +898,27 @@ const handleBenefactorInputChange = (event) => {
       type="text"
       name="Telefono"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Teléfono del Tutor"
-      value={tutorData.Telefono}
+      value={personaDataRelacion.Telefono}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
+  <div className="flex justify-between">
+            <button
+          onClick={handlePersonaSubmit}
+              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
+            >
+              {!personaDataRelacion.esNuevo ? 'Actualizar Tutor' : 'Registrar Tutor'}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
+            >
+              Cancelar
+            </button>
+          </div>
 
 </div>
    {/* Tabla de Relaciones */}
@@ -807,6 +934,8 @@ const handleBenefactorInputChange = (event) => {
               <th className="border px-4 py-2 text-left">Persona Relacionada</th>
               <th className="border px-4 py-2 text-left">Estado</th>
               <th className="border px-4 py-2 text-left">Observaciones</th>
+              <th className="border px-4 py-2 text-left">Acciones</th>
+
             </tr>
           </thead>
           <tbody>
@@ -819,6 +948,24 @@ const handleBenefactorInputChange = (event) => {
         </td>
         <td className="border px-4 py-2">{relacion.Estado}</td>
         <td className="border px-4 py-2">{relacion.Observaciones}</td>
+        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
+              {permisos[1]?.actualizar && (
+                <button
+                  onClick={() => handleEditTutor(relacion)}
+                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  Editar
+                </button>
+              )}
+              {permisos[1]?.eliminar && (
+                <button
+                  onClick={() => handleDeleteRelacion(relacion.Id)}
+                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              )}
+            </td>
       </tr>
     ))
   ) : (
