@@ -10,6 +10,8 @@ const EstudiantesCrud = () => {
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
   const [estudianteTemp, setEstudianteTemp] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null); // Mantener el estudiante seleccionado
+
   const [institutos, setInstitutos] = useState([]);
   const [areas, setAreas] = useState([]);
   const [beneficios, setBeneficios] = useState([]);
@@ -37,6 +39,25 @@ const EstudiantesCrud = () => {
     Id_Tipo_Persona: 1,
 
   });
+
+
+  const handleCancelRelacion = () => {
+    setPersonaDataRelacion((prevData) => ({
+      ...prevData,
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      Id_Departamento: 0,
+      Id_Municipio: 0,
+      esNuevo: true,
+    }));
+  };
 
   const [personaDataRelacion, setPersonaDataRelacion] = useState({
     Primer_Nombre: "",
@@ -101,6 +122,16 @@ const [benefactorData, setBenefactorData] = useState({
     try {
       const response = await axios.get("/api/estudiantes");
       setEstudiantes(response.data);
+
+       // Si hay un estudiante seleccionado, actualizarlo
+    if (selectedStudent) {
+      const updatedStudent = response.data.find(
+        (e) => e.Id_Estudiante === selectedStudent.Id_Estudiante
+      );
+      setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+  
+      handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+    }
       console.log(response.data)
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
@@ -246,6 +277,7 @@ const handlePersonaSubmit = async (e) => {
 
 
       if (res!=null){
+        fetchEstudiantes();
         alert("Registro creado")
       }
 
@@ -262,9 +294,10 @@ const handlePersonaSubmit = async (e) => {
       Identidad: "",
       Creado_Por: "",
       esEstudiente:true,
+      esNuevo:true
     });
     
-    fetchEstudiantes();
+
   } catch (error) {
     console.error("Error al guardar estudiante y persona", error);
   }
@@ -363,6 +396,12 @@ const handlePersonaSubmit = async (e) => {
   };
 
   const handleEdit = (estudiante) => {
+
+    setPersonaDataRelacion({
+      ...personaDataRelacion,
+      Estudiante: estudiante, // Guarda el objeto completo del estudiante
+    });
+    setSelectedStudent(estudiante); 
     setEditId(estudiante.Id_Estudiante);
     setEstudianteTemp(estudiante);
     setEstudianteData({
@@ -422,6 +461,9 @@ setPersonaDataRelacion({
     try {
       await axios.delete(`/api/estudiantes/${id}`);
       fetchEstudiantes();
+      if (selectedStudent?.Id_Estudiante === id) {
+        setSelectedStudent(null); // Limpiar la selección si fue eliminado
+      }
     } catch (error) {
       console.error("Error al eliminar estudiante", error);
     }
@@ -432,9 +474,10 @@ setPersonaDataRelacion({
       
    var res=   await axios.delete(`/api/relacion/${id}`);
    if(res!=null){
+    fetchEstudiantes();
 alert("Registro eliminado")
    }
-      fetchEstudiantes();
+
     } catch (error) {
       console.error("Error al eliminar relacion", error);
     }
@@ -758,7 +801,27 @@ alert("Registro eliminado")
 
     </div>
   </div>
+
+
+  <br></br>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
+            >
+              {editId ? 'Actualizar Estudiante' : 'Registrar Ficha del Estudiante'}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
+            >
+              Cancelar
+            </button>
+          </div>
 </div>
+
+
   )}
 {/* Sección Tutor/Padre */}
 {activeTab === 2 && (
@@ -766,48 +829,6 @@ alert("Registro eliminado")
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
 
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-
-
-
-  <div className="flex flex-col">
-  <label htmlFor="Estudiante" className="text-gray-700 font-medium">
-  Seleccionar Estudiante
-</label>
-<select
-  id="Estudiante"
-  name="Estudiante"
-  value={personaDataRelacion.Estudiante?.Id_Estudiante || ''} // Asegura que se use el Id_Estudiante
-  onChange={(e) => {
-    const selectedId = parseInt(e.target.value); // Obtén el ID seleccionado como número
-    const selectedEstudiante = filteredEstudiantes.find(
-      (estudiante) => estudiante.Id_Estudiante === selectedId
-    );
-
-    if (selectedEstudiante) {
-      setPersonaDataRelacion({
-        ...personaDataRelacion,
-        Estudiante: selectedEstudiante, // Guarda el objeto completo del estudiante
-      });
-      handleEdit(selectedEstudiante)
-    }
-  }}
-  required
-  className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 w-full transition duration-300"
->
-  <option value="" disabled>
-    Selecciona un estudiante
-  </option>
-  {filteredEstudiantes.map((estudiante) => (
-    <option key={estudiante.Id_Estudiante} value={estudiante.Id_Estudiante}>
-      {`${estudiante.Persona.Identidad} - ${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}
-    </option>
-  ))}
-</select>
-</div>
-
-
-</div>
 
 
   <div className="flex flex-col">
@@ -909,11 +930,11 @@ alert("Registro eliminado")
           onClick={handlePersonaSubmit}
               className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
             >
-              {!personaDataRelacion.esNuevo ? 'Actualizar Tutor' : 'Registrar Tutor'}
+              {!personaDataRelacion.esNuevo ? 'Actualizar ' : 'Registrar '}
             </button>
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={handleCancelRelacion}
               className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
             >
               Cancelar
@@ -926,11 +947,11 @@ alert("Registro eliminado")
 
 
    <div>
-        <h2 className="text-lg font-semibold text-gray-700">Relaciones</h2>
+        <h2 className="text-lg font-semibold text-gray-700">Tutores</h2>
         <table className="min-w-full mt-4 border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border px-4 py-2 text-left">Tipo de Relación</th>
+              <th className="border px-4 py-2 text-left">Identidad</th>
               <th className="border px-4 py-2 text-left">Persona Relacionada</th>
               <th className="border px-4 py-2 text-left">Estado</th>
               <th className="border px-4 py-2 text-left">Observaciones</th>
@@ -940,9 +961,11 @@ alert("Registro eliminado")
           </thead>
           <tbody>
   {estudianteData.Relaciones?.length > 0 ? (
-    estudianteData.Relaciones.map((relacion) => (
+    estudianteData.Relaciones
+    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+    .map((relacion) => (
       <tr key={relacion.Id} className="hover:bg-gray-50">
-        <td className="border px-4 py-2">{relacion.TipoPersona?.Tipo_Persona}</td>
+         <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
         <td className="border px-4 py-2">
           {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
         </td>
@@ -985,86 +1008,189 @@ alert("Registro eliminado")
 
 {/* Sección Benefactor */}
 {activeTab === 3 && (
+  <div>
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-    <div className="flex flex-col">
-      <label htmlFor="Identidad_Benefactor" className="text-gray-700 font-medium">
-        Identidad
-      </label>
-      <input
-        id="Identidad_Benefactor"
-        type="text"
-        name="Identidad_Benefactor"
-        placeholder="Número de Identidad"
-        value={benefactorData.Identidad}
-        onChange={handleBenefactorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Nombre_Benefactor" className="text-gray-700 font-medium">
-        Nombre Completo
-      </label>
-      <input
-        id="Nombre_Benefactor"
-        type="text"
-        name="Nombre_Benefactor"
-        placeholder="Nombre Completo"
-        value={benefactorData.Nombre_Completo}
-        onChange={handleBenefactorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Telefono_Benefactor" className="text-gray-700 font-medium">
-        Teléfono
-      </label>
-      <input
-        id="Telefono_Benefactor"
-        type="text"
-        name="Telefono_Benefactor"
-        placeholder="Teléfono del Benefactor"
-        value={benefactorData.Telefono}
-        onChange={handleBenefactorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label htmlFor="Direccion_Benefactor" className="text-gray-700 font-medium">
-        Dirección
-      </label>
-      <input
-        id="Direccion_Benefactor"
-        type="text"
-        name="Direccion_Benefactor"
-        placeholder="Dirección del Benefactor"
-        value={benefactorData.Direccion}
-        onChange={handleBenefactorInputChange}
-        required
-        className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-      />
-    </div>
-  </div>
-)}
 
-<br></br>
-          <div className="flex justify-between">
+
+
+
+  <div className="flex flex-col">
+
+
+    
+    <label htmlFor="Identidad_Tutor" className="text-gray-700 font-medium">
+      Identidad
+    </label>
+    <input
+      id="Identidad_Tutor"
+      name="Identidad"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Número de Identidad"
+      value={personaDataRelacion.Identidad}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
+    Primer_Nombre
+    </label>
+    <input
+      id="Primer_Nombre"
+      type="text"
+      name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Primer_Nombre"
+      value={personaDataRelacion.Primer_Nombre}
+      onChange={handleTutorInputChange}
+      required
+      className="bordPrimer_Nombreer border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
+    Primer Apellido
+    </label>
+    <input
+      id="Primer_Apellido"
+      type="text"
+      name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Primer_Apellido"
+      value={personaDataRelacion.Primer_Apellido}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Sexo_Tutor" className="text-gray-700 font-medium">
+      Sexo
+    </label>
+    <select
+      id="Sexo_Tutor"
+      name="Sexo"  // Asegúrate de que el name coincida con la propiedad del estado
+      value={personaDataRelacion.Sexo}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    >
+      <option value="">Seleccione Sexo</option>
+      <option value="1">Masculino</option>
+      <option value="0">Femenino</option>
+    </select>
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Direccion_Tutor" className="text-gray-700 font-medium">
+      Dirección
+    </label>
+    <input
+      id="Direccion_Tutor"
+      type="text"
+      name="Direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Dirección del Tutor"
+      value={personaDataRelacion.Direccion}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex flex-col">
+    <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
+      Teléfono
+    </label>
+    <input
+      id="Telefono_Tutor"
+      type="text"
+      name="Telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      placeholder="Teléfono del Tutor"
+      value={personaDataRelacion.Telefono}
+      onChange={handleTutorInputChange}
+      required
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+    />
+  </div>
+  <div className="flex justify-between">
             <button
-              type="submit"
+          onClick={handlePersonaSubmit}
               className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
             >
-              {editId ? 'Actualizar Estudiante' : 'Registrar Ficha del Estudiante'}
+              {!personaDataRelacion.esNuevo ? 'Actualizar ' : 'Registrar '}
             </button>
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={handleCancelRelacion}
               className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
             >
               Cancelar
             </button>
           </div>
+
+</div>
+   {/* Tabla de Relaciones */}
+
+
+
+   <div>
+        <h2 className="text-lg font-semibold text-gray-700">Benefactores</h2>
+        <table className="min-w-full mt-4 border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border px-4 py-2 text-left">Identidad</th>
+              <th className="border px-4 py-2 text-left">Persona Relacionada</th>
+              <th className="border px-4 py-2 text-left">Estado</th>
+              <th className="border px-4 py-2 text-left">Observaciones</th>
+              <th className="border px-4 py-2 text-left">Acciones</th>
+
+            </tr>
+          </thead>
+          <tbody>
+  {estudianteData.Relaciones?.length > 0 ? (
+    estudianteData.Relaciones
+    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
+    .map((relacion) => (
+      <tr key={relacion.Id} className="hover:bg-gray-50">
+        <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
+        <td className="border px-4 py-2">
+          {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
+        </td>
+        <td className="border px-4 py-2">{relacion.Estado}</td>
+        <td className="border px-4 py-2">{relacion.Observaciones}</td>
+        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
+              {permisos[1]?.actualizar && (
+                <button
+                  onClick={() => handleEditTutor(relacion)}
+                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  Editar
+                </button>
+              )}
+              {permisos[1]?.eliminar && (
+                <button
+                  onClick={() => handleDeleteRelacion(relacion.Id)}
+                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              )}
+            </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="4" className="text-center border px-4 py-2">
+        No hay relaciones disponibles.
+      </td>
+    </tr>
+  )}
+</tbody>
+
+        </table>
+      </div>
+</div>
+
+
+)}
+
+
         </form>
 
 

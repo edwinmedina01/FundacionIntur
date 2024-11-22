@@ -65,6 +65,6 @@ Estudiante.hasMany(Relacion, {
   as: 'Relaciones',           // Alias para la relación
 });
 
-
+// Estudiante.hasMany(Relacion, {
 
 module.exports = Estudiante;
