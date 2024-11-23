@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
-import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { ShieldExclamationIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { data } from "autoprefixer";
 import { toast } from "react-toastify";
 const EstudiantesCrud = () => {
@@ -57,6 +57,28 @@ const EstudiantesCrud = () => {
       Id_Municipio: 0,
       esNuevo: true,
     }));
+    setPersonaData({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "", 
+      Id_Departamento: "",
+      Id_Municipio: ""
+    });
+    
+    setEstudianteData({
+      Id_Beneficio: "",
+      Id_Area: "",
+      Id_Instituto: "",
+      Creado_Por: "",
+      Relaciones: [],
+      
+    });
   };
 
   const [personaDataRelacion, setPersonaDataRelacion] = useState({
@@ -115,7 +137,7 @@ const [benefactorData, setBenefactorData] = useState({
       fetchBeneficios();
       fetchDepartamentos();
       fetchPermisos(user.rol);
-      
+
     }
   }, [user]);
   const fetchEstudiantes = async () => {
@@ -276,10 +298,33 @@ const handlePersonaSubmit = async (e) => {
       let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
 
 
-      if (res!=null){
-        fetchEstudiantes();
-        alert("Registro creado")
+      if (res != null) {
+        fetchEstudiantes(); // Llama a la función para actualizar la lista de estudiantes
+        
+        // Verifica si es una acción de registrar o actualizar
+        if (editId) {
+          toast.success("Registro Creado", {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        } else {
+          toast.success("Registro Actualizado", {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        }
       }
+      
 
    
     
@@ -318,7 +363,7 @@ const handlePersonaSubmit = async (e) => {
           
         })
         if (res!=null){
-          alert("Registro creado")
+          // alert("Registro creado")
         }
 
         setEditId(null);
@@ -393,6 +438,8 @@ const handlePersonaSubmit = async (e) => {
       Relaciones: [], 
 
     });
+    
+    setEditId(null); //correccion para el estado del boton "registrar estudiante, y no se quede en actualizar cuando se cancele"
   };
 
   const handleEdit = (estudiante) => {
@@ -420,19 +467,44 @@ const handlePersonaSubmit = async (e) => {
   };
 
 
-  const handleDeleteRelacion = (id) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.");
-    
-    if (confirmDelete) {
-      // Lógica para eliminar el registro
-      console.log(`Eliminando registro con ID: ${id}`);
+const handleDeleteRelacion = (id) => {
+  // Crear un toast personalizado con botones
+  const confirmToast = (
+    <div className="flex flex-col text-black">
+      <p>¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+      <div className="flex space-x-2 mt-2">
+        <button 
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+          onClick={() => {
+            handleDeletRelacion(id); // Llamar la función para eliminar
+            toast.dismiss(); // Cerrar el toast
+            console.log(`Eliminando registro con ID: ${id}`);
+          }}
+        >
+         Confirmar <CheckIcon className="h-6 w-6 inline" />
+        </button>
+        <button 
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+          onClick={() => toast.dismiss()} // Cerrar el toast sin hacer nada
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
 
-      handleDeletRelacion(id);
-      // Aquí iría la llamada al backend para eliminar
-    } else {
-      console.log("Eliminación cancelada.");
-    }
-  };
+  // Mostrar el toast de confirmación
+  toast.warning(confirmToast, {
+    position: "top-center",
+    autoClose: false,  // No se cierra automáticamente
+    hideProgressBar: true,
+    closeOnClick: false,  // No cierra el toast si se hace clic
+    pauseOnHover: true,
+    draggable: true,
+    theme: "colored",
+  });
+};
+
 
   const handleEditTutor = (tutor) => {
     console.log( "handleEditTutor")
@@ -473,10 +545,21 @@ setPersonaDataRelacion({
     try {
       
    var res=   await axios.delete(`/api/relacion/${id}`);
-   if(res!=null){
+   if (res != null) {
     fetchEstudiantes();
-alert("Registro eliminado")
-   }
+    toast.success("Registro eliminado", {
+      position: "top-center",
+      autoClose: 3000,  // Se cierra automáticamente después de 3 segundos
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      className: "bg-green-200 text-green-700",  // Fondo verde claro con texto verde
+      bodyClassName: "text-white",  // Color del texto dentro del toast
+      progressClassName: "bg-green-500",  // Barra de progreso verde
+    });
+  }
 
     } catch (error) {
       console.error("Error al eliminar relacion", error);
@@ -809,7 +892,7 @@ alert("Registro eliminado")
               type="submit"
               className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
             >
-              {editId ? 'Actualizar Estudiante' : 'Registrar Ficha del Estudiante'}
+              {editId ? 'Actualizar Ficha del Estudiante' : 'Registrar Ficha del Estudiante' }
             </button>
             <button
               type="button"
@@ -850,28 +933,28 @@ alert("Registro eliminado")
   </div>
   <div className="flex flex-col">
     <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Primer_Nombre
+    Nombre
     </label>
     <input
       id="Primer_Nombre"
       type="text"
       name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Primer_Nombre"
+      placeholder="Primer Nombre"
       value={personaDataRelacion.Primer_Nombre}
       onChange={handleTutorInputChange}
       required
-      className="bordPrimer_Nombreer border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
   <div className="flex flex-col">
     <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Primer Apellido
+    Apellido
     </label>
     <input
       id="Primer_Apellido"
       type="text"
       name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Primer_Apellido"
+      placeholder="Primer Apellido"
       value={personaDataRelacion.Primer_Apellido}
       onChange={handleTutorInputChange}
       required
@@ -925,7 +1008,9 @@ alert("Registro eliminado")
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
-  <div className="flex justify-between">
+</div>
+<br></br>
+<div className="flex justify-between">
             <button
           onClick={handlePersonaSubmit}
               className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
@@ -940,22 +1025,20 @@ alert("Registro eliminado")
               Cancelar
             </button>
           </div>
-
-</div>
    {/* Tabla de Relaciones */}
 
 
 
    <div>
-        <h2 className="text-lg font-semibold text-gray-700">Tutores</h2>
+        <center><h2 className="text-2xl font-semibold text-gray-700"><strong>Tutores</strong></h2></center>
         <table className="min-w-full mt-4 border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border px-4 py-2 text-left">Identidad</th>
-              <th className="border px-4 py-2 text-left">Persona Relacionada</th>
-              <th className="border px-4 py-2 text-left">Estado</th>
-              <th className="border px-4 py-2 text-left">Observaciones</th>
-              <th className="border px-4 py-2 text-left">Acciones</th>
+            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold textcenter">Persona Relacionada</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Observaciones</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
 
             </tr>
           </thead>
@@ -977,7 +1060,7 @@ alert("Registro eliminado")
                   onClick={() => handleEditTutor(relacion)}
                   className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
                 >
-                  Editar
+                  <PencilSquareIcon className="h-6 w-6" />
                 </button>
               )}
               {permisos[1]?.eliminar && (
@@ -985,7 +1068,7 @@ alert("Registro eliminado")
                   onClick={() => handleDeleteRelacion(relacion.Id)}
                   className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                 >
-                  Eliminar
+                  <TrashIcon className="h-6 w-6" />
                 </button>
               )}
             </td>
@@ -1033,28 +1116,28 @@ alert("Registro eliminado")
   </div>
   <div className="flex flex-col">
     <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Primer_Nombre
+    Nombre
     </label>
     <input
       id="Primer_Nombre"
       type="text"
       name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Primer_Nombre"
+      placeholder="Primer Nombre"
       value={personaDataRelacion.Primer_Nombre}
       onChange={handleTutorInputChange}
       required
-      className="bordPrimer_Nombreer border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
   <div className="flex flex-col">
     <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Primer Apellido
+   Apellido
     </label>
     <input
       id="Primer_Apellido"
       type="text"
       name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Primer_Apellido"
+      placeholder="Primer Apellido"
       value={personaDataRelacion.Primer_Apellido}
       onChange={handleTutorInputChange}
       required
@@ -1108,7 +1191,9 @@ alert("Registro eliminado")
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
-  <div className="flex justify-between">
+</div>
+<br></br>
+<div className="flex justify-between">
             <button
           onClick={handlePersonaSubmit}
               className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
@@ -1123,22 +1208,20 @@ alert("Registro eliminado")
               Cancelar
             </button>
           </div>
-
-</div>
    {/* Tabla de Relaciones */}
 
 
 
    <div>
-        <h2 className="text-lg font-semibold text-gray-700">Benefactores</h2>
+   <center><h2 className="text-2xl font-semibold text-gray-700"><strong>Benefactores</strong></h2></center>
         <table className="min-w-full mt-4 border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border px-4 py-2 text-left">Identidad</th>
-              <th className="border px-4 py-2 text-left">Persona Relacionada</th>
-              <th className="border px-4 py-2 text-left">Estado</th>
-              <th className="border px-4 py-2 text-left">Observaciones</th>
-              <th className="border px-4 py-2 text-left">Acciones</th>
+            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold textcenter">Persona Relacionada</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Observaciones</th>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
 
             </tr>
           </thead>
@@ -1154,13 +1237,13 @@ alert("Registro eliminado")
         </td>
         <td className="border px-4 py-2">{relacion.Estado}</td>
         <td className="border px-4 py-2">{relacion.Observaciones}</td>
-        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
+        <td className="border px-4 py-2 flex justify-center items space-x-2">
               {permisos[1]?.actualizar && (
                 <button
                   onClick={() => handleEditTutor(relacion)}
                   className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
                 >
-                  Editar
+                  <PencilSquareIcon className="h-6 w-6" />
                 </button>
               )}
               {permisos[1]?.eliminar && (
@@ -1168,7 +1251,7 @@ alert("Registro eliminado")
                   onClick={() => handleDeleteRelacion(relacion.Id)}
                   className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                 >
-                  Eliminar
+                  <TrashIcon className="h-6 w-6" />
                 </button>
               )}
             </td>
@@ -1202,28 +1285,28 @@ alert("Registro eliminado")
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
-            <table className="min-w-full table-auto">
+            <table className="min-w-full mt-4 border border-gray-300">
               <thead>
-                <tr className="bg-blue-500 text-white">
-                  <th className="p-3">Nombre</th>
-                  <th className="p-3">Instituto</th>
-                  <th className="p-3">Acciones</th>
+                <tr classname ="bg-gray-100">
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEstudiantes.map((estudiante) => (
-                  <tr key={estudiante.Id_Estudiante}>
-                    <td className="p-3 text-center">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
-                    <td className="p-3 text-center">
+                  <tr key={estudiante.Id_Estudiante} className="hover:bg-gray-50">
+                    <td className="border p-3 text-center">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
+                    <td className="border p-3 text-center">
                       {estudiante.Instituto.Nombre_Instituto}
                     </td>
                     <td className="p-3 border-b flex justify-center items-center space-x-2">
                       {permisos[1]?.actualizar && (
                         <button
                           onClick={() => handleEdit(estudiante)}
-                          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                          className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
                         >
-                          Editar
+                          <PencilSquareIcon className="h-6 w-6" />
                         </button>
                       )}
 
@@ -1232,7 +1315,7 @@ alert("Registro eliminado")
                           onClick={() => handleDelete(estudiante.Id_Estudiante)}
                           className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                         >
-                          X
+                          <TrashIcon className="h-6 w-6" />
                         </button>
                       )}
                     </td>

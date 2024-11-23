@@ -6,7 +6,7 @@ import * as XLSX from "xlsx"; // Importar la librería xlsx
 import AuthContext from "../../context/AuthContext";
 import {
   MagnifyingGlassIcon,
-  ShieldExclamationIcon,
+  ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
 } from "@heroicons/react/24/outline";
 
 const EstudiantesReporte = () => {
@@ -198,7 +198,7 @@ const EstudiantesReporte = () => {
                 onClick={() => (window.location.href = "/estudiante")}
                 className="block py-1 px-4 rounded bg-orange-500 text-white hover:bg-orange-600 focus:outline-none transition-colors"
               >
-                + Agregar Registro
+                <UserPlusIcon className="h-6 w-6 inline" /> Agregar Registro
               </button>
             )}
           </center>
@@ -208,7 +208,7 @@ const EstudiantesReporte = () => {
               onClick={exportToExcel}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
             >
-              Exportar a Excel
+             <ArrowDownCircleIcon className="h-6 w-6 inline" />    Exportar Excel
             </button>
           </div>
         </div>
@@ -316,8 +316,8 @@ const EstudiantesReporte = () => {
                     <div className="flex gap-2">
                       {permisos[1]?.actualizar && (
                         <Link href={`/estudiante/${estudiante.Id_Estudiante}`}>
-                          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                            Editar
+                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
+                          <PencilSquareIcon className="h-6 w-6" />
                           </button>
                         </Link>
                       )}
@@ -327,7 +327,7 @@ const EstudiantesReporte = () => {
                           onClick={() => handleDelete(estudiante.Id_Estudiante)}
                           className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                         >
-                          X
+                          <TrashIcon className="h-6 w-6" />
                         </button>
                       )}
                     </div>
