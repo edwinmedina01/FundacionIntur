@@ -127,6 +127,7 @@ const Layout = ({ children }) => {
   const handleLogout = async () => {
     try {
       await axios.post("/api/logout");
+      
       router.push("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);

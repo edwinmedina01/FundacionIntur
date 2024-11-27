@@ -1,5 +1,3 @@
-// components/LoginForm.jsx
-
 import { useState, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
@@ -18,16 +16,27 @@ const LoginForm = () => {
         e.preventDefault();
         try {
             const respuesta = await axios.post('/api/login', { email, password });
-            console.log(respuesta);
-            login(respuesta.data.token);
+     
+            // Imprime toda la respuesta para ver su estructura
+            console.log('Respuesta de la API:', respuesta);
+    
+            const { token, userId, role, primerLogin } = respuesta.data;
+     
+            if (!userId || !token) {
+                throw new Error('userId o token no están presentes en la respuesta');
+            }
+     
+            // Guarda el token y el userId en el contexto
+            login(token, userId, role);
+     
             setMensaje('Login exitoso');
-            if(!respuesta.data.primerLogin) router.push('/inicio');
-            else router.push('/change-password')
+            primerLogin ? router.push('/change-password') : router.push('/inicio');
         } catch (error) {
             setMensaje(error.response?.data?.mensaje || 'Error en el login');
+            console.error('Error:', error.response?.data || error);
         }
     };
-
+    
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="p-8 bg-white rounded-lg shadow-lg w-full max-w-sm">
@@ -42,23 +51,22 @@ const LoginForm = () => {
                             </svg>
                         </div>
                         <input
-    type="text"
-    id="email"
-    value={email.toUpperCase()} // Muestra el texto siempre en mayúsculas
-    onChange={(e) => setEmail(e.target.value.toUpperCase())} // Guarda el valor en mayúsculas
-    className="block py-2 pl-10 pr-2 w-full text-sm text-gray-900 bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-600"
-    placeholder=" "
-    required
-    maxLength={20}
-    style={{ textTransform: 'uppercase' }} // Visualiza el texto en mayúsculas
-/>
-<label
-    htmlFor="email"
-    className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
->
-     Usuario *
-</label>
-
+                            type="text"
+                            id="email"
+                            value={email.toUpperCase()} // Muestra el texto siempre en mayúsculas
+                            onChange={(e) => setEmail(e.target.value.toUpperCase())} // Guarda el valor en mayúsculas
+                            className="block py-2 pl-10 pr-2 w-full text-sm text-gray-900 bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-600"
+                            placeholder=" "
+                            required
+                            maxLength={20}
+                            style={{ textTransform: 'uppercase' }} // Visualiza el texto en mayúsculas
+                        />
+                        <label
+                            htmlFor="email"
+                            className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
+                        >
+                             Usuario *
+                        </label>
                     </div>
                     <div className="mb-4 relative">
                         <div className="absolute inset-y-3 left-3 flex items-center">
@@ -81,7 +89,7 @@ const LoginForm = () => {
                             htmlFor="password"
                             className="absolute text-sm text-gray-500 transform -translate-y-6 scale-75 top-3 left-2 duration-300 origin-[0] peer-focus:scale-75 peer-focus:-translate-y-6"
                         >
-                            contraseña *
+                            Contraseña *
                         </label>
                         <span
                             className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
@@ -106,8 +114,8 @@ const LoginForm = () => {
                         Entrar
                     </button>
                     <div className="mt-4 text-center">
-        <a href='/forgot-password' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a>
-    </div>
+                        <a href='/forgot-password' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -115,3 +123,5 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+
+

@@ -52,5 +52,5 @@ export default async function handler(req, res) {
     });
 
     res.setHeader('Set-Cookie', serialized);
-    res.status(200).json({ token, role: usuario.Rol, primerLogin: usuario.Primer_Login });
+    res.status(200).json({ token, role: usuario.Id_Rol, primerLogin: usuario.Primer_Login, userId: usuario.Id_Usuario });
 }

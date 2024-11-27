@@ -208,11 +208,15 @@ const exportToExcel = () => {
       {/* Columna izquierda: Formulario */}
       <div className="w-4/6 bg-white p-6 rounded-lg shadow-md">
         <center>
-          <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Permiso' : 'Asignar Permisos'}</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            {isEditing ? "Editar Permiso" : "Asignar Permisos"}
+          </h2>
         </center>
         <form onSubmit={handleSubmit}>
           {/* Selector de Rol */}
-          <label className="block mb-2 text-sm font-medium text-gray-700">Rol</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Rol
+          </label>
           <select
             name="Id_Rol"
             value={formData.Id_Rol}
@@ -222,14 +226,18 @@ const exportToExcel = () => {
           >
             <option value="">Selecciona un Rol</option>
             {roles
-              .filter(role => role.Estado === 1) // Filtra para mostrar solo roles activos
+              .filter((role) => role.Estado === 1) // Filtra para mostrar solo roles activos
               .map((rol) => (
-                <option key={rol.Id_Rol} value={rol.Id_Rol}>{rol.Rol}</option>
+                <option key={rol.Id_Rol} value={rol.Id_Rol}>
+                  {rol.Rol}
+                </option>
               ))}
           </select>
 
           {/* Selector de Objeto */}
-          <label className="block mb-2 text-sm font-medium text-gray-700">Objeto</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">
+            Objeto
+          </label>
           <select
             name="Id_Objeto"
             value={formData.Id_Objeto}
@@ -239,29 +247,38 @@ const exportToExcel = () => {
           >
             <option value="">Selecciona un Objeto</option>
             {objects.map((objeto) => (
-              <option key={objeto.Id_Objeto} value={objeto.Id_Objeto}>{objeto.Objeto}</option> // Asumiendo que `Nombre` es el campo que deseas mostrar
+              <option key={objeto.Id_Objeto} value={objeto.Id_Objeto}>
+                {objeto.Objeto}
+              </option> // Asumiendo que `Nombre` es el campo que deseas mostrar
             ))}
           </select>
 
           {/* Opciones de Permisos */}
           <div className="grid grid-cols-2 gap-4 mb-4">
-  {['Insertar', 'Actualizar', 'Consultar', 'Eliminar'].map((action) => (
-    <div key={action} className="flex items-center">
-      <input
-        type="checkbox"
-        name={`Permiso_${action}`}
-        checked={formData[`Permiso_${action}`]}
-        onChange={handleCheckboxChange}
-        className="mr-2 h-4 w-4 border border-gray-300 rounded"
-      />
-      <label className="text-sm font-medium text-gray-700">{action}</label>
-    </div>
-  ))}
-</div>
+            {["Insertar", "Actualizar", "Consultar", "Eliminar"].map(
+              (action) => (
+                <div key={action} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name={`Permiso_${action}`}
+                    checked={formData[`Permiso_${action}`]}
+                    onChange={handleCheckboxChange}
+                    className="mr-2 h-4 w-4 border border-gray-300 rounded"
+                  />
+                  <label className="text-sm font-medium text-gray-700">
+                    {action}
+                  </label>
+                </div>
+              )
+            )}
+          </div>
 
           <div className="flex justify-end">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              {isEditing ? 'Actualizar' : 'Agregar'}
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              {isEditing ? "Actualizar" : "Agregar"}
             </button>
             <button
               type="button"
@@ -272,108 +289,137 @@ const exportToExcel = () => {
             </button>
           </div>
         </form>
-        {notification && <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">{notification}</div>}
+        {notification && (
+          <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
+            {notification}
+          </div>
+        )}
       </div>
 
       {/* Columna derecha: Tabla de permisos */}
       <div className="w-2/1">
-       {/* Buscador */}
-                        <center><input
-          type="text"
-          value={searchTerm}
-          onChange={handleSearch}
-  className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-  placeholder="Buscar..."
-        /></center>
-      <div className="flex justify-end space-x-4 mb-4">
-                       
-        <button
-          onClick={exportToExcel}
-          className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-          ><strong>
-            Exportar a Excel
-          </strong></button>
-          </div>
+        {/* Buscador */}
+        <center>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleSearch}
+            className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+            placeholder="Buscar..."
+          />
+        </center>
+        <div className="flex justify-end space-x-4 mb-4">
+          <button
+            onClick={exportToExcel}
+            className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
+          >
+            <strong>Exportar a Excel</strong>
+          </button>
+        </div>
         <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-
           <thead className="bg-slate-200">
             <tr>
               <th className="py-4 px-6 text-left">Id Permiso</th>
               <th className="py-4 px-6 text-left">Rol</th>
-              <th className="py-4 px-6 text-left">Objeto</th> {/* Nueva columna para objeto */}
+              <th className="py-4 px-6 text-left">Objeto</th>{" "}
+              {/* Nueva columna para objeto */}
               <th className="py-4 px-6 text-left">Consultar</th>
               <th className="py-4 px-6 text-left">Insertar</th>
               <th className="py-4 px-6 text-left">Actualizar</th>
               <th className="py-4 px-6 text-left">Eliminar</th>
-     
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-  {currentPermissions.map((permiso) => (
-    <tr key={permiso.Id_Permiso} className="border-b hover:bg-gray-100">
-      <td className="py-4 px-6">{permiso.Id_Permiso}</td>
-      <td className="py-4 px-6"><strong>{roleMap[permiso.Id_Rol]}</strong></td> {/* Mostrar nombre del rol */}
-      <td className="py-4 px-6">{objectMap[permiso.Id_Objeto]}</td> {/* Mostrar nombre del objeto correctamente */}
-      <td className="py-4 px-6">{permiso.Permiso_Consultar === '1' ? 'Sí' : 'No'}</td>
-      <td className="py-4 px-6">{permiso.Permiso_Insertar === '1' ? 'Sí' : 'No'}</td>
-      <td className="py-4 px-6">{permiso.Permiso_Actualizar === '1' ? 'Sí' : 'No'}</td>
-      <td className="py-4 px-6">{permiso.Permiso_Eliminar === '1' ? 'Sí' : 'No'}</td>
-
-      <td className="py-4 px-6 flex justify-center space-x-2">
-        <button onClick={() => handleEdit(permiso)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Editar</button>
-        <button onClick={() => handleDelete(permiso.Id_Permiso)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">X</button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            {currentPermissions.map((permiso) => (
+              <tr
+                key={permiso.Id_Permiso}
+                className="border-b hover:bg-gray-100"
+              >
+                <td className="py-4 px-6">{permiso.Id_Permiso}</td>
+                <td className="py-4 px-6">
+                  <strong>{roleMap[permiso.Id_Rol]}</strong>
+                </td>{" "}
+                {/* Mostrar nombre del rol */}
+                <td className="py-4 px-6">
+                  {objectMap[permiso.Id_Objeto]}
+                </td>{" "}
+                {/* Mostrar nombre del objeto correctamente */}
+                <td className="py-4 px-6">
+                  {permiso.Permiso_Consultar === "1" ? "Sí" : "No"}
+                </td>
+                <td className="py-4 px-6">
+                  {permiso.Permiso_Insertar === "1" ? "Sí" : "No"}
+                </td>
+                <td className="py-4 px-6">
+                  {permiso.Permiso_Actualizar === "1" ? "Sí" : "No"}
+                </td>
+                <td className="py-4 px-6">
+                  {permiso.Permiso_Eliminar === "1" ? "Sí" : "No"}
+                </td>
+                <td className="py-4 px-6 flex justify-center space-x-2">
+                  <button
+                    onClick={() => handleEdit(permiso)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(permiso.Id_Permiso)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    X
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
-{/* Paginación */}
-<div className="flex justify-between items-center mt-4">
-  {/* Botón "Anterior" */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === 1
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Anterior
-  </button>
+        {/* Paginación */}
+        <div className="flex justify-between items-center mt-4">
+          {/* Botón "Anterior" */}
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+              currentPage === 1
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
+            }`}
+          >
+            Anterior
+          </button>
 
-    {/* Páginas */}
-    <div className="flex space-x-2">
-    {Array.from({ length: totalPages }, (_, index) => (
-      <button
-        key={index + 1}
-        onClick={() => paginate(index + 1)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-          currentPage === index + 1
-            ? 'bg-white-600 text-black shadow-lg scale-105'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
-        }`}
-      >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+          {/* Páginas */}
+          <div className="flex space-x-2">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => paginate(index + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+                  currentPage === index + 1
+                    ? "bg-white-600 text-black shadow-lg scale-105"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
 
-  {/* Botón "Siguiente" */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === totalPages
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Siguiente
-  </button>
-</div>
-
+          {/* Botón "Siguiente" */}
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+              currentPage === totalPages
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
+            }`}
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </div>
   );
