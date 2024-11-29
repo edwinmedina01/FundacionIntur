@@ -160,6 +160,26 @@ const EstudiantesReporte = () => {
         Area: estudiante.Area?.Nombre_Area || "N/A",
         Beneficio: estudiante.Beneficio?.Nombre_Beneficio || "N/A",
         Municipio: estudiante.Persona?.Municipio?.Nombre_Municipio || "N/A",
+        Tutor: estudiante.Relaciones
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) // Filtra solo tutores
+        .map((relacion) => {
+          const identidad = relacion.Persona.Identidad || "No disponible";
+          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
+          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
+        })
+        .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
+        Benefactor: estudiante.Relaciones
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) // Filtra solo tutores
+        .map((relacion) => {
+          const identidad = relacion.Persona.Identidad || "No disponible";
+          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
+          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
+        })
+        .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
+        
+
       }))
     );
 
@@ -247,6 +267,13 @@ const EstudiantesReporte = () => {
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Estado
                 </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Tutores
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Benefactores
+                </th>
+   
                 <th className="py-4 px-12 bg-blue-200 text-blue-800 font-semibold text-left">
                   Acciones
                 </th>
@@ -311,6 +338,44 @@ const EstudiantesReporte = () => {
                         ? "Inactivo"
                         : "Estado no disponible"}
                     </strong>
+                  </td>
+
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+                  const tipoRelacion = relacion.Tipo_Relacion || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
+                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const observaciones = relacion.Observaciones || 'Sin observaciones';
+
+                  return `
+                  ${identidad}- ${primerNombre} ${primerApellido}
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
+                  
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
+                   .map(relacion => {
+                  const tipoRelacion = relacion.Tipo_Relacion || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
+                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const observaciones = relacion.Observaciones || 'Sin observaciones';
+
+                  return `
+                  ${identidad}- ${primerNombre} ${primerApellido}
+                    
+                  `;
+                }).join('')}
+              </ul>
                   </td>
                   <td className="py-4 px-6 border-b">
                     <div className="flex gap-2">
