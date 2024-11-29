@@ -2,8 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
-import { ShieldExclamationIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { data } from "autoprefixer";
+import { ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 const EstudiantesCrud = () => {
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
@@ -11,11 +10,14 @@ const EstudiantesCrud = () => {
   const [estudiantes, setEstudiantes] = useState([]);
   const [estudianteTemp, setEstudianteTemp] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null); // Mantener el estudiante seleccionado
-
+// ------------------- FUNCIONALIDAD PERMISOS----------------------//
+const [permisos, setPermisos] = useState([]);
+const [error, setError] = useState(null); //mostrar error de permiso
+const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+// ------------------------------------------------------------//
   const [institutos, setInstitutos] = useState([]);
   const [areas, setAreas] = useState([]);
   const [beneficios, setBeneficios] = useState([]);
-  const [permisos, setPermisos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [sexos, setSexos] = useState([
@@ -216,22 +218,31 @@ const [benefactorData, setBenefactorData] = useState({
     }
   };
 
-  const fetchPermisos = async (rolId) => {
+  const fetchPermisos = async () => {
     try {
-      const response = await axios.get(`/api/permisos?rolId=${rolId}`);
-      // Convierte la lista de permisos en un objeto de permisos
-      const permisosMap = response.data.reduce((acc, permiso) => {
-        acc[permiso.Id_Objeto] = {
-          insertar: permiso.Permiso_Insertar === "1",
-          actualizar: permiso.Permiso_Actualizar === "1",
-          eliminar: permiso.Permiso_Eliminar === "1",
-          consultar: permiso.Permiso_Consultar === "1",
-        };
-        return acc;
-      }, {});
-      setPermisos(permisosMap);
-    } catch (error) {
-      console.error("Error al obtener permisos", error);
+      if (user) {
+        const idObjeto = 1; // ID del objeto relacionado con esta página
+        const response = await axios.post('/api/api_permiso', {
+          idRol: user.rol,
+          idObjeto,
+        });
+  
+        const permisosData = response.data;
+  
+        // Validar si no hay permisos habilitados
+        if (
+          permisosData.Permiso_Insertar !== '1' &&
+          permisosData.Permiso_Actualizar !== '1' &&
+          permisosData.Permiso_Eliminar !== '1' &&
+          permisosData.Permiso_Consultar !== '1'
+        ) {
+          setSinPermisos(true);
+        } else {
+          setPermisos(permisosData);
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al obtener permisos');
     }
   };
 
@@ -603,21 +614,53 @@ setPersonaDataRelacion({
     return fullText.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+  // Renderizado
+if (!user) {
+  return <p>Cargando usuario...</p>;
+}
+
+if (error) {
+  return <p>{error}</p>;
+}
+
+if (sinPermisos) {
+  return        <Layout><div className="bg-red-100 text-red-800 p-4  flex items-center">
+  <div className="bg-red-100 text-red-800 p-4   flex items-center max-w-md w-full">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Estudiantes
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+  </div>
+
+</div>
+</Layout> 
+}
+
+if (!permisos) {
+  return <p>Cargando permisos...</p>;
+}
+
+
   return (
     <Layout>
-      {permisos[1]?.insertar ? (
         <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
           <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
             Nuevo Registro
           </h1>
 
           <center>
-            <button
-              onClick={() => (window.location.href = "/estudiante/reporte")}
-              className="block py-1 px-4 rounded bg-orange-600 text-white hover:bg-orange-700 focus:outline-none"
-            >
-              Ir a Estudiantes
-            </button>
+          {permisos.Permiso_Consultar === "1" && (
+  <button
+    onClick={() => (window.location.href = "/estudiante/reporte")}
+    className="block py-1 px-4 rounded bg-orange-600 text-white hover:bg-orange-700 focus:outline-none"
+  >
+    Ir a Estudiantes
+  </button>
+)}
+
           </center>
           <br></br>
           
@@ -888,16 +931,30 @@ setPersonaDataRelacion({
 
   <br></br>
           <div className="flex justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
-            >
-              {editId ? 'Actualizar Ficha del Estudiante' : 'Registrar Ficha del Estudiante' }
-            </button>
+          {editId
+              ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+                permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Actualizar
+                  </button>
+                )
+              : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+                permisos.Permiso_Insertar === "1" && (
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Agregar
+                  </button>
+                )}
+
             <button
               type="button"
               onClick={handleCancel}
-              className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
+              className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Cancelar
             </button>
@@ -1010,21 +1067,38 @@ setPersonaDataRelacion({
   </div>
 </div>
 <br></br>
-<div className="flex justify-between">
-            <button
-          onClick={handlePersonaSubmit}
-              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
-            >
-              {!personaDataRelacion.esNuevo ? 'Actualizar ' : 'Registrar '}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancelRelacion}
-              className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-          </div>
+<div className="flex justify-end">
+  {personaDataRelacion.esNuevo ? (
+    // Mostrar botón "Registrar" si es nuevo y tiene permiso para insertar
+    permisos.Permiso_Insertar === "1" && (
+      <button
+        onClick={handlePersonaSubmit}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Registrar
+      </button>
+    )
+  ) : (
+    // Mostrar botón "Actualizar" si no es nuevo y tiene permiso para actualizar
+    permisos.Permiso_Actualizar === "1" && (
+      <button
+        onClick={handlePersonaSubmit}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Actualizar
+      </button>
+    )
+  )}
+
+  <button
+    type="button"
+    onClick={handleCancelRelacion}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Cancelar
+  </button>
+</div>
+
    {/* Tabla de Relaciones */}
 
 
@@ -1042,6 +1116,7 @@ setPersonaDataRelacion({
 
             </tr>
           </thead>
+          
           <tbody>
   {estudianteData.Relaciones?.length > 0 ? (
     estudianteData.Relaciones
@@ -1055,23 +1130,24 @@ setPersonaDataRelacion({
         <td className="border px-4 py-2">{relacion.Estado}</td>
         <td className="border px-4 py-2">{relacion.Observaciones}</td>
         <td className="border px-4 py-2 flex justify-center items-center space-x-2">
-              {permisos[1]?.actualizar && (
-                <button
-                  onClick={() => handleEditTutor(relacion)}
-                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                </button>
-              )}
-              {permisos[1]?.eliminar && (
-                <button
-                  onClick={() => handleDeleteRelacion(relacion.Id)}
-                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-                >
-                  <TrashIcon className="h-6 w-6" />
-                </button>
-              )}
-            </td>
+  {permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEditTutor(relacion)}
+      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-6 w-6" />
+    </button>
+  )}
+  {permisos.Permiso_Eliminar === "1" && (
+    <button
+      onClick={() => handleDeleteRelacion(relacion.Id)}
+      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+    >
+      <TrashIcon className="h-6 w-6" />
+    </button>
+  )}
+</td>
+
       </tr>
     ))
   ) : (
@@ -1194,20 +1270,37 @@ setPersonaDataRelacion({
 </div>
 <br></br>
 <div className="flex justify-between">
-            <button
-          onClick={handlePersonaSubmit}
-              className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
-            >
-              {!personaDataRelacion.esNuevo ? 'Actualizar ' : 'Registrar '}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancelRelacion}
-              className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-          </div>
+  {personaDataRelacion.esNuevo ? (
+    // Mostrar botón "Registrar" si tiene permiso de inserción
+    permisos.Permiso_Insertar === "1" && (
+      <button
+        onClick={handlePersonaSubmit}
+        className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
+      >
+        Registrar
+      </button>
+    )
+  ) : (
+    // Mostrar botón "Actualizar" si tiene permiso de actualización
+    permisos.Permiso_Actualizar === "1" && (
+      <button
+        onClick={handlePersonaSubmit}
+        className="bg-blue-500 text-white p-3 rounded shadow-md hover:bg-blue-600"
+      >
+        Actualizar
+      </button>
+    )
+  )}
+
+  <button
+    type="button"
+    onClick={handleCancelRelacion}
+    className="bg-red-500 text-white p-3 rounded shadow-md hover:bg-gray-600"
+  >
+    Cancelar
+  </button>
+</div>
+
    {/* Tabla de Relaciones */}
 
 
@@ -1237,24 +1330,25 @@ setPersonaDataRelacion({
         </td>
         <td className="border px-4 py-2">{relacion.Estado}</td>
         <td className="border px-4 py-2">{relacion.Observaciones}</td>
-        <td className="border px-4 py-2 flex justify-center items space-x-2">
-              {permisos[1]?.actualizar && (
-                <button
-                  onClick={() => handleEditTutor(relacion)}
-                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                </button>
-              )}
-              {permisos[1]?.eliminar && (
-                <button
-                  onClick={() => handleDeleteRelacion(relacion.Id)}
-                  className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-                >
-                  <TrashIcon className="h-6 w-6" />
-                </button>
-              )}
-            </td>
+        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
+  {permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEditTutor(relacion)}
+      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-6 w-6" />
+    </button>
+  )}
+  {permisos.Permiso_Eliminar === "1" && (
+    <button
+      onClick={() => handleDeleteRelacion(relacion.Id)}
+      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+    >
+      <TrashIcon className="h-6 w-6" />
+    </button>
+  )}
+</td>
+
       </tr>
     ))
   ) : (
@@ -1293,6 +1387,7 @@ setPersonaDataRelacion({
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
                 </tr>
               </thead>
+              {permisos?.Permiso_Consultar === "1" && (
               <tbody>
                 {filteredEstudiantes.map((estudiante) => (
                   <tr key={estudiante.Id_Estudiante} className="hover:bg-gray-50">
@@ -1301,43 +1396,32 @@ setPersonaDataRelacion({
                       {estudiante.Instituto.Nombre_Instituto}
                     </td>
                     <td className="p-3 border-b flex justify-center items-center space-x-2">
-                      {permisos[1]?.actualizar && (
-                        <button
-                          onClick={() => handleEdit(estudiante)}
-                          className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-                        >
-                          <PencilSquareIcon className="h-6 w-6" />
-                        </button>
-                      )}
+  {permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEdit(estudiante)}
+      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-6 w-6" />
+    </button>
+  )}
 
-                      {permisos[1]?.eliminar && (
-                        <button
-                          onClick={() => handleDelete(estudiante.Id_Estudiante)}
-                          className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                        >
-                          <TrashIcon className="h-6 w-6" />
-                        </button>
-                      )}
-                    </td>
+  {permisos.Permiso_Eliminar === "1" && (
+    <button
+      onClick={() => handleDelete(estudiante.Id_Estudiante)}
+      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+    >
+      <TrashIcon className="h-6 w-6" />
+    </button>
+  )}
+</td>
+
                   </tr>
                 ))}
-              </tbody>
+              </tbody>)}
             </table>
           </div>
         </div>
-      ) : (
-        // Mostrar el mensaje si no tiene permisos para Insertar
 
-        <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
-          <ShieldExclamationIcon className="h-12 w-12 mr-4" />
-          <div>
-            <h3 className="font-bold text-lg">
-              Sin permisos para Agregar Registros
-            </h3>
-            <p>No tienes permisos para consultar la información.</p>
-          </div>
-        </div>
-      )}
     </Layout>
   );
 };

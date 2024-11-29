@@ -1,11 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import AuthContext from '../context/AuthContext';
 
 const PermissionsManagement = () => {
   const [permissions, setPermissions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [objects, setObjects] = useState([]); // Nuevo estado para los objetos
+    // ------------------- FUNCIONALIDAD ROLES----------------------//
+    const { user } = useContext(AuthContext); // Usuario logueado
+    const [permisos, setPermisos] = useState(null); //obtener permiso
+    const [error, setError] = useState(null); //mostrar error de permiso
+    const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+  // ------------------------------------------------------------//
+  
   const [formData, setFormData] = useState({
     Id_Permiso: '',
     Id_Rol: '',
@@ -27,8 +36,36 @@ const PermissionsManagement = () => {
     fetchPermissions();
     fetchRoles();
     fetchObjects(); // Llama a la función para obtener objetos
+    fetchPermisos();
   }, []);
+// -------- PERMISOS -------- //
+const fetchPermisos = async () => {
+  try {
+    if (user) {
+      const idObjeto = 2; // ID del objeto relacionado con esta página
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
 
+      const permisosData = response.data;
+
+      // Validar si no hay permisos habilitados
+      if (
+        permisosData.Permiso_Insertar !== '1' &&
+        permisosData.Permiso_Actualizar !== '1' &&
+        permisosData.Permiso_Eliminar !== '1' &&
+        permisosData.Permiso_Consultar !== '1'
+      ) {
+        setSinPermisos(true);
+      } else {
+        setPermisos(permisosData);
+      }
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error al obtener permisos');
+  }
+};
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Resetear a la primera página cuando se hace búsqueda
@@ -201,7 +238,30 @@ const exportToExcel = () => {
   XLSX.writeFile(wb, "permisos.xlsx");
 };
 
+// Renderizado
+if (!user) {
+  return <p>Cargando usuario...</p>;
+}
 
+if (error) {
+  return <p>{error}</p>;
+}
+
+if (sinPermisos) {
+  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Permisos
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+</div>
+}
+
+if (!permisos) {
+  return <p>Cargando permisos...</p>;
+}
 
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8 items-center">
@@ -274,20 +334,35 @@ const exportToExcel = () => {
           </div>
 
           <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {isEditing ? "Actualizar" : "Agregar"}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Cancelar
-            </button>
-          </div>
+  {isEditing
+    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+      permisos.Permiso_Actualizar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Actualizar
+        </button>
+      )
+    : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+      permisos.Permiso_Insertar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Agregar
+        </button>
+      )}
+
+  <button
+    type="button"
+    onClick={resetForm}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Cancelar
+  </button>
+</div>
+
         </form>
         {notification && (
           <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
@@ -330,6 +405,7 @@ const exportToExcel = () => {
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
+          {permisos?.Permiso_Consultar === "1" && (
           <tbody>
             {currentPermissions.map((permiso) => (
               <tr
@@ -357,23 +433,31 @@ const exportToExcel = () => {
                 <td className="py-4 px-6">
                   {permiso.Permiso_Eliminar === "1" ? "Sí" : "No"}
                 </td>
-                <td className="py-4 px-6 flex justify-center space-x-2">
-                  <button
-                    onClick={() => handleEdit(permiso)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(permiso.Id_Permiso)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    X
-                  </button>
-                </td>
+                <td className="flex items-center space-x-2">
+  {/* Agregar la condicional para verificar si tiene permiso */}
+  {permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEdit(permiso)}
+      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+    >
+      Editar
+    </button>
+  )}
+  
+  {/* Agregar la condicional para verificar si tiene permiso */}
+  {permisos.Permiso_Eliminar === "1" && (
+    <button
+      onClick={() => handleDelete(permiso.Id_Permiso)}
+      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+    >
+      X
+    </button>
+  )}
+</td>
+
               </tr>
             ))}
-          </tbody>
+          </tbody>)}
         </table>
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">

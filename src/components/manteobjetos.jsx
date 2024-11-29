@@ -2,6 +2,7 @@ import React, { useState, useEffect,useContext} from 'react'; //agregar el useCo
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import AuthContext from '../context/AuthContext'; //llamado del authcontext para extraer info de usuario logeado
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 
 const ManejoObjetos = () => {
   const { user } = useContext(AuthContext); // Usuario logueado
@@ -178,7 +179,15 @@ if (error) {
 }
 
 if (sinPermisos) {
-  return <p>No tienes permisos para acceder a esta pantalla.</p>;
+  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Objetos
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+</div>
 }
 
 if (!permisos) {
@@ -318,6 +327,7 @@ if (!permisos) {
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
+          {permisos?.Permiso_Consultar === "1" && (
           <tbody>
             {currentObjetos.map((objeto) => (
               <tr key={objeto.Id_Objeto} className="border-b hover:bg-gray-100">
@@ -352,7 +362,7 @@ if (!permisos) {
                 </td>
               </tr>
             ))}
-          </tbody>
+          </tbody>)}
         </table>
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">

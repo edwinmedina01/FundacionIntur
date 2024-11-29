@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import AuthContext from '../../context/AuthContext';
 
 const InstitucionManagement = () => {
 
   const [instituciones, setInstituciones] = useState([]);
+            // ------------------- FUNCIONALIDAD ROLES----------------------//
+            const { user } = useContext(AuthContext); // Usuario logueado
+            const [permisos, setPermisos] = useState(null); //obtener permiso
+            const [error, setError] = useState(null); //mostrar error de permiso
+            const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+          // ------------------------------------------------------------//
   const [formData, setFormData] = useState({
     Id_Instituto: '',
     Nombre_Instituto: '',
@@ -72,7 +79,38 @@ const InstitucionManagement = () => {
   // Fetch de instituciones desde el backend
   useEffect(() => {
     fetchInstituciones();
+    fetchPermisos();
   }, []);
+
+ // -------- PERMISOS -------- //
+ const fetchPermisos = async () => {
+  try {
+    if (user) {
+      const idObjeto = 9; // ID del objeto relacionado con esta página
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
+
+      const permisosData = response.data;
+
+      // Validar si no hay permisos habilitados
+      if (
+        permisosData.Permiso_Insertar !== '1' &&
+        permisosData.Permiso_Actualizar !== '1' &&
+        permisosData.Permiso_Eliminar !== '1' &&
+        permisosData.Permiso_Consultar !== '1'
+      ) {
+        setSinPermisos(true);
+      } else {
+        setPermisos(permisosData);
+      }
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error al obtener permisos');
+  }
+};
+
 
   const fetchInstituciones = async () => {
     try {
@@ -168,6 +206,32 @@ const InstitucionManagement = () => {
     setIsEditing(false);
   };
 
+// Renderizado
+if (!user) {
+  return <p>Cargando usuario...</p>;
+}
+
+if (error) {
+  return <p>{error}</p>;
+}
+
+if (sinPermisos) {
+  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Instituciones
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+</div>
+}
+
+if (!permisos) {
+  return <p>Cargando permisos...</p>;
+}
+
+
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
       {/* Columna izquierda: Formulario */}
@@ -229,18 +293,36 @@ const InstitucionManagement = () => {
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          <div className="flex justify-end">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              {isEditing ? 'Actualizar' : 'Agregar'}
-            </button>
-            <button
-              type="button"
-              className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-              onClick={resetForm}
-              >
-                Cancelar
-            </button>
-          </div>
+<div className="flex justify-end">
+  {isEditing
+    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+      permisos.Permiso_Actualizar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Actualizar
+        </button>
+      )
+    : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+      permisos.Permiso_Insertar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Agregar
+        </button>
+      )}
+
+  <button
+    type="button"
+    onClick={resetForm}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Cancelar
+  </button>
+</div>
+
         </form>
 
         {/* Notificación de éxito */}
@@ -291,6 +373,7 @@ const InstitucionManagement = () => {
               <th className="p-3 border-b text-center">Acciones</th>
             </tr>
           </thead>
+          {permisos?.Permiso_Consultar === "1" && ( 
           <tbody>
             {currentInstituciones.map((instituto) => (
               <tr key={instituto.Id_Instituto}>
@@ -301,22 +384,25 @@ const InstitucionManagement = () => {
                 <td className="p-3 border-b">{instituto.Correo}</td>
                 <td className="p-3 border-b">{instituto.Director}</td>
                 <td className="py-4 px-6 flex justify-center space-x-2">
+                {permisos.Permiso_Actualizar === "1" && ( 
+
                 <button
             onClick={() => handleEdit(instituto)}
             className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
           >
             Editar
-          </button>
+          </button>)}
+          {permisos.Permiso_Eliminar === "1" && (
           <button
             onClick={() => handleDelete(instituto.Id_Instituto)}
             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
           >
             X
-          </button>
+          </button>)}
                 </td>
               </tr>
             ))}
-          </tbody>
+          </tbody>)}
         </table>
 
 {/* Paginación */}

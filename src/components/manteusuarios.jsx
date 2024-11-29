@@ -2,13 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { useRouter } from "next/router";
-import AuthContext from '../context/AuthContext'; //llamado del authcontext para extraer info de usuario logeado
+import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import AuthContext from "../context/AuthContext"; // para permisos
 
 const UsersManagement = () => {
-  const { user } = useContext(AuthContext); // Usuario logueado
-  const [permisos, setPermisos] = useState(null); //obtener permiso
-  const [error, setError] = useState(null); //mostrar error de permiso
-  const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
   const [users, setUsers] = useState([]);
   const router = useRouter();
   const [roles, setRoles] = useState([]);
@@ -16,6 +13,13 @@ const UsersManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 8; // cantidad de usuarios por pagina
   const [searchQuery, setSearchQuery] = useState("");
+  // ------------------- FUNCIONALIDAD ROLES----------------------//
+  const { user } = useContext(AuthContext); // Usuario logueado
+  const [permisos, setPermisos] = useState(null); //obtener permiso
+  const [error, setError] = useState(null); //mostrar error de permiso
+  const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+// ------------------------------------------------------------//
+
   const [formData, setFormData] = useState({
     Id_Usuario: "",
     Id_Rol: "",
@@ -74,12 +78,11 @@ const UsersManagement = () => {
     fetchUserStates();
     fetchPermisos();
   }, []);
-
-  // Obtener permisos
+// -------- PERMISOS -------- //
 const fetchPermisos = async () => {
   try {
     if (user) {
-      const idObjeto = 1; // ID del objeto relacionado con esta página
+      const idObjeto = 5; // ID del objeto relacionado con esta página
       const response = await axios.post('/api/api_permiso', {
         idRol: user.rol,
         idObjeto,
@@ -103,7 +106,6 @@ const fetchPermisos = async () => {
     setError(err.response?.data?.error || 'Error al obtener permisos');
   }
 };
-
   const fetchUsers = async () => {
     try {
       const response = await axios.get("/api/usuarios"); // API  usuarios
@@ -312,7 +314,8 @@ const fetchPermisos = async () => {
 
     XLSX.writeFile(workbook, "Usuarios.xlsx");
   };
-  // Renderizado
+
+// Renderizado
 if (!user) {
   return <p>Cargando usuario...</p>;
 }
@@ -322,12 +325,21 @@ if (error) {
 }
 
 if (sinPermisos) {
-  return <p>No tienes permisos para acceder a esta pantalla.</p>;
+  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Usuarios
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+</div>
 }
 
 if (!permisos) {
   return <p>Cargando permisos...</p>;
 }
+
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
       {/* Columna izquierda: Formulario */}
@@ -470,32 +482,35 @@ if (!permisos) {
               </option>
             ))}
           </select>
-          {isEditing
-              ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
-                permisos.Permiso_Actualizar === "1" && (
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Actualizar
-                  </button>
-                )
-              : // Mostrar botón "Agregar" solo si tiene permisos de inserción
-                permisos.Permiso_Insertar === "1" && (
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Agregar
-                  </button>
-                )}
-          <button
-            type="button"
-            onClick={resetForm}
-            className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Cancelar
-          </button>
+          <div className="flex justify-end">
+  {isEditing
+    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+      permisos.Permiso_Actualizar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+        >
+          Actualizar
+        </button>
+      )
+    : // Mostrar botón "Registrar" solo si tiene permisos de inserción
+      permisos.Permiso_Insertar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+        >
+          Agregar
+        </button>
+      )}
+
+  <button
+    type="button"
+    onClick={resetForm}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+  >
+    Cancelar
+  </button>
+</div>
           {notification && (
             <p className="mt-2 text-green-500">{notification}</p>
           )}
@@ -556,6 +571,7 @@ if (!permisos) {
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
+          {permisos?.Permiso_Consultar === "1" && (
           <tbody>
             {filteredUsers
               .slice(indexOfFirstUser, indexOfLastUser)
@@ -580,37 +596,38 @@ if (!permisos) {
                     </td>
                     <td className="border-b border-gray-200 p-2">
                       <td className="border-b border-gray-200 p-2">
-                        <div className="flex items-center">
-                          {/* BOTON DE EDITAR */}
-                          
-                  {permisos.Permiso_Actualizar === "1" && (
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-                          >
-                            Editar
-                          </button>
-                           )}
-                          {/* BOTON DE VER */}
-                          
-                          <button
-                            onClick={() => toggleDetails(user.Id_Usuario)}
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 ml-2"
-                          >
-                            {visibleDetails[user.Id_Usuario]
-                              ? "Ocultar"
-                              : "Ver"}
-                          </button>
-                          {/* BOTON DE ELIMINAR */}
-                          {permisos.Permiso_Eliminar === "1" && (
-                          <button
-                            onClick={() => handleDelete(user.Id_Usuario)}
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-                          >
-                            X
-                          </button>
-                           )}
-                        </div>
+                      <div className="flex items-center">
+  {/* Botón de Editar: verificar permiso */}
+  {permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEdit(user)}
+      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+    >
+      Editar
+    </button>
+  )}
+  
+  {/* Botón de Ver: verificar permiso */}
+  {permisos.Permiso_Consultar === "1" && (
+    <button
+      onClick={() => toggleDetails(user.Id_Usuario)}
+      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 ml-2"
+    >
+      {visibleDetails[user.Id_Usuario] ? "Ocultar" : "Ver"}
+    </button>
+  )}
+  
+  {/* Botón de Eliminar: verificar permiso */}
+  {permisos.Permiso_Eliminar === "1" && (
+    <button
+      onClick={() => handleDelete(user.Id_Usuario)}
+      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+    >
+      X
+    </button>
+  )}
+</div>
+
                       </td>
                     </td>
                   </tr>
@@ -655,7 +672,7 @@ if (!permisos) {
                   )}
                 </React.Fragment>
               ))}
-          </tbody>
+          </tbody>)}
         </table>
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
