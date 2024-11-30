@@ -79,7 +79,7 @@ const Inicio = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Matricula General</h2>
             <p className="text-gray-600 mb-4">aqui se presenta el registro general de matricula.</p>
-            <Link href="/">
+            <Link href="/matricula">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Matricula
               </button>
