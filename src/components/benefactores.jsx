@@ -7,10 +7,10 @@ import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-const TutorPadreManagement = () => {
+const BenefactoresManagement = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext); // Usuario logueado
-  const [tutores, setTutores] = useState([]);
+  const [Benefactores, setBenefactores] = useState([]);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
@@ -20,7 +20,7 @@ const TutorPadreManagement = () => {
     Primer_Apellido: '',
     Municipio: '',
     Departamento: '',
-    Tipo_Persona: 2, // Solo tutores/padres (tipo 3)
+    Tipo_Persona: 3, // Solo Benefactores/padres (tipo 3)
   });
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState('');
@@ -28,10 +28,10 @@ const TutorPadreManagement = () => {
   const [deleteNotification, setDeleteNotification] = useState('');
   const [search, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [tutoresPerPage] = useState(10);
+  const [BenefactoresPerPage] = useState(10);
 
   useEffect(() => {
-    fetchTutores();
+    fetchBenefactores();
     fetchPermisos();
   }, []);
 
@@ -39,7 +39,7 @@ const TutorPadreManagement = () => {
   const fetchPermisos = async () => {
     try {
       if (user) {
-        const idObjeto = 15; // ID relacionado con tutores (suponiendo que esto corresponde a los tutores)
+        const idObjeto = 16; // ID relacionado con Benefactores (suponiendo que esto corresponde a los Benefactores)
         const response = await axios.post('/api/api_permiso', {
           idRol: user.rol,
           idObjeto,
@@ -63,17 +63,17 @@ const TutorPadreManagement = () => {
     }
   };
 
-  const fetchTutores = async () => {
+  const fetchBenefactores = async () => {
     try {
-      const response = await axios.get('/api/tutorpadre');
+      const response = await axios.get('/api/benefactores');
       if (response.data && Array.isArray(response.data)) {
-        setTutores(response.data);
+        setBenefactores(response.data);
       } else {
         throw new Error('Datos no válidos recibidos');
       }
     } catch (error) {
-      console.error('Error fetching tutores:', error);
-      setError('Hubo un problema al obtener los tutores');
+      console.error('Error fetching Benefactores:', error);
+      setError('Hubo un problema al obtener los Benefactores');
     }
   };
 
@@ -96,7 +96,7 @@ const TutorPadreManagement = () => {
     e.preventDefault();
     try {
       if (isEditing) {
-        const response = await fetch(`/api/tutorpadre`, {
+        const response = await fetch(`/api/benefactores`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -105,15 +105,15 @@ const TutorPadreManagement = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Error al actualizar el tutor');
+          throw new Error('Error al actualizar el Benefactor');
         }
 
-        setUpdateNotification('Tutor actualizado exitosamente');
+        setUpdateNotification('Benefactor actualizado exitosamente');
         setTimeout(() => {
           setUpdateNotification('');
         }, 3000);
       } else {
-        const response = await fetch('/api/tutorpadre', {
+        const response = await fetch('/api/benefactores', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -122,30 +122,30 @@ const TutorPadreManagement = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Error al agregar el tutor');
+          throw new Error('Error al agregar el Benefactor');
         }
 
-        setNotification('Tutor agregado exitosamente');
+        setNotification('Benefactor agregado exitosamente');
         setTimeout(() => {
           setNotification('');
         }, 3000);
       }
 
-      fetchTutores();
+      fetchBenefactores();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el tutor:', error);
+      console.error('Error al guardar el Benefactor:', error);
     }
   };
 
-  const handleEdit = (tutor) => {
-    setFormData(tutor);
+  const handleEdit = (Benefactor) => {
+    setFormData(Benefactor);
     setIsEditing(true);
   };
 
   const handleDelete = async (Id_Persona) => {
     try {
-      const response = await fetch('/api/tutorpadre', {
+      const response = await fetch('/api/benefactores', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -154,17 +154,17 @@ const TutorPadreManagement = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el tutor');
+        throw new Error('Error al eliminar el Benefactor');
       }
 
-      fetchTutores();
+      fetchBenefactores();
       resetForm();
-      setDeleteNotification('Tutor eliminado exitosamente');
+      setDeleteNotification('Benefactor eliminado exitosamente');
       setTimeout(() => {
         setDeleteNotification('');
       }, 3000);
     } catch (error) {
-      console.error('Error al eliminar el tutor:', error);
+      console.error('Error al eliminar el Benefactor:', error);
     }
   };
 
@@ -175,36 +175,36 @@ const TutorPadreManagement = () => {
       Apellido: '',
       Municipio: '',
       Departamento: '',
-      Tipo_Persona: 3, // Solo tutores/padres (tipo 3)
+      Tipo_Persona: 3, // Solo Benefactores/padres (tipo 3)
     });
     setIsEditing(false);
   };
 
-  const filteredTutores = tutores.filter((tutor) =>
-    (tutor.Nombre && tutor.Nombre.toLowerCase().includes(search.toLowerCase())) ||
-    (tutor.Apellido && tutor.Apellido.toLowerCase().includes(search.toLowerCase()))
+  const filteredBenefactores = Benefactores.filter((Benefactor) =>
+    (Benefactor.Nombre && Benefactor.Nombre.toLowerCase().includes(search.toLowerCase())) ||
+    (Benefactor.Apellido && Benefactor.Apellido.toLowerCase().includes(search.toLowerCase()))
   );
 
   // Paginación
-  const indexOfLastTutor = currentPage * tutoresPerPage;
-  const indexOfFirstTutor = indexOfLastTutor - tutoresPerPage;
-  const currentTutores = filteredTutores.slice(indexOfFirstTutor, indexOfLastTutor);
+  const indexOfLastBenefactor = currentPage * BenefactoresPerPage;
+  const indexOfFirstBenefactor = indexOfLastBenefactor - BenefactoresPerPage;
+  const currentBenefactores = filteredBenefactores.slice(indexOfFirstBenefactor, indexOfLastBenefactor);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const totalPages = Math.ceil(filteredTutores.length / tutoresPerPage);
+  const totalPages = Math.ceil(filteredBenefactores.length / BenefactoresPerPage);
 
   const handleExport = () => {
-    const transformedTutores = tutores.map((tutor) => ({
-      Identidad: tutor.Identidad,
-      Nombre: `${tutor.Primer_Nombre} ${tutor.Primer_Apellido}`,
-      Sexo: tutor.Sexo === 1 ? 'Masculino' : 'Femenino',
+    const transformedBenefactores = Benefactores.map((Benefactor) => ({
+      Identidad: Benefactor.Identidad,
+      Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
+      Sexo: Benefactor.Sexo === 1 ? 'Masculino' : 'Femenino',
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(transformedTutores);
+    const worksheet = XLSX.utils.json_to_sheet(transformedBenefactores);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tutores');
-    XLSX.writeFile(workbook, 'tutores.xlsx');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Benefactores');
+    XLSX.writeFile(workbook, 'Benefactores.xlsx');
   };
 
 
@@ -215,7 +215,7 @@ const TutorPadreManagement = () => {
   if (error) {
     return (
       <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg">
-        <h3>Error al cargar los tutores:</h3>
+        <h3>Error al cargar los Benefactores:</h3>
         <p>{error}</p>
       </div>
     );
@@ -226,7 +226,7 @@ const TutorPadreManagement = () => {
       <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
         <ShieldExclamationIcon className="h-12 w-12 mr-4" />
         <div>
-          <h3 className="font-bold text-lg">Sin permisos para acceder a los tutores</h3>
+          <h3 className="font-bold text-lg">Sin permisos para acceder a los Benefactores</h3>
           <p>No tienes permisos para acceder a esta información.</p>
         </div>
       </div>
@@ -240,7 +240,7 @@ const TutorPadreManagement = () => {
   return (
     <div className="w-full lg:w-2/3 p-6 rounded-lg">
       <center>
-        <h2 className="text-2xl font-semibold mb-4">Listado Tutores</h2>
+        <h2 className="text-2xl font-semibold mb-4">Listado Benefactores</h2>
       </center>
 
       {/* Barra de búsqueda */}
@@ -260,12 +260,12 @@ const TutorPadreManagement = () => {
       <br />
       {/* Botón para exportar */}
       <div className="mb-4 flex justify-between items-center">
-        {/* Botón para agregar tutor
+        {/* Botón para agregar Benefactor
         {permisos.Permiso_Insertar === '1' && (
-          <Link href="/agregarTutor">
+          <Link href="/agregarBenefactor">
             <button className="flex items-center bg-blue-600 text-white rounded-lg p-2 hover:bg-blue-700">
               <UserPlusIcon className="w-6 h-6 mr-2" />
-              <span>Agregar Tutor</span>
+              <span>Agregar Benefactor</span>
             </button>
           </Link>
         )} */}
@@ -281,7 +281,7 @@ const TutorPadreManagement = () => {
       {updateNotification && <div className="text-yellow-600">{updateNotification}</div>}
       {deleteNotification && <div className="text-red-600">{deleteNotification}</div>}
 
-{/* Tabla de tutores */}
+{/* Tabla de Benefactores */}
 <div className="overflow-x-auto border-t border-b mb-4">
 <table className="min-w-full bg-white shadow-lg rounded-lg mb-6">
 <thead>
@@ -292,15 +292,15 @@ const TutorPadreManagement = () => {
       </tr>
     </thead>
     <tbody>
-      {tutores && tutores.length > 0 ? (
-        tutores.map(tutor => (
-          <tr key={tutor.Id_Persona}>
-            <td className="border px-4 py-2">{tutor.Identidad}</td>
-           <td className="border px-4 py-2">{tutor.Primer_Nombre} {tutor.Primer_Apellido}</td>
+      {Benefactores && Benefactores.length > 0 ? (
+        Benefactores.map(Benefactor => (
+          <tr key={Benefactor.Id_Persona}>
+            <td className="border px-4 py-2">{Benefactor.Identidad}</td>
+           <td className="border px-4 py-2">{Benefactor.Primer_Nombre} {Benefactor.Primer_Apellido}</td>
            <td className="border px-4 py-2">
-  {tutor.Sexo === 1
+  {Benefactor.Sexo === 1
     ? 'Masculino'
-    : tutor.Sexo === 0
+    : Benefactor.Sexo === 0
     ? 'Femenino'
     : 'Desconocido'}
 </td>
@@ -311,7 +311,7 @@ const TutorPadreManagement = () => {
         ))
       ) : (
         <tr>
-          <td colSpan="8">No hay tutores disponibles</td>
+          <td colSpan="8">No hay Benefactores disponibles</td>
         </tr>
       )}
     </tbody>
@@ -368,4 +368,4 @@ const TutorPadreManagement = () => {
   );
 };
 
-export default TutorPadreManagement;
+export default BenefactoresManagement;

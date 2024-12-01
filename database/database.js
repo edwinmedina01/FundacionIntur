@@ -8,6 +8,8 @@ const { Sequelize } = require('sequelize');
 // });
 
 
+
+
 // Crea una nueva instancia de Sequelize
  const sequelize = new Sequelize('gestion_academica_db', 'root', 'soren1' , {
      host: 'localhost',

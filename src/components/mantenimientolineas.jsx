@@ -1,42 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import AuthContext from '../context/AuthContext';
 
 const LineaBeneficioManagement = () => {
+
   const [beneficios, setBeneficios] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 8;
-  const [searchQuery, setSearchQuery] = useState('');
+            // ------------------- FUNCIONALIDAD ROLES----------------------//
+            const { user } = useContext(AuthContext); // Usuario logueado
+            const [permisos, setPermisos] = useState(null); //obtener permiso
+            const [error, setError] = useState(null); //mostrar error de permiso
+            const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+          // ------------------------------------------------------------//
+    
   const [formData, setFormData] = useState({
-    Id_Beneficio: "",
-    Nombre_Beneficio: "",
-    Tipo_Beneficio: "",
-    Monto_Beneficio: "",
-    Responsable_Beneficio: "",
-    Creado_Por: "",
-    Fecha_Creacion: "",
-    Modificado_Por: "",
-    Fecha_Modificacion: "",
-    Estado: "",
+    Id_Beneficio: '',
+    Nombre_Beneficio: '',
+    Tipo_Beneficio: '',
+    Monto_Beneficio: '',
+    Responsable_Beneficio: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState("");
-  const [updateNotification, setUpdateNotification] = useState("");
-  const [deleteNotification, setDeleteNotification] = useState("");
-  const [visibleDetails, setVisibleDetails] = useState({});
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const [notification, setNotification] = useState('');
+  const [updateNotification, setUpdateNotification] = useState('');
+  const [deleteNotification, setDeleteNotification] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const beneficiosPerPage = 8;
+  const [searchQuery, setSearchQuery] = useState('');
 
-  {/* Filtros del buscador por Nombre, Tipo, Monto o Responsable */}
-const filteredUsers = beneficios.filter(user =>
-    user.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.Tipo_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.Monto_Beneficio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.Responsable_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
+
+  // Filtrado de beneficios por Nombre_Beneficio
+  const filteredBeneficios = beneficios.filter(beneficio =>
+    beneficio.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Lógica de paginación
+  const indexOfLastBeneficio = currentPage * beneficiosPerPage;
+  const indexOfFirstBeneficio = indexOfLastBeneficio - beneficiosPerPage;
+  const currentBeneficios = filteredBeneficios.slice(indexOfFirstBeneficio, indexOfLastBeneficio);
+
+  // Paginación
   const nextPage = () => {
-    if (currentPage < Math.ceil(beneficios.length / usersPerPage)) {
+    if (currentPage < Math.ceil(filteredBeneficios.length / beneficiosPerPage)) {
       setCurrentPage(currentPage + 1);
     }
   };
@@ -50,100 +56,118 @@ const filteredUsers = beneficios.filter(user =>
   const setPage = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
+  // Exportación a Excel
+  const exportToExcel = () => {
+    const exportData = currentBeneficios.map(beneficio => ({
+      ID: beneficio.Id_Beneficio,
+      Nombre: beneficio.Nombre_Beneficio,
+      Tipo: beneficio.Tipo_Beneficio,
+      Monto: beneficio.Monto_Beneficio,
+      Responsable: beneficio.Responsable_Beneficio,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Líneas de Beneficio');
+
+    XLSX.writeFile(workbook, 'LineasBeneficio.xlsx');
+  };
+
+  // Fetch de beneficios desde el backend
   useEffect(() => {
     fetchBeneficios();
+    fetchPermisos();
+
   }, []);
+
+ // -------- PERMISOS -------- //
+ const fetchPermisos = async () => {
+  try {
+    if (user) {
+      const idObjeto = 10; // ID del objeto relacionado con esta página
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
+
+      const permisosData = response.data;
+
+      // Validar si no hay permisos habilitados
+      if (
+        permisosData.Permiso_Insertar !== '1' &&
+        permisosData.Permiso_Actualizar !== '1' &&
+        permisosData.Permiso_Eliminar !== '1' &&
+        permisosData.Permiso_Consultar !== '1'
+      ) {
+        setSinPermisos(true);
+      } else {
+        setPermisos(permisosData);
+      }
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error al obtener permisos');
+  }
+};
+
+
 
   const fetchBeneficios = async () => {
     try {
-      const response = await axios.get("/api/lineabeneficio"); // Asegúrate de que esta URL sea correcta
+      const response = await axios.get('/api/apis_mantenimientos/lineas_beneficio');
       setBeneficios(response.data);
     } catch (error) {
-      console.error("Error fetching beneficios:", error);
+      console.error('Error fetching beneficios:', error);
     }
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    // For the "Usuario" field, enforce uppercase transformation
-    if (name === "Usuario") {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const currentDate = new Date().toISOString().split("T")[0]; // Formato YYYY-MM-DD
-    let dataToSubmit = { ...formData };
-    console.log(currentDate);
-    // Si no estamos editando, asignamos la fecha de creación
-    if (!isEditing) {
-      dataToSubmit.Fecha_Creacion = currentDate;
-      dataToSubmit.Fecha_Modificacion = ""; // No se debe asignar nada a Fecha_Modificacion
-    } else {
-      // Si estamos editando, asignamos la fecha de modificación
-      dataToSubmit.Fecha_Creacion = ""; // No se debe asignar nada a Fecha_Creacion
-      dataToSubmit.Fecha_Modificacion = currentDate;
-    }
     try {
-      // Verifica si se está editando o creando un nuevo registro de tutor/padre
       if (isEditing) {
-        // Lógica para actualizar un tutor/padre existente
-        const response = await fetch(`/api/lineabeneficio`, {
-          method: "PUT",
+        const response = await fetch('/api/apis_mantenimientos/lineas_beneficio', {
+          method: 'PUT',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(formData),
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          if (errorData.error) {
-            throw new Error(errorData.error); // Mensaje de error específico
-          }
-          throw new Error("Error al actualizar el beneficio");
+          throw new Error('Error al actualizar el beneficio');
         }
 
-        setUpdateNotification("Beneficio actualizado exitosamente");
+        setUpdateNotification('Beneficio actualizado exitosamente');
         setTimeout(() => {
-          setUpdateNotification("");
+          setUpdateNotification('');
         }, 3000);
       } else {
-        // Lógica para crear un nuevo registro
-        const response = await fetch("/api/lineabeneficio", {
-          method: "POST",
+        const response = await fetch('/api/apis_mantenimientos/lineas_beneficio', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(formData),
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          if (errorData.error) {
-            throw new Error(errorData.error); // Mensaje de error específico
-          }
-          throw new Error("Error al crear el beneficio");
+          throw new Error('Error al crear el beneficio');
         }
 
-        setNotification("Beneficio agregado exitosamente");
+        setNotification('Beneficio agregado exitosamente');
         setTimeout(() => {
-          setNotification("");
+          setNotification('');
         }, 3000);
       }
 
-      fetchBeneficios(); // Actualiza la lista
-      resetForm(); // Resetea el formulario
+      fetchBeneficios();
+      resetForm();
     } catch (error) {
-      console.error("Error al guardar el beneficio:", error);
-      setNotification(error.message);
-      setTimeout(() => {
-        setNotification("");
-      }, 3000);
+      console.error('Error al guardar el beneficio:', error);
     }
   };
 
@@ -152,409 +176,242 @@ const filteredUsers = beneficios.filter(user =>
     setIsEditing(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      Id_Beneficio: "",
-      Nombre_Beneficio: "",
-      Tipo_Beneficio: "",
-      Monto_Beneficio: "",
-      Responsable_Beneficio: "",
-      Creado_Por: "",
-      Fecha_Creacion: "",
-      Modificado_Por: "",
-      Fecha_Modificacion: "",
-      Estado: "",
-    });
-    setIsEditing(false);
-  };
   const handleDelete = async (Id_Beneficio) => {
     try {
-      const response = await fetch("/api/lineabeneficio", {
-        method: "DELETE",
+      const response = await fetch('/api/apis_mantenimientos/lineas_beneficio', {
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ Id_Beneficio }),
       });
 
       if (!response.ok) {
-        throw new Error("Error al eliminar el beneficio:");
+        throw new Error('Error al eliminar el beneficio');
       }
 
-      fetchBeneficios(); // Actualiza la lista
-      resetForm(); // Resetea el formulario
-      setDeleteNotification("Beneficio eliminado exitosamente");
+      fetchBeneficios();
+      resetForm();
+      setDeleteNotification('Beneficio eliminado exitosamente');
       setTimeout(() => {
-        setDeleteNotification("");
+        setDeleteNotification('');
       }, 3000);
     } catch (error) {
-      console.error("Error al eliminar el beneficio", error);
+      console.error('Error al eliminar el beneficio:', error);
     }
   };
 
-  const toggleDetails = (beneficioId) => {
-    setVisibleDetails((prevState) => ({
-      ...prevState,
-      [beneficioId]: !prevState[beneficioId],
-    }));
+  const resetForm = () => {
+    setFormData({ Id_Beneficio: '', Nombre_Beneficio: '', Tipo_Beneficio: '', Monto_Beneficio: '', Responsable_Beneficio: '' });
+    setIsEditing(false);
   };
-  const exportToExcel = () => {
-    const exportData = beneficios.map(user => ({
-      ID: user.Id_Beneficio,
-      Tipo_Beneficio: user.Tipo_Beneficio,
-      Nombre: user.Nombre_Beneficio,
-      Monto: user.Monto_Beneficio,
-      Responsable: user.Responsable_Beneficio,
-      // Otros campos que desees incluir
-    }));
-  
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
-    XLSX.writeFile(workbook, 'Linea_Beneficio.xlsx');
-  };
-  
+
+
+  // Renderizado
+if (!user) {
+  return <p>Cargando usuario...</p>;
+}
+
+if (error) {
+  return <p>{error}</p>;
+}
+
+if (sinPermisos) {
+  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+  <div>
+    <h3 className="font-bold text-lg">
+      Sin permisos para Acceder a la Pantalla de Lineas de Beneficio
+    </h3>
+    <p>No tienes permisos para Acceder a la información.</p>
+  </div>
+</div>
+}
+
+if (!permisos) {
+  return <p>Cargando permisos...</p>;
+}
+
 
   return (
     <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
+      {/* Columna izquierda: Formulario */}
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
-        <center>
-          <h2 className="text-2xl font-semibold mb-4">
-            {isEditing ? "Editar Beneficio" : "Agregar Beneficio"}
-          </h2>
-        </center>
+        <center><h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Beneficio' : 'Agregar Beneficio'}</h2></center>
         <form onSubmit={handleSubmit}>
-          {/* Campo: Nombre del Beneficio */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Nombre_Beneficio"
-              value={formData.Nombre_Beneficio}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Nombre_Beneficio
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Nombre del Beneficio
-            </label>
-          </div>
+          <label htmlFor="Nombre_Beneficio" className="block mb-2 text-sm font-medium text-gray-700">Nombre del Beneficio</label>
+          <input
+            type="text"
+            name="Nombre_Beneficio"
+            placeholder="Nombre del Beneficio"
+            value={formData.Nombre_Beneficio}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-          {/* Campo: Tipo de Beneficio */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Tipo_Beneficio"
-              value={formData.Tipo_Beneficio}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Tipo_Beneficio
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Tipo de Beneficio
-            </label>
-          </div>
+          <label htmlFor="Tipo_Beneficio" className="block mb-2 text-sm font-medium text-gray-700">Tipo de Beneficio</label>
+          <input
+            type="text"
+            name="Tipo_Beneficio"
+            placeholder="Tipo de Beneficio"
+            value={formData.Tipo_Beneficio}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-          {/* Campo: Monto de Beneficio */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Monto_Beneficio"
-              value={formData.Monto_Beneficio}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Monto_Beneficio
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Monto del Beneficio
-            </label>
-          </div>
+          <label htmlFor="Monto_Beneficio" className="block mb-2 text-sm font-medium text-gray-700">Monto del Beneficio</label>
+          <input
+            type="text"
+            name="Monto_Beneficio"
+            placeholder="Monto del Beneficio"
+            value={formData.Monto_Beneficio}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-          {/* Campo: Responsable del Beneficio */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Responsable_Beneficio"
-              value={formData.Responsable_Beneficio}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Responsable_Beneficio
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Responsable
-            </label>
-          </div>
+          <label htmlFor="Responsable_Beneficio" className="block mb-2 text-sm font-medium text-gray-700">Responsable del Beneficio</label>
+          <input
+            type="text"
+            name="Responsable_Beneficio"
+            placeholder="Responsable del Beneficio"
+            value={formData.Responsable_Beneficio}
+            onChange={handleInputChange}
+            required
+            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-          {/* Campo: Estado */}
-          <div className="relative mb-4">
-            <select
-              name="Estado"
-              value={formData.Estado}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Seleccione Estado</option>
-              <option value="1">Activo</option>
-              <option value="0">Inactivo</option>
-            </select>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              Estado
-            </label>
-          </div>
+<div className="flex justify-end">
+  {isEditing
+    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+      permisos.Permiso_Actualizar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Actualizar
+        </button>
+      )
+    : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+      permisos.Permiso_Insertar === "1" && (
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Agregar
+        </button>
+      )}
 
-          {/* Fecha de Creación */}
+  <button
+    type="button"
+    onClick={resetForm}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Cancelar
+  </button>
+</div>
 
-          {/* Fecha de Modificación */}
-
-          {/* Creado Por */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Creado_Por"
-              value={formData.Creado_Por}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Creado_Por
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Creado Por
-            </label>
-          </div>
-
-          {/* Modificado Por */}
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Modificado_Por"
-              value={formData.Modificado_Por}
-              onChange={handleInputChange}
-              required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Modificado_Por
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Modificado Por
-            </label>
-          </div>
-
-          {/* Botón de Guardar */}
-          <button
-            type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
-          >
-            {isEditing ? "Actualizar" : "Registrar"}
-          </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Cancelar
-          </button>
         </form>
 
         {/* Notificaciones */}
-        {notification && (
-          <div className="mt-4 text-center text-green-600">{notification}</div>
-        )}
-        {updateNotification && (
-          <div className="mt-4 text-center text-yellow-600">
-            {updateNotification}
-          </div>
-        )}
-        {deleteNotification && (
-          <div className="mt-4 text-center text-red-600">
-            {deleteNotification}
-          </div>
-        )}
+        {notification && <div className="mt-4 text-green-600">{notification}</div>}
+        {updateNotification && <div className="mt-4 text-blue-600">{updateNotification}</div>}
+        {deleteNotification && <div className="mt-4 text-red-600">{deleteNotification}</div>}
       </div>
 
-      {/* Listado de Beneficios */}
-      <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
-        <center>
-          <h2 className="text-2xl font-semibold mb-4">Beneficios Existentes</h2>
-        </center>
-        <div className="mb-4">
-          {/*Barra de busqueda */}
-          <center>
-            {" "}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-              placeholder="Buscar por nombre o correo"
-            />
-          </center>
-
-          {/* Botón para exportar */}
-          <button
-            onClick={exportToExcel}
-            className="mb-4 bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-          >
-            Exportar a Excel
-          </button>
+      {/* Columna derecha: Tabla de beneficios */}
+      <div className="w-2/3">
+        <button
+          onClick={exportToExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
+        >
+          Exportar a Excel
+        </button>
+        <div className="mb-4 flex justify-between items-center">
+          <input
+            type="text"
+            placeholder="Buscar por nombre"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="p-2 mb-4 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-        <table className="min-w-full table-auto">
-          <thead>
+
+        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <thead className="bg-slate-200">
             <tr>
-              <th className="px-4 py-2 border-b">Nombre</th>
-              <th className="px-4 py-2 border-b">Tipo</th>
-              <th className="px-4 py-2 border-b">Monto</th>
-              <th className="px-4 py-2 border-b">Responsable</th>
-              <th className="px-4 py-2 border-b">Estado</th>
-              <th className="px-4 py-2 border-b">Acciones</th>
+              <th className="p-3 border-b">ID</th>
+              <th className="p-3 border-b">Nombre del Beneficio</th>
+              <th className="p-3 border-b">Tipo de Beneficio</th>
+              <th className="p-3 border-b">Monto del Beneficio</th>
+              <th className="p-3 border-b">Responsable del Beneficio</th>
+              <th className="p-3 border-b">Acciones</th>
             </tr>
           </thead>
+          {permisos?.Permiso_Consultar === "1" && ( 
           <tbody>
-            {filteredUsers
-              .slice(indexOfFirstUser, indexOfLastUser)
-              .map((beneficio) => (
-                <React.Fragment key={beneficio.Id_Beneficio}>
-                  <tr className="hover:bg-gray-100">
-                    <td className="px-4 py-2 border-b">
-                      {beneficio.Nombre_Beneficio}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {beneficio.Tipo_Beneficio}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {beneficio.Monto_Beneficio}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {beneficio.Responsable_Beneficio}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      {beneficio.Estado === 1 ? "Activo" : "Inactivo"}
-                    </td>
-                    <td className="px-4 py-2 border-b">
-                      <div className="flex items-center">
-                        {/* BOTON DE EDITAR */}
-                        <button
-                          onClick={() => handleEdit(beneficio)}
-                          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-                        >
-                          Editar
-                        </button>
-                        {/* BOTON DE VER */}
-                        <button
-                          onClick={() => toggleDetails(beneficio.Id_Beneficio)}
-                          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 ml-2"
-                        >
-                          {visibleDetails[beneficio.Id_Beneficio]
-                            ? "Ocultar"
-                            : "Ver"}
-                        </button>
-                        {/* BOTON DE ELIMINAR */}
-                        <button
-                          onClick={() => handleDelete(beneficio.Id_Beneficio)}
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-                        >
-                          X
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {visibleDetails[beneficio.Id_Beneficio] && (
-                    <tr className="bg-gray-50">
-                      <td colSpan="6" className="border-b border-gray-200 p-2">
-                        <div>
-                          <p>
-                            <strong>Fecha de Creación:</strong>{" "}
-                            {beneficio.Fecha_Creacion}
-                          </p>
-                          <p>
-                            <strong>Fecha de Modificación:</strong>{" "}
-                            {beneficio.Fecha_Modificacion}
-                          </p>
-                          <p>
-                            <strong>Creado Por:</strong> {beneficio.Creado_Por}
-                          </p>
-                          <p>
-                            <strong>Modificado Por:</strong>{" "}
-                            {beneficio.Modificado_Por}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-          </tbody>
+            {currentBeneficios.map((beneficio) => (
+              <tr key={beneficio.Id_Beneficio} className="hover:bg-slate-100 transition-colors">
+                <td className="p-3 border-b">{beneficio.Id_Beneficio}</td>
+                <td className="p-3 border-b">{beneficio.Nombre_Beneficio}</td>
+                <td className="p-3 border-b">{beneficio.Tipo_Beneficio}</td>
+                <td className="p-3 border-b">{beneficio.Monto_Beneficio}</td>
+                <td className="p-3 border-b">{beneficio.Responsable_Beneficio}</td>
+                <td className="p-3 border-b flex space-x-2">
+                {permisos.Permiso_Actualizar === "1" && ( 
+                  <button
+                    onClick={() => handleEdit(beneficio)}
+                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                  >
+                    Editar
+                  </button>)}
+                  {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => handleDelete(beneficio.Id_Beneficio)}
+                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                  >
+                    X
+                  </button>)}
+                </td>
+              </tr>
+            ))}
+          </tbody>)}
         </table>
+
+        {/* Paginación */}
         <div className="flex justify-between mt-4">
           <button
             onClick={prevPage}
             className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+            disabled={currentPage === 1}
           >
             Anterior
           </button>
 
           {/* Páginas */}
           <div className="flex space-x-2">
-            {Array.from(
-              { length: Math.ceil(beneficios.length / usersPerPage) },
-              (_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => setPage(index + 1)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                    currentPage === index + 1
-                      ? "bg-white-600 text-black shadow-lg scale-105"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              )
-            )}
+            {Array.from({ length: Math.ceil(filteredBeneficios.length / beneficiosPerPage) }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => setPage(index + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+                  currentPage === index + 1
+                    ? 'bg-white-600 text-black shadow-lg scale-105'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
           </div>
 
           {/* Botón "Siguiente" */}
           <button
             onClick={nextPage}
             className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
+            disabled={currentPage === Math.ceil(filteredBeneficios.length / beneficiosPerPage)}
           >
             Siguiente
           </button>

@@ -112,7 +112,7 @@ const Inicio = () => {
             <p className="text-gray-600 mb-4">
               Ver y Administrar la informacion de los benefactores
             </p>
-            <Link href="/">
+            <Link href="/benefactores">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Benefactores
               </button>
@@ -138,7 +138,7 @@ const Inicio = () => {
             <p className="text-gray-600 mb-4">
               aqui se presenta el registro general de matricula.
             </p>
-            <Link href="/">
+            <Link href="/matriculageneral">
               <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                 Ir a Matricula
               </button>

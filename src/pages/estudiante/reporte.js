@@ -6,7 +6,7 @@ import * as XLSX from "xlsx"; // Importar la librería xlsx
 import AuthContext from "../../context/AuthContext";
 import {
   MagnifyingGlassIcon,
-  ShieldExclamationIcon,
+  ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
 } from "@heroicons/react/24/outline";
 
 const EstudiantesReporte = () => {
@@ -160,6 +160,26 @@ const EstudiantesReporte = () => {
         Area: estudiante.Area?.Nombre_Area || "N/A",
         Beneficio: estudiante.Beneficio?.Nombre_Beneficio || "N/A",
         Municipio: estudiante.Persona?.Municipio?.Nombre_Municipio || "N/A",
+        Tutor: estudiante.Relaciones
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) // Filtra solo tutores
+        .map((relacion) => {
+          const identidad = relacion.Persona.Identidad || "No disponible";
+          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
+          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
+        })
+        .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
+        Benefactor: estudiante.Relaciones
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) // Filtra solo tutores
+        .map((relacion) => {
+          const identidad = relacion.Persona.Identidad || "No disponible";
+          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
+          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
+        })
+        .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
+        
+
       }))
     );
 
@@ -172,7 +192,7 @@ const EstudiantesReporte = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-6  min-h-screen">
         <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
           Estudiantes
         </h1>
@@ -198,17 +218,24 @@ const EstudiantesReporte = () => {
                 onClick={() => (window.location.href = "/estudiante")}
                 className="block py-1 px-4 rounded bg-orange-500 text-white hover:bg-orange-600 focus:outline-none transition-colors"
               >
-                + Agregar Registro
+                <UserPlusIcon className="h-6 w-6 inline" /> Agregar Registro
               </button>
             )}
           </center>
+          {permisos[1]?.actualizar && (
+                        <Link href={`/estudiante`}>
+                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
+                          <PencilSquareIcon className="h-6 w-6 inline" />  Editar Registros
+                          </button>
+                        </Link>
+                      )}
           {/* Botón de exportación */}
           <div className="flex justify-center ml-4">
             <button
               onClick={exportToExcel}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
             >
-              Exportar a Excel
+             <ArrowDownCircleIcon className="h-6 w-6 inline" />    Exportar Excel
             </button>
           </div>
         </div>
@@ -247,6 +274,13 @@ const EstudiantesReporte = () => {
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Estado
                 </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Tutores
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Benefactores
+                </th>
+   
                 <th className="py-4 px-12 bg-blue-200 text-blue-800 font-semibold text-left">
                   Acciones
                 </th>
@@ -312,22 +346,53 @@ const EstudiantesReporte = () => {
                         : "Estado no disponible"}
                     </strong>
                   </td>
+
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+                  const tipoRelacion = relacion.Tipo_Relacion || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
+                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const observaciones = relacion.Observaciones || 'Sin observaciones';
+
+                  return `
+                  ${identidad}- ${primerNombre} ${primerApellido}
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
+                  
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
+                   .map(relacion => {
+                  const tipoRelacion = relacion.Tipo_Relacion || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
+                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const observaciones = relacion.Observaciones || 'Sin observaciones';
+
+                  return `
+                  ${identidad}- ${primerNombre} ${primerApellido}
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
                   <td className="py-4 px-6 border-b">
                     <div className="flex gap-2">
-                      {permisos[1]?.actualizar && (
-                        <Link href={`/estudiante/${estudiante.Id_Estudiante}`}>
-                          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                            Editar
-                          </button>
-                        </Link>
-                      )}
 
                       {permisos[1]?.eliminar && (
                         <button
                           onClick={() => handleDelete(estudiante.Id_Estudiante)}
                           className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
                         >
-                          X
+                          <TrashIcon className="h-6 w-6" />
                         </button>
                       )}
                     </div>
