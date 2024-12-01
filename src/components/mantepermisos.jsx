@@ -49,6 +49,8 @@ const fetchPermisos = async () => {
       });
 
       const permisosData = response.data;
+      console.log("fetchPermisos")
+      console.log(permisosData)
 
       // Validar si no hay permisos habilitados
       if (
@@ -61,6 +63,9 @@ const fetchPermisos = async () => {
       } else {
         setPermisos(permisosData);
       }
+    }
+    else{
+    console.log(user)
     }
   } catch (err) {
     setError(err.response?.data?.error || 'Error al obtener permisos');

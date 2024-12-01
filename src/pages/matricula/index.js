@@ -17,6 +17,9 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
 // ------------------------------------------------------------//
   const [institutos, setInstitutos] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [modalidades, setModalidades] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [grados, setGrados] = useState([]);
   const [beneficios, setBeneficios] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
@@ -138,6 +141,9 @@ const [benefactorData, setBenefactorData] = useState({
       fetchAreas();
       fetchBeneficios();
       fetchDepartamentos();
+      fetchModalidades();
+      fetchGrados();
+      fetchSecciones();
       fetchPermisos(user.rol);
 
     }
@@ -246,6 +252,34 @@ const [benefactorData, setBenefactorData] = useState({
     }
   };
 
+  const fetchModalidades = async () => {
+    try {
+      const response = await axios.get('/api/apis_mantenimientos/modalidades');
+      setModalidades(response.data);
+    } catch (error) {
+      console.error('Error fetching modalidades:', error);
+    }
+  };
+
+  
+  const fetchGrados = async () => {
+    try {
+      const response = await axios.get('/api/apis_mantenimientos/grado');
+      setGrados(response.data);
+    } catch (error) {
+      console.error('Error fetching modalidades:', error);
+    }
+  };
+
+    
+  const fetchSecciones = async () => {
+    try {
+      const response = await axios.get('/api/apis_mantenimientos/seccion');
+      setSecciones(response.data);
+    } catch (error) {
+      console.error('Error fetching modalidades:', error);
+    }
+  };
   const fetchDepartamentos = async () => {
     try {
       const response = await axios.get("/api/departamentos");
@@ -656,22 +690,38 @@ if (!permisos) {
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
+                    <label htmlFor="Id_Grado" className="text-gray-700">Estudiante</label>
+        <select
+          id="Id_Grado"
+          name="Id_Grado"
+          value={estudianteData.Id_Grado}
+          onChange={ handleEdit(estudianteitem)}
+                     className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
+          required
+        >
+          <option value="">Selecciona un Estudiante</option>
+          {filteredEstudiantes.map((estudianteitem) => (
+            <option key={estudianteitem.Id_Grado} value={estudianteitem.Id_Grado}>
+             {estudianteitem.Persona.Identidad +" - "+estudianteitem.Persona.Primer_Nombre + "" + estudianteitem.Persona.Primer_Apellido}
+            </option>
+          ))}
+        </select>
             <table className="min-w-full mt-4 border border-gray-300">
               <thead>
                 <tr classname ="bg-gray-100">
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Se</th>
                 </tr>
               </thead>
               {permisos?.Permiso_Consultar === "1" && (
               <tbody>
                 {filteredEstudiantes.map((estudiante) => (
                   <tr key={estudiante.Id_Estudiante} className="hover:bg-gray-50">
+                    <td className="border p-3 text-center">{`${estudiante.Persona.Identidad} `}</td>
+                
                     <td className="border p-3 text-center">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
-                    <td className="border p-3 text-center">
-                      {estudiante.Instituto.Nombre_Instituto}
-                    </td>
+                
                     <td className="p-3 border-b flex justify-center items-center space-x-2">
   {permisos.Permiso_Actualizar === "1" && (
     <button
@@ -723,38 +773,38 @@ if (!permisos) {
       </div>
             {/* Modalidad */}
             <div className="flex flex-col">
-        <label htmlFor="Id_Instituto" className="text-gray-700">Modalidad</label>
+        <label htmlFor="Id_Modalidad" className="text-gray-700">Modalidad</label>
         <select
-          id="Id_Instituto"
-          name="Id_Instituto"
-          value={estudianteData.Id_Instituto}
+          id="Id_Modalidad"
+          name="Id_Modalidad"
+          value={estudianteData.Id_Modalidad}
           onChange={handleEstudianteInputChange}
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
           required
         >
-          <option value="">Selecciona un Instituto</option>
-          {institutos.map((instituto) => (
-            <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>
-              {instituto.Nombre_Instituto}
+          <option value="">Selecciona un Modalidad</option>
+          {modalidades.map((modalidaditem) => (
+            <option key={modalidaditem.Id_Instituto} value={modalidaditem.Id_Instituto}>
+              {modalidaditem.Nombre}
             </option>
           ))}
         </select>
       </div>
            {/* Curso */}
            <div className="flex flex-col">
-        <label htmlFor="Id_Instituto" className="text-gray-700">Curso/Grado</label>
+        <label htmlFor="Id_Grado" className="text-gray-700">Curso/Grado</label>
         <select
-          id="Id_Instituto"
-          name="Id_Instituto"
-          value={estudianteData.Id_Instituto}
+          id="Id_Grado"
+          name="Id_Grado"
+          value={estudianteData.Id_Grado}
           onChange={handleEstudianteInputChange}
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
           required
         >
           <option value="">Selecciona un Instituto</option>
-          {institutos.map((instituto) => (
-            <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>
-              {instituto.Nombre_Instituto}
+          {grados.map((gradoitem) => (
+            <option key={gradoitem.Id_Grado} value={gradoitem.Id_Grado}>
+              {gradoitem.Nombre}
             </option>
           ))}
         </select>
@@ -802,19 +852,19 @@ if (!permisos) {
 
            {/* Seccion */}
            <div className="flex flex-col">
-        <label htmlFor="Id_Instituto" className="text-gray-700">Seccion</label>
+        <label htmlFor="Id_Seccion" className="text-gray-700">Seccion</label>
         <select
-          id="Id_Instituto"
-          name="Id_Instituto"
-          value={estudianteData.Id_Instituto}
+          id="Id_Seccion"
+          name="Id_Seccion"
+          value={estudianteData.Id_Seccion}
           onChange={handleEstudianteInputChange}
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
           required
         >
-          <option value="">Selecciona un Instituto</option>
-          {institutos.map((instituto) => (
-            <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>
-              {instituto.Nombre_Instituto}
+          <option value="">Selecciona un Seccion</option>
+          {secciones.map((instituto) => (
+            <option key={instituto.Id_Seccion} value={instituto.Id_Seccion}>
+              {instituto.Nombre_Seccion}
             </option>
           ))}
         </select>
