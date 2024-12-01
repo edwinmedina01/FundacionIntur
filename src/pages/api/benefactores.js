@@ -10,7 +10,7 @@ export default async function handler(req, res) {
         // Obtener todas las personas con Id_Tipo_Persona = 3
         const personas = await Persona.findAll({
           where: {
-            Id_Tipo_Persona: '2', // Filtro para solo obtener personas de tipo 3
+            Id_Tipo_Persona: '3', // Filtro para solo obtener personas de tipo 3
           },
           attributes: [
             'Id_Persona',

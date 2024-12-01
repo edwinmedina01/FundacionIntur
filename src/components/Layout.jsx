@@ -78,50 +78,50 @@ const Layout = ({ children }) => {
   //seguridad//
   const toggleseguridadNavbar = () => {
     // Verificar si el usuario tiene el rol adecuado (por ejemplo, "admin")
-    if (user && user.rol == 1) {
+    // if (user && user.rol == 1) {
       // Solo muestra si el rol es 'admin'
       setShowseguridadNavbar(!showseguridadNavbar);
       if (showAcademicoNavBar) setShowAcademicoNavBar(false);
       if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
       if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
       if (showApartadoTresNavbar) setShowApartadoTresNavbar(false);
-    } else {
-      //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
-      console.log("No tienes permisos para ver esta sección.");
-      console.log(user);
-      toast.error("No tienes permisos para ver esta sección.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }
+    // } else {
+    //   //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
+    //   console.log("No tienes permisos para ver esta sección.");
+    //   console.log(user);
+    //   toast.error("No tienes permisos para ver esta sección.", {
+    //     position: "top-right",
+    //     autoClose: 3000,
+    //     hideProgressBar: false,
+    //     closeOnClick: true,
+    //     pauseOnHover: true,
+    //     draggable: true,
+    //   });
+    // }
   };
 
   //mantenimientos//
   const toggleApartadoTresNavbar = () => {
-    if (user && user.rol == 1) {
+    // if (user && user.rol == 1) {
       // Solo muestra si el rol es 'admin'
       setShowApartadoTresNavbar(!showApartadoTresNavbar);
       if (showAcademicoNavBar) setShowAcademicoNavBar(false);
       if (showseguridadNavbar) setShowseguridadNavbar(false);
       if (showApartadoUnoNavbar) setShowApartadoUnoNavbar(false);
       if (showApartadoDosNavbar) setShowApartadoDosNavbar(false);
-    } else {
-      //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
-      console.log("No tienes permisos para ver esta sección.");
-      console.log(user);
-      toast.error("No tienes permisos para ver esta sección.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    }
+    // } else {
+    //   //     // Si el usuario no tiene el rol adecuado, no hacer nada o mostrar un mensaje (opcional)
+    //   console.log("No tienes permisos para ver esta sección.");
+    //   console.log(user);
+    //   toast.error("No tienes permisos para ver esta sección.", {
+    //     position: "top-right",
+    //     autoClose: 3000,
+    //     hideProgressBar: false,
+    //     closeOnClick: true,
+    //     pauseOnHover: true,
+    //     draggable: true,
+    //   });
+    // }
   };
 
   const handleLogout = async () => {
@@ -193,7 +193,7 @@ const Layout = ({ children }) => {
                 </li>{" "}
                 <li>
                   <Link
-                    href="/"
+                    href="/benefactores"
                     className="block py-1 px-4 rounded hover:bg-blue-600"
                   >
                     <QueueListIcon className="h-5 w-5 mr-1 inline" />
@@ -202,7 +202,7 @@ const Layout = ({ children }) => {
                 </li>
                 <li>
                   <Link
-                    href="/tutores/index"
+                    href="/tutorpadre"
                     className="block py-1 px-4 rounded hover:bg-blue-600"
                   >
                     <QueueListIcon className="h-5 w-5 mr-1 inline" />
@@ -211,7 +211,7 @@ const Layout = ({ children }) => {
                 </li>
                 <li>
                   <Link
-                    href="/"
+                    href="/matriculageneral"
                     className="block py-1 px-4 rounded hover:bg-blue-600"
                   >
                     <BookmarkSquareIcon className="h-5 w-5 mr-2 inline" />{" "}

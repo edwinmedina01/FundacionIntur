@@ -192,7 +192,7 @@ const EstudiantesReporte = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-6  min-h-screen">
         <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
           Estudiantes
         </h1>
@@ -222,6 +222,13 @@ const EstudiantesReporte = () => {
               </button>
             )}
           </center>
+          {permisos[1]?.actualizar && (
+                        <Link href={`/estudiante`}>
+                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
+                          <PencilSquareIcon className="h-6 w-6 inline" />  Editar Registros
+                          </button>
+                        </Link>
+                      )}
           {/* Botón de exportación */}
           <div className="flex justify-center ml-4">
             <button
@@ -379,13 +386,6 @@ const EstudiantesReporte = () => {
                   </td>
                   <td className="py-4 px-6 border-b">
                     <div className="flex gap-2">
-                      {permisos[1]?.actualizar && (
-                        <Link href={`/estudiante/${estudiante.Id_Estudiante}`}>
-                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
-                          <PencilSquareIcon className="h-6 w-6" />
-                          </button>
-                        </Link>
-                      )}
 
                       {permisos[1]?.eliminar && (
                         <button
