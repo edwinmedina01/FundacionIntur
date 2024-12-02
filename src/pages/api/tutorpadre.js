@@ -25,6 +25,8 @@ export default async function handler(req, res) {
             'Fecha_Nacimiiento',
             'Lugar_Nacimiento',
             'Identidad',
+            'telefono',
+            'direccion'
           ], // Los campos que deseas devolver
         });
 

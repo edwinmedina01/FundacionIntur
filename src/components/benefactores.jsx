@@ -199,6 +199,8 @@ const BenefactoresManagement = () => {
       Identidad: Benefactor.Identidad,
       Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
       Sexo: Benefactor.Sexo === 1 ? 'Masculino' : 'Femenino',
+      telefono: `${Benefactor.telefono}`,
+      direccion: `${Benefactor.direccion}`,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(transformedBenefactores);
