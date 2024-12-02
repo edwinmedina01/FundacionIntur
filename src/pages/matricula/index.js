@@ -489,6 +489,7 @@ const handlePersonaSubmit = async (e) => {
 
   const handleEdit = (estudiante) => {
 
+    if  (estudiante!=null){
     setPersonaDataRelacion({
       ...personaDataRelacion,
       Estudiante: estudiante, // Guarda el objeto completo del estudiante
@@ -504,11 +505,11 @@ const handlePersonaSubmit = async (e) => {
       Relaciones:estudiante.Relaciones
     });
 
-    setEditPersonaId(estudiante.Persona.Id_Persona);
+    setEditPersonaId(estudiante.Persona?.Id_Persona);
     setPersonaData(estudiante.Persona);
-    if (estudiante.Persona.Id_Departamento) {
-      fetchMunicipios(estudiante.Persona.Id_Departamento);
-    }
+    if (estudiante.Persona?.Id_Departamento) {
+      fetchMunicipios(estudiante.Persona?.Id_Departamento);
+    }  }
   };
 
 
@@ -691,21 +692,21 @@ if (!permisos) {
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
                     <label htmlFor="Id_Grado" className="text-gray-700">Estudiante</label>
-        <select
+        {/* <select
           id="Id_Grado"
           name="Id_Grado"
-          value={estudianteData.Id_Grado}
-          onChange={ handleEdit(estudianteitem)}
+          value={estudianteData}
+          onChange={ handleEdit(estudianteData)}
                      className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
           required
         >
           <option value="">Selecciona un Estudiante</option>
           {filteredEstudiantes.map((estudianteitem) => (
-            <option key={estudianteitem.Id_Grado} value={estudianteitem.Id_Grado}>
+            <option key={estudianteitem} value={estudianteitem}>
              {estudianteitem.Persona.Identidad +" - "+estudianteitem.Persona.Primer_Nombre + "" + estudianteitem.Persona.Primer_Apellido}
             </option>
           ))}
-        </select>
+        </select> */}
             <table className="min-w-full mt-4 border border-gray-300">
               <thead>
                 <tr classname ="bg-gray-100">

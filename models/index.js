@@ -30,7 +30,6 @@ Persona.hasMany(Relacion, {
 });
 
 
-
 module.exports = {
   sequelize,
   Estudiante,

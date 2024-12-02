@@ -241,9 +241,21 @@ const EstudiantesReporte = () => {
         </div>
 
         {permisos[1]?.consultar ? (
-          <table className="min-w-full bg-white shadow-lg rounded-lg mb-6">
+          <table className="xls_style-excel-table">
             <thead>
               <tr>
+              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  #
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Fecha Registro
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Beneficio
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Area
+                </th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Identidad
                 </th>
@@ -254,17 +266,23 @@ const EstudiantesReporte = () => {
                   Sexo
                 </th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Modalidad
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Grado
+                </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+                  Seccion
+                </th>
+
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Lugar Nacimiento
                 </th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Instituto
                 </th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-                  Area
-                </th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-                  Beneficio
-                </th>
+            
+             
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
                   Municipio
                 </th>
@@ -287,8 +305,31 @@ const EstudiantesReporte = () => {
               </tr>
             </thead>
             <tbody>
-              {currentEstudiantes.map((estudiante) => (
+              {currentEstudiantes.map((estudiante,index) => (
                 <tr key={estudiante.Id_Estudiante} className="hover:bg-blue-50">
+                         <td className="py-4 px-6 border-b">
+                         {index + 1}
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Fecha_Creacion
+                      ? new Date(estudiante.Fecha_Creacion).toLocaleDateString(
+                          "es-ES",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )
+                      : "Fecha no disponible"}
+                  </td>
+          
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Beneficio?.Nombre_Beneficio ||
+                      "Beneficio no disponible"}
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Area?.Nombre_Area || "Área no disponible"}
+                  </td>
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Identidad || "Identidad no disponible"}
                   </td>
@@ -306,6 +347,22 @@ const EstudiantesReporte = () => {
                       ? "Femenino"
                       : "Sexo no disponible"}
                   </td>
+
+
+                  <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-"}
+                  </td>
+
+                  <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-"}
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-"}
+                  </td>
+
+
+
+
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Lugar_Nacimiento ||
                       "Lugar de nacimiento no disponible"}
@@ -314,29 +371,12 @@ const EstudiantesReporte = () => {
                     {estudiante.Instituto?.Nombre_Instituto ||
                       "Instituto no disponible"}
                   </td>
-                  <td className="py-4 px-6 border-b">
-                    {estudiante.Area?.Nombre_Area || "Área no disponible"}
-                  </td>
-                  <td className="py-4 px-6 border-b">
-                    {estudiante.Beneficio?.Nombre_Beneficio ||
-                      "Beneficio no disponible"}
-                  </td>
+              
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Municipio?.Nombre_Municipio ||
                       "Municipio no disponible"}
                   </td>
-                  <td className="py-4 px-6 border-b">
-                    {estudiante.Fecha_Creacion
-                      ? new Date(estudiante.Fecha_Creacion).toLocaleDateString(
-                          "es-ES",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )
-                      : "Fecha no disponible"}
-                  </td>
+            
                   <td className="py-4 px-6 border-b">
                     <strong>
                       {estudiante?.Persona?.Estado === 1

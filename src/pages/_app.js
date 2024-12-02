@@ -1,6 +1,7 @@
 // pages/_app.js
 
  import '../styles/global.css'
+ import '../styles/xls_style.css'
 import { AuthProvider } from '../context/AuthContext'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

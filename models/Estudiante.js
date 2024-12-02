@@ -7,6 +7,7 @@ const Instituto = require('./Instituto');
 const Beneficio = require('./Beneficio');
 const Area = require('./Area');
 const Relacion = require('./Relacion');
+const Matricula = require('./Matricula');
 
 const Estudiante = sequelize.define('Tbl_Estudiante', {
     Id_Estudiante: {
@@ -64,6 +65,14 @@ Estudiante.hasMany(Relacion, {
   sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
   as: 'Relaciones',           // Alias para la relación
 });
+
+Estudiante.hasMany(Matricula, {
+  foreignKey: 'Id_estudiante', // Clave foránea en tbl_Relacion
+  sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
+  as: 'Matriculas',           // Alias para la relación
+});
+
+
 
 // Estudiante.hasMany(Relacion, {
 

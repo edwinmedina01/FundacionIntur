@@ -3,6 +3,11 @@ import Instituto from '../../../../models/Instituto';
 import Area from '../../../../models/Area';
 import Beneficio from '../../../../models/Beneficio';
 import TipoPersona from '../../../../models/TipoPersona';
+import Matricula from '../../../../models/Matricula';
+import Modalidad from '../../../../models/modalidad';
+import Grado from '../../../../models/grado';
+import Seccion from '../../../../models/seccion';
+
 
 
 const Estudiante = require('../../../../models/Estudiante');
@@ -10,6 +15,8 @@ const Persona = require('../../../../models/Persona');
 const Municipio = require('../../../../models/Municipio');
 const Relacion = require('../../../../models/Relacion');
 const Departamento = require('../../../../models/Departamento');
+
+
 
 
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
@@ -60,6 +67,28 @@ export default async function handler(req, res) {
                     as: 'TipoPersona', // Alias definido en la relación
 
                   }
+                ]
+              },
+              { 
+                model: Matricula, 
+                as: 'Matriculas',  // El alias que usaste en la relación
+                include: [  
+                  {
+                    model: Grado,
+                    as: 'Grado', // Alias definido en la relación
+
+                  },
+                  {
+                    model: Modalidad,
+                    as: 'Modalidad', // Alias definido en la relación
+
+                  },
+                  {
+                    model: Seccion,
+                    as: 'Seccion', // Alias definido en la relación
+
+                  }
+               
                 ]
               },
             ],

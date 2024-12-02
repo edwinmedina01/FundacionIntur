@@ -1,0 +1,933 @@
+﻿
+/* Excel Style Table */
+.table-container {
+    width: 100%;
+    height: 24rem; /* Ajusta el alto deseado para el contenedor */
+    min-height: 24rem;
+    overflow: auto;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+}
+
+.xls_style-excel-table {
+    width: 100%;
+
+}
+
+.xls_text {
+    font-size:large;
+    text-align:left;
+}
+
+.xls_item {
+
+}
+
+.xls_1P {
+    width: 1%;
+}
+.xls_2P .ImgeExpan .Contador{
+    width: 2%;
+}
+.xls_5P {
+    width: 5%;
+}
+.xls_10P {
+    width: 10%;
+}
+.xls_15P {
+    width: 15%;
+}
+.xls_20P {
+    width: 20%;
+}
+.xls_30P {
+    width: 30%;
+}
+.xls_50P {
+    width: 50%;
+}
+
+.xls_70P {
+    width: 70%;
+}
+
+
+.xls_80P {
+    width: 90%;
+}
+
+.inputsearch {
+    float: initial;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: .63rem;
+}
+
+
+    .xls_item td input {
+        max-width: 60px;
+    }
+
+    /*.xls_style-excel-table tbody {
+            display: block;*/ /* Establece un bloque para el cuerpo */
+    /*min-height: 20rem;*/ /* Altura mínima para el cuerpo */
+    /*max-height: calc(100% - 40px);*/ /* Resta la altura de los encabezados */
+    /*overflow: auto;*/ /* Habilita el scroll para el cuerpo */
+    /*}*/
+
+
+    .xls_style-excel-table tfoot {
+        
+        
+
+        position: sticky;
+        bottom: 0;
+        background-color: #f0f0f0; /* Cambia el color de fondo del footer */
+        font-weight: bold;
+    }
+
+.fixed-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #2980BA; /* Color de fondo para los encabezados */
+    color: white; /* Color de texto para los encabezados */
+    border: 1px solid #ddd;
+
+}
+
+.bordered-header {
+    border: 1px solid #ddd; /* Añade los bordes a los encabezados */
+}
+
+.xls_style-excel-table th {
+    background-color: rgb(191 219 254);
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: center;
+    color: rgb(30 64 175);
+    /* font-family: "Calibri", sans-serif; */
+    /* font-size: 16px; */
+    font-weight: 100;
+    z-index: 3; /* Coloca el div detrás del thead */
+}
+
+.checkbox-label {
+    cursor: pointer;
+    display: inline-block;
+    margin: 0;
+    padding: 5px;
+    vertical-align: middle; /* Alinea verticalmente con el checkbox */
+}
+
+.xls_style-excel-table td {
+    border: 1px solid #ddd;
+    padding: 4px;
+
+    font-family: "Calibri", sans-serif;
+    font-size: 14px;
+
+   
+}
+
+.xls_father {
+    font-weight: bold;
+}
+
+.xls_child {
+    background-color: #f0f0f0;
+}
+
+.xls_number {
+    text-align: right;
+
+}
+
+
+.xls_center {
+    text-align: center;
+}
+
+.xls_style-row-header {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+
+.xls_style-excel-table td:first-child::before {
+    content: attr(data-row-number);
+    position: absolute;
+    left: 5px;
+    color: #007bff;
+}
+
+.xls_style-excel-table td:first-child {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    padding-left: 5px;
+    position: relative;
+}
+
+.xls_style-excel-table td.selected {
+    /*border: 2px solid #70ad47;*/
+}
+
+.xls_style-excel-table td input {
+    border: none;
+    outline: none;
+}
+
+.xls_style-excel-table td:hover {
+    /*        border: 1px solid #70ad47;
+        transition: border-color 0.3s;*/
+}
+
+.excel_selected {
+    border: 1px solid #70ad47;
+    background-color: #c9dde1;
+}
+.ValidacionCheck {
+    border: 1px solid #70ad47;
+    background-color: #c9dde1;
+}
+
+.xls_style-excel-table tr:hover {
+    border: 1px solid #70ad47;
+    background-color: #e0f4da;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    position: relative;
+}
+
+.m_Text {
+    -webkit-appearance: none;
+    float: left;
+    position: relative;
+    border: 1px #d9d9d9 solid;
+    width: 100%;
+    height: 100%;
+    padding: .125rem;
+    z-index: 0
+}
+
+
+    .m_Text.m_title {
+        margin: 14px;
+    }
+
+
+.m_label {
+    -webkit-appearance: none;
+    position: relative;
+    font-weight: 600;
+    width: 100%;
+    height: 100%;
+    padding: .125rem;
+    z-index: 0;
+    float: left;
+}
+
+.mytableEventCol {
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+
+.mytableEventCol tr:nth-column(1) {
+    background-color: #f2f2f2;
+}
+
+.mytable {
+    width: 100%
+}
+
+
+    .mytable th {
+        background-color: #2980BA;
+        color: aliceblue;
+        font-family: math;
+    }
+
+.errorValidate {
+    background-color: #ff0000;
+    color: white;
+    z-index: 10;
+    position: absolute;
+    opacity: .9;
+    padding: .5rem;
+    max-width: 150px;
+    margin: .5rem;
+    border: .01rem solid black;
+    /*border-right: .1rem solid black;
+            border-bottom: .1rem solid black;*/
+}
+
+.xls_style-excel-table .beforeinput {
+    content: "";
+    width: .625rem;
+    height: .625rem;
+    display: block;
+    position: absolute;
+    background-color: inherit;
+    top: 0;
+    left: 50%;
+    margin-top: -0.3125rem;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.errorValidate::before {
+    content: "";
+    width: .625rem;
+    height: .625rem;
+    display: block;
+    position: absolute;
+    background-color: inherit;
+    top: 0;
+    left: 50%;
+    margin-top: -0.3125rem;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.xls_style-excel-table input {
+    padding: .07rem;
+    font-family: monospace;
+    font-size: unset;
+}
+
+textarea {
+    padding: .05rem;
+    margin: .05rem;
+}
+
+td {
+    margin: .05rem;
+    padding: 5px;
+}
+
+select {
+    margin: .05rem;
+    padding: 5px;
+    width: 100%;
+}
+
+
+.mif-truck:hover {
+    background-color: #3e8e41
+}
+
+.mif-truck:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}
+
+.mif-truck2:hover {
+    background-color: #3e8e41
+}
+
+.mif-truck2:active {
+    background-color: #3e8e41;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}
+
+.custom-file-input {
+    position: relative;
+    display: inline-block;
+    font-size: 16px;
+}
+
+    .custom-file-input input[type="file"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .custom-file-input label {
+        display: block;
+        padding: 8px 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    .custom-file-input i {
+        margin-right: 8px;
+    }
+
+.file-name {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.xls_left_button {
+ 
+    position: absolute;
+    left: 0.5rem;
+    top: 0rem;
+}
+.xls_right_button {
+    position: absolute;
+    right: 52%;
+    top: 0rem;
+}
+.custom-file-button2 {
+    /* Estilos personalizados para el botón */
+    background-color: forestgreen;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+paddin_table td:nth-child(even) {
+    padding: .05rem;
+}
+
+/*td:nth-child(even) {
+            padding:.05rem;
+            background-color:azure;
+        }
+
+        td:nth-child(odd) {
+            padding: .05rem;
+        }*/
+
+.file-upload-label {
+    display: inline-block;
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #f0f0f0;
+    font-family: "Calibri", sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+   
+}
+
+.file-upload-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.xls_style-excel-table input:invalid {
+    border: 1px solid red;
+    background-color: #ffcccc;
+}
+
+select:invalid {
+    border: 1px solid red;
+    background-color: #ffcccc;
+}
+
+.file {
+    display: none;
+}
+
+.xls_style-excel-table td.input.align-right-with-decimals {
+    text-align: right;
+}
+
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(888, 888, 8888, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+/* Estilo para los campos de filtro */
+.filter-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    padding: 4px;
+    font-family: "Calibri", sans-serif;
+    font-size: 14px;
+}
+
+/* Estilo para los campos de filtro en la fila de encabezados */
+.xls_style-excel-table th .filter-input {
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+
+/* Ajuste de tamaño para la primera columna de filtros */
+.xls_style-excel-table th:first-child .filter-input {
+    width: 80px;
+}
+
+/* Ajuste de tamaño para la segunda columna de filtros */
+.xls_style-excel-table th:nth-child(2) .filter-input {
+    width: 110px;
+}
+
+.excel_selected {
+    background-color: rgba(0, 120, 255, 0.3);
+    transition: background-color 0.3s;
+}
+
+
+.xls_style-excel-table tr.selected {
+    background-color: rgba(0, 120, 255, 0.3);
+    transition: background-color 0.3s;
+}
+
+
+.header-background {
+    position: sticky; /* Cambio a sticky para que el fondo blanco quede fijo */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px; /* Ajusta la altura del thead */
+    background-color: white; /* Color de fondo blanco */
+    z-index: 2; /* Coloca el div detrás del thead */
+}
+
+
+.inner-table {
+     background-color:white;
+}
+
+.xls_style-excel-table .inner-table th {
+    background-color: #1596D8;
+}
+
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1565C0;
+    color: white;
+    padding: 5px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title {
+    flex: 1;
+}
+
+.options {
+    display: flex;
+   
+}
+
+.option-button {
+    padding: 0.4rem;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.separator {
+    width: 1px;
+    height: 100%;
+    background-color: white;
+    margin: 0 10px;
+}
+
+.input-error {
+    background-color: yellow;
+}
+
+.input-normal {
+    background-color: white;
+}
+
+
+.xls_select {
+    height: 1.5rem;
+    min-width: 250px;
+    padding: 0.1rem;
+}
+
+.fixed-action-button2 {
+    position: fixed;
+    bottom: 7rem;
+    right: 60px;
+    z-index: 100;
+}
+
+    .fixed-action-button2 .button {
+        width: 56px;
+        height: 56px;
+        background-color: #6465e7;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        font-size: 20px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+        transition: background-color 0.3s ease;
+    }
+
+        .fixed-action-button2 .button:hover {
+            background-color: #6465e7;
+        }
+
+        /* Estilos para el icono dentro del botón */
+        .fixed-action-button2 .button .mif-plus {
+            line-height: 56px;
+            vertical-align: middle;
+        }
+
+
+.fixed-action-button {
+    position: fixed;
+    bottom: 120px;
+    right: 60px;
+    z-index: 9999;
+}
+
+    /* Estilos para el botón */
+    .fixed-action-button .button {
+        width: 56px;
+        height: 56px;
+        background-color: #fa6800;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        font-size: 20px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+        transition: background-color 0.3s ease;
+    }
+
+        .fixed-action-button .button:hover {
+            background-color: #ce352c;
+        }
+
+        /* Estilos para el icono dentro del botón */
+        .fixed-action-button .button .mif-plus {
+            line-height: 56px;
+            vertical-align: middle;
+        }
+
+.xls_tabs {
+   
+}
+
+.xls_tab {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+    .xls_tab.xls_active {
+        background-color: blue;
+        color: white;
+    }
+
+.xls_tab-content {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.xls_contenedor {
+    background-color: #f0f0f0; /* Fondo gris */
+    padding: 20px;
+    width: 160%;
+    min-height: 100px; /* Altura mínima */
+    display: flex; /* Usamos flexbox para centrar verticalmente */
+    align-items: center; /* Centramos verticalmente */
+    justify-content: center; /* Centramos horizontalmente */
+}
+
+.xls_boton-recargar {
+    background-color: #999999db; /* Color del botón */
+    color: white;
+    border: 1px solid #ccc; /* Borde */
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra */
+    cursor: pointer;
+    display: inline-block; /* Hacer que el botón se comporte como un bloque */
+}
+
+    .xls_boton-recargar .xlx_icono {
+        display: inline-block;
+        width: 20px; /* Ajusta el tamaño del icono según sea necesario */
+        height: 20px; /* Ajusta el tamaño del icono según sea necesario */
+    
+        /* Añade cualquier otra configuración necesaria para el icono */
+    }
+
+.xls_a {
+    padding: 0rem;
+}
+
+.xls_next {
+    margin-top: 0.25rem;
+}
+
+.h-menu.xls_ul li a {
+    padding: 0.5rem;
+}
+
+.loader-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    transform: translate(-50%, -50%); /* Centra el elemento */
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999999999999999999;
+}
+
+.loader {
+    border: 8px solid #f3f3f3; /* Ancho del borde del spinner */
+    border-top: 8px solid #3498db; /* Color del borde superior */
+    border-radius: 50%;
+    width: 50px; /* Tamaño del spinner */
+    height: 50px; /* Tamaño del spinner */
+    animation: spin 1s linear infinite; /* Animación */
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+.box_container {
+    width: 300px;
+    margin: 0 auto;
+}
+
+.box_list {
+    list-style-type: none;
+    padding: 0;
+    border: 1px solid #ccc;
+    min-height: 200px;
+}
+.box_containerDrag {
+    display: flex;
+    justify-content: space-around;
+}
+
+
+
+.box_item, .box_drop-zone {
+    margin: 2px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+}
+
+.box_item {
+ 
+   
+    cursor: move;
+    height: 100px;
+    width: 6rem;
+}
+
+
+
+    .box_item:active {
+        cursor: grabbing; /* Cursor de mano con la acción de arrastrar */
+    }
+
+.box_drop-zone {
+    overflow-y: auto;
+    background-color: #eaeaea;
+    height: 14rem;
+    display: flex;
+    width: 32rem;
+    flex-wrap: wrap;
+ 
+    align-content: flex-start;
+    flex-direction: row;
+}
+
+.box_panel-zone {
+    overflow-y: auto;
+    background-color: #eaeaea;
+    height: 14rem;
+    /* display: flex; */
+    flex-wrap: wrap;
+    align-content: flex-start;
+    flex-direction: row;
+    margin: 2px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.box_header {
+    background-color: #1565C0;
+    padding: 0.20rem;
+    color: white;
+    height:2rem
+}
+.box_drop-zone-main {
+    background-color: #eaeaea;
+    min-height: 350px;
+    overflow: auto;
+    max-height: 450px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    flex-direction: row;
+}
+
+    .box_drop-zone.drag-over {
+        background-color: #c0c0c0;
+    }
+
+.drophovered {
+    background-color: #d4edda; /* Cambia de color cuando el ítem es arrastrado sobre él */
+}
+.box_mainContanier {
+    display: -webkit-inline-box;
+    flex-direction: column; /* Agrupar en columna */
+    align-items: flex-start; /* Agrupar hacia la izquierda */
+    width: 100%; /* Ancho del contenedor */
+    border: 1px solid #ccc; /* Borde para visualizar el área */
+    padding: 10px;
+}
+
+
+.box_item-50 {
+    flex-basis: 50%; /* Ocupa el 50% del ancho */
+}
+.box_item-30 {
+    flex-basis: 30%; /* Ocupa el 50% del ancho */
+}
+.box_item-70 {
+    flex-basis: 70%; /* Ocupa el 50% del ancho */
+}
+
+.box_fixed-container {
+    position: relative;
+    bottom: 20px; /* Separación desde el borde inferior */
+    right: 20px; /* Separación desde el borde derecho */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.box_contenedor {
+    position: relative; /* El contenedor se convierte en el "padre" de referencia */
+
+
+}
+.box_fixed-button {
+    position: absolute;
+    bottom: 20px; /* Separación desde el borde inferior */
+    right: 20px; /* Separación desde el borde derecho */
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+    .box_fixed-button:hover {
+        background-color: #2980b9;
+    }
+
+
+/* Estilos del contenedor */
+.search-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 2px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del input */
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 1px;
+    border-radius: 8px;
+}
+
+/* Estilo del botón */
+.search-button {
+    background-color: #3498db;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    /* Estilo del ícono SVG (lupa) */
+    .search-button svg {
+        width: 12px;
+        height: 12px;
+        fill: white;
+    }
+
+
+.btnBlue {
+    background-color: #3498db;
+    color: white;
+    padding: 5px 6px;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btnBlue:hover {
+        background-color: #276691;
+    }
+
+
+

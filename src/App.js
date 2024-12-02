@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import './styles/xls_style.css';
 import React, { useState } from 'react';
 import ReactLoading from 'react-loading';  // Importa la librería de carga
 import { ToastContainer, toast } from 'react-toastify';  // Importa las notificaciones
