@@ -44,7 +44,7 @@ const Persona = sequelize.define('Tbl_Persona', {
       type: DataTypes.STRING(100),
     },
     Identidad: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     Creado_Por: {
       type: DataTypes.STRING(45),
@@ -64,10 +64,18 @@ const Persona = sequelize.define('Tbl_Persona', {
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
+    telefono : {
+      type: DataTypes.STRING,
+    }, 
+    direccion  : {
+      type: DataTypes.STRING,
+    },   
   }, {
     tableName: 'Tbl_Persona',
     timestamps: false,
-  }   
+  } 
+  ,
+
 );
 
 

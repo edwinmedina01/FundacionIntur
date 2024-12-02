@@ -386,16 +386,16 @@ const handlePersonaSubmit = async (e) => {
           personaData.Nombre_Completo=tutorData.Nombre_Completo;
           personaData.Primer_Nombre=tutorData.Nombre_Completo.split(" ")[0];;
           personaData.Primer_Apellido=tutorData.Nombre_Completo.split(" ")[1];
-          personaData.Telefono=tutorData.Telefono;
-          personaData.Direccion=tutorData.Direccion;
+          personaData.telefono=tutorData.telefono;
+          personaData.direccion=tutorData.direccion;
           personaData.sexo=tutorData.Sexo;
         }
 
         if(benefactorData.Identidad.length>10){
           personaData.Identidad=benefactorData.Identidad;
           personaData.Nombre_Completo=benefactorData.Nombre_Completo;
-          personaData.Telefono=benefactorData.Telefono;
-          personaData.Direccion=benefactorData.Direccion;
+          personaData.telefono=benefactorData.telefono;
+          personaData.direccion=benefactorData.direccion;
           personaData.sexo=benefactorData.Sexo;
         }
 
@@ -530,8 +530,8 @@ setPersonaDataRelacion({
   Primer_Nombre:  tutor.Persona.Primer_Nombre ,
   Primer_Apellido:  tutor.Persona.Primer_Apellido ,
   Sexo:  tutor.Persona.Sexo,
-  Direccion: tutor.Persona.Direccion,
-  Telefono:  tutor.Persona.Telefono,
+  direccion: tutor.Persona.direccion,
+  telefono:  tutor.Persona.telefono,
   Id_Persona:tutor.Persona.Id_Persona,
   Update:true
 
@@ -704,6 +704,8 @@ if (!permisos) {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-gray-800">Datos del Estudiante</h2>
 
+
+
       {/* Primer Nombre */}
       <div className="flex flex-col">
         <label htmlFor="Primer_Nombre" className="text-gray-700">Primer Nombre</label>
@@ -729,6 +731,20 @@ if (!permisos) {
           placeholder="Segundo Nombre"
           value={personaData.Segundo_Nombre}
           onChange={handlePersonaInputChange}
+          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
+        />
+      </div>
+                  {/* Número de Identidad */}
+                  <div className="flex flex-col">
+        <label htmlFor="Identidad" className="text-gray-700">Número de Identidad</label>
+        <input
+          id="Identidad"
+          type="text"
+          name="Identidad"
+          placeholder="Número de Identidad"
+          value={personaData.Identidad}
+          onChange={handlePersonaInputChange}
+          required
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
         />
       </div>
@@ -767,40 +783,43 @@ if (!permisos) {
         </select>
       </div>
 
-      {/* Municipio */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Municipio" className="text-gray-700">Municipio</label>
-        <select
-          id="Id_Municipio"
-          name="Id_Municipio"
-          value={personaData.Id_Municipio}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Seleccione un Municipio</option>
-          {municipios.map((municipio) => (
-            <option key={municipio.Id_Municipio} value={municipio.Id_Municipio}>
-              {municipio.Nombre_Municipio}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Número de Identidad */}
-      <div className="flex flex-col">
-        <label htmlFor="Identidad" className="text-gray-700">Número de Identidad</label>
+                 {/* Número de Direccion */}
+                 <div className="flex flex-col">
+        <label htmlFor="direccion " className="text-gray-700">Dirección</label>
         <input
-          id="Identidad"
+          id="direccion"
           type="text"
-          name="Identidad"
-          placeholder="Número de Identidad"
-          value={personaData.Identidad}
+          name="direccion"
+          placeholder="direccion"
+          value={personaData.direccion}
           onChange={handlePersonaInputChange}
           required
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
         />
       </div>
+
+
+
+
+{/* Área */}
+<div className="flex flex-col">
+        <label htmlFor="Id_Area" className="text-gray-700">Área</label>
+        <select
+          id="Id_Area"
+          name="Id_Area"
+          value={estudianteData.Id_Area}
+          onChange={handleEstudianteInputChange}
+          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
+          required
+        >
+          <option value="">Selecciona un Área</option>
+          {areas.map((area) => (
+            <option key={area.Id_Area} value={area.Id_Area}>{area.Nombre_Area}</option>
+          ))}
+        </select>
+      </div>
+
+      
     </div>
 
     <div className="space-y-4">
@@ -849,6 +868,41 @@ if (!permisos) {
           ))}
         </select>
       </div>
+            {/* Número de Telefono */}
+            <div className="flex flex-col">
+        <label htmlFor="telefono" className="text-gray-700">Número de telefono</label>
+        <input
+          id="telefono"
+          type="text"
+          name="telefono"
+          placeholder="Número de telefono"
+          value={personaData.telefono}
+          onChange={handlePersonaInputChange}
+          required
+          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
+        />
+      </div>
+      
+      {/* Municipio */}
+      <div className="flex flex-col">
+        <label htmlFor="Id_Municipio" className="text-gray-700">Municipio</label>
+        <select
+          id="Id_Municipio"
+          name="Id_Municipio"
+          value={personaData.Id_Municipio}
+          onChange={handlePersonaInputChange}
+          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
+          required
+        >
+          <option value="">Seleccione un Municipio</option>
+          {municipios.map((municipio) => (
+            <option key={municipio.Id_Municipio} value={municipio.Id_Municipio}>
+              {municipio.Nombre_Municipio}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Beneficio */}
       <div className="flex flex-col">
         <label htmlFor="Id_Beneficio" className="text-gray-700">Beneficio</label>
@@ -885,23 +939,7 @@ if (!permisos) {
                   <option value="0">Inactivo</option>
                 </select>
               </div>
-      {/* Área */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Area" className="text-gray-700">Área</label>
-        <select
-          id="Id_Area"
-          name="Id_Area"
-          value={estudianteData.Id_Area}
-          onChange={handleEstudianteInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Selecciona un Área</option>
-          {areas.map((area) => (
-            <option key={area.Id_Area} value={area.Id_Area}>{area.Nombre_Area}</option>
-          ))}
-        </select>
-      </div>
+      
 
       {/* Instituto */}
       <div className="flex flex-col">
@@ -1042,9 +1080,9 @@ if (!permisos) {
     <input
       id="Direccion_Tutor"
       type="text"
-      name="Direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="direccion"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Dirección del Tutor"
-      value={personaDataRelacion.Direccion}
+      value={personaDataRelacion.direccion}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1057,9 +1095,9 @@ if (!permisos) {
     <input
       id="Telefono_Tutor"
       type="text"
-      name="Telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="telefono"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Teléfono del Tutor"
-      value={personaDataRelacion.Telefono}
+      value={personaDataRelacion.telefono}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1244,9 +1282,9 @@ if (!permisos) {
     <input
       id="Direccion_Tutor"
       type="text"
-      name="Direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="direccion"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Dirección del Tutor"
-      value={personaDataRelacion.Direccion}
+      value={personaDataRelacion.direccion}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1259,9 +1297,9 @@ if (!permisos) {
     <input
       id="Telefono_Tutor"
       type="text"
-      name="Telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="telefono"  // Asegúrate de que el name coincida con la propiedad del estado
       placeholder="Teléfono del Tutor"
-      value={personaDataRelacion.Telefono}
+      value={personaDataRelacion.telefono}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"

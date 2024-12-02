@@ -192,268 +192,172 @@ const EstudiantesReporte = () => {
 
 
 
-  const exportToExcelold2 = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      currentEstudiantes.map((estudiante) => ({
-        // Columna 1
-        "#": currentEstudiantes.indexOf(estudiante) + 1,
-  
-        // Fecha Registro
-        "Fecha Registro":
-          estudiante.Fecha_Creacion
-            ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-            : "Fecha no disponible",
-  
-        // Beneficio
-        "Beneficio": estudiante.Beneficio?.Nombre_Beneficio || "Beneficio no disponible",
-  
-        // Area
-        "Area": estudiante.Area?.Nombre_Area || "Área no disponible",
-  
-        // Identidad
-        "Identidad": estudiante.Persona?.Identidad || "Identidad no disponible",
-  
-        // Nombre
-        "Nombre": `${estudiante.Persona?.Primer_Nombre || ""} ${
-          estudiante.Persona?.Segundo_Nombre || ""
-        } ${estudiante.Persona?.Primer_Apellido || ""} ${
-          estudiante.Persona?.Segundo_Apellido || ""
-        }`,
-  
-        // Sexo
-        "Sexo":
-          estudiante.Persona?.Sexo === 1
-            ? "Masculino"
-            : estudiante.Persona?.Sexo === 0
-            ? "Femenino"
-            : "Sexo no disponible",
-  
-        // Año Matricula
-        "Año Matricula":
-          Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-            ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-            : "-",
-  
-        // Modalidad
-        "Modalidad": Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
-  
-        // Grado
-        "Grado": Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
-  
-        // Sección
-        "Seccion": Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
-  
-        // Lugar Nacimiento
-        "Lugar Nacimiento": estudiante.Persona?.Lugar_Nacimiento || "Lugar de nacimiento no disponible",
-  
-        // Instituto
-        "Instituto": estudiante.Instituto?.Nombre_Instituto || "Instituto no disponible",
-  
-        // Municipio
-        "Municipio": estudiante.Persona?.Municipio?.Nombre_Municipio || "Municipio no disponible",
-  
-        // Estado
-        "Estado":
-          estudiante?.Persona?.Estado === 1
-            ? "Activo"
-            : estudiante?.Persona?.Estado === 0
-            ? "Inactivo"
-            : "Estado no disponible",
-  
-        // Tutor
-        "Tutor Identidad":
-          estudiante.Relaciones.filter(
-            (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-          )
-            .map((relacion) => relacion.Persona.Identidad || "No disponible")
-            .join(", "),
-  
-        "Tutor Nombre":
-          estudiante.Relaciones.filter(
-            (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-          )
-            .map(
-              (relacion) =>
-                `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-                  relacion.Persona.Primer_Apellido || "No disponible"
-                }`
-            )
-            .join(", "),
-  
-        // Benefactor
-        "Benefactor Identidad":
-          estudiante.Relaciones.filter(
-            (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-          )
-            .map((relacion) => relacion.Persona.Identidad || "No disponible")
-            .join(", "),
-  
-        "Benefactor Nombre":
-          estudiante.Relaciones.filter(
-            (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-          )
-            .map(
-              (relacion) =>
-                `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-                  relacion.Persona.Primer_Apellido || "No disponible"
-                }`
-            )
-            .join(", "),
-      }))
-    );
-  
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Estudiantes");
-  
-    // Generar y descargar el archivo Excel
-    XLSX.writeFile(workbook, "reporte_estudiantes.xlsx");
+
+
+
+
+
+const exportToExcel = () => {
+  const wsData = [
+    // Encabezado de la tabla (primera fila)
+    [
+      "#",
+      "Fecha Registro",
+      "Beneficio",
+      "Area",
+      "Identidad",
+      "Nombre",
+      "Sexo",
+      "Año Matricula",
+      "Modalidad",
+      "Grado",
+      "Seccion",
+      "Lugar Nacimiento",
+      "Instituto",
+      "Municipio",
+      "Direccion",
+      "Telefono",
+      "Estado",
+      "Tutor Identidad",
+      "Tutor Nombre",
+      "Benefactor Identidad",
+      "Benefactor Nombre",
+      "Benefactor Telefono",
+      "Benefactor Direccion"
+    ],
+    // Datos de estudiantes
+    ...currentEstudiantes.map((estudiante, index) => [
+      index + 1,
+      estudiante.Fecha_Creacion
+        ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        : "Fecha no disponible",
+      estudiante.Beneficio?.Nombre_Beneficio || "Beneficio no disponible",
+      estudiante.Area?.Nombre_Area || "Área no disponible",
+      estudiante.Persona?.Identidad || "Identidad no disponible",
+      `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
+      estudiante.Persona?.Sexo === 1
+        ? "Masculino"
+        : estudiante.Persona?.Sexo === 0
+        ? "Femenino"
+        : "Sexo no disponible",
+      Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
+        ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
+        : "-",
+      Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
+      Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
+      Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
+      estudiante.Persona?.Lugar_Nacimiento || "Lugar de nacimiento no disponible",
+      estudiante.Instituto?.Nombre_Instituto || "Instituto no disponible",
+      estudiante.Persona?.Municipio?.Nombre_Municipio || "Municipio no disponible",
+      estudiante.Persona?.direccion || "No disponible",
+      estudiante.Persona?.telefono || "No disponible",
+      estudiante.Persona?.Estado === 1
+        ? "Activo"
+        : estudiante.Persona?.Estado === 0
+        ? "Inactivo"
+        : "Estado no disponible",
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
+      )
+        .map((relacion) => relacion.Persona.Identidad || "No disponible")
+        .join(", "),
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
+      )
+        .map(
+          (relacion) =>
+            `${relacion.Persona.Primer_Nombre || "No disponible"} ${
+              relacion.Persona.Primer_Apellido || "No disponible"
+            }`
+        )
+        .join(", "),
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona.Identidad || "No disponible")
+        .join(", "),
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map(
+          (relacion) =>
+            `${relacion.Persona.Primer_Nombre || "No disponible"} ${
+              relacion.Persona.Primer_Apellido || "No disponible"
+            }`
+        )
+        .join(", "),
+      // Benefactor telefono y direccion
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona?.telefono || "No disponible")
+        .join(", "),
+      estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona?.direccion || "No disponible")
+        .join(", "),
+    ]),
+  ];
+
+  // Crear la hoja de trabajo con estilo
+  const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Estilos de encabezado
+  const headerStyle = {
+    fill: { fgColor: { rgb: "B7D8FF" } },
+    font: { bold: true },
+    alignment: { horizontal: "center", vertical: "center" },
+    border: {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" },
+      bottom: { style: "thin" },
+    },
   };
-  
-  const exportToExcel = () => {
-    const wsData = [
-      // Encabezado de la tabla (primera fila)
-      [
-        "#",
-        "Fecha Registro",
-        "Beneficio",
-        "Area",
-        "Identidad",
-        "Nombre",
-        "Sexo",
-        "Año Matricula",
-        "Modalidad",
-        "Grado",
-        "Seccion",
-        "Lugar Nacimiento",
-        "Instituto",
-        "Municipio",
-        "Estado",
-        "Tutor Identidad",
-        "Tutor Nombre",
-        "Benefactor Identidad",
-        "Benefactor Nombre",
-      ],
-      // Datos de estudiantes
-      ...currentEstudiantes.map((estudiante, index) => [
-        index + 1,
-        estudiante.Fecha_Creacion
-          ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })
-          : "Fecha no disponible",
-        estudiante.Beneficio?.Nombre_Beneficio || "Beneficio no disponible",
-        estudiante.Area?.Nombre_Area || "Área no disponible",
-        estudiante.Persona?.Identidad || "Identidad no disponible",
-        `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
-        estudiante.Persona?.Sexo === 1
-          ? "Masculino"
-          : estudiante.Persona?.Sexo === 0
-          ? "Femenino"
-          : "Sexo no disponible",
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-          ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-          : "-",
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
-        estudiante.Persona?.Lugar_Nacimiento || "Lugar de nacimiento no disponible",
-        estudiante.Instituto?.Nombre_Instituto || "Instituto no disponible",
-        estudiante.Persona?.Municipio?.Nombre_Municipio || "Municipio no disponible",
-        estudiante?.Persona?.Estado === 1
-          ? "Activo"
-          : estudiante?.Persona?.Estado === 0
-          ? "Inactivo"
-          : "Estado no disponible",
-        estudiante.Relaciones.filter(
-          (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-        )
-          .map((relacion) => relacion.Persona.Identidad || "No disponible")
-          .join(", "),
-        estudiante.Relaciones.filter(
-          (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-        )
-          .map(
-            (relacion) =>
-              `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-                relacion.Persona.Primer_Apellido || "No disponible"
-              }`
-          )
-          .join(", "),
-        estudiante.Relaciones.filter(
-          (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-        )
-          .map((relacion) => relacion.Persona.Identidad || "No disponible")
-          .join(", "),
-        estudiante.Relaciones.filter(
-          (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-        )
-          .map(
-            (relacion) =>
-              `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-                relacion.Persona.Primer_Apellido || "No disponible"
-              }`
-          )
-          .join(", "),
-      ]),
-    ];
-  
-    // Crear la hoja de trabajo con estilo
-    const worksheet = XLSX.utils.aoa_to_sheet(wsData);
-  
-    // Estilos de encabezado
-    const headerStyle = {
-      fill: { fgColor: { rgb: "B7D8FF" } },
-      font: { bold: true },
-      alignment: { horizontal: "center", vertical: "center" },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        bottom: { style: "thin" },
-      },
-    };
-  
-    // Aplicar el estilo al encabezado
-    for (let i = 0; i < wsData[0].length; i++) {
-      const cellAddress = { r: 0, c: i }; // Primera fila (encabezado)
+
+  // Aplicar el estilo al encabezado
+  for (let i = 0; i < wsData[0].length; i++) {
+    const cellAddress = { r: 0, c: i }; // Primera fila (encabezado)
+    if (!worksheet[cellAddress]) worksheet[cellAddress] = {}; // Crear la celda si no existe
+    worksheet[cellAddress].s = headerStyle; // Asignar estilo
+  }
+
+  // Estilo para las celdas de datos
+  const dataStyle = {
+    border: {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" },
+      bottom: { style: "thin" },
+    },
+  };
+
+  // Aplicar estilo a las celdas de datos
+  const range = XLSX.utils.decode_range(worksheet["!ref"]);
+  for (let row = 1; row <= range.e.r; row++) {
+    for (let col = 0; col <= range.e.c; col++) {
+      const cellAddress = { r: row, c: col };
       if (!worksheet[cellAddress]) worksheet[cellAddress] = {}; // Crear la celda si no existe
-      worksheet[cellAddress].s = headerStyle; // Asignar estilo
+      worksheet[cellAddress].s = dataStyle; // Asignar estilo
     }
-  
-    // Estilo para las celdas de datos
-    const dataStyle = {
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        bottom: { style: "thin" },
-      },
-    };
-  
-    // Aplicar estilo a las celdas de datos
-    const range = XLSX.utils.decode_range(worksheet["!ref"]);
-    for (let row = 1; row <= range.e.r; row++) {
-      for (let col = 0; col <= range.e.c; col++) {
-        const cellAddress = { r: row, c: col };
-        if (!worksheet[cellAddress]) worksheet[cellAddress] = {}; // Crear la celda si no existe
-        worksheet[cellAddress].s = dataStyle; // Asignar estilo
-      }
-    }
-  
-    // Crear el libro y agregar la hoja
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Estudiantes");
-  
-    // Descargar el archivo Excel
-    XLSX.writeFile(workbook, "reporte_estudiantes.xlsx");
-  };
-  
+  }
+
+  // Crear el libro y agregar la hoja
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Estudiantes");
+
+  // Descargar el archivo Excel
+  XLSX.writeFile(workbook, "reporte_estudiantes.xlsx");
+};
+
+// Llama a esta función cuando desees exportar los datos
+//exportToExcel(currentEstudiantes);
+
 
   return (
     <Layout>
@@ -551,16 +455,22 @@ const EstudiantesReporte = () => {
     <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Municipio
     </th>
+    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Direccion
+    </th>
+    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Telefono
+    </th>
 
     <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Estado
     </th>
 
     {/* Subencabezado de Tutor y Benefactor */}
-    <th colSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+    <th colSpan="4" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Tutor
     </th>
-    <th colSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+    <th colSpan="4" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Benefactor
     </th>
 
@@ -578,6 +488,12 @@ const EstudiantesReporte = () => {
     <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Nombre
     </th>
+    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Telefono
+    </th>
+    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+    Direccion
+    </th>
  
 
     {/* Subcolumnas Benefactor */}
@@ -586,6 +502,12 @@ const EstudiantesReporte = () => {
     </th>
     <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
       Nombre
+    </th>
+    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Telefono
+    </th>
+    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+    Direccion
     </th>
 
   </tr>
@@ -670,6 +592,14 @@ const EstudiantesReporte = () => {
                       "Municipio no disponible"}
                   </td>
 
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Persona?.telefono ||
+                      "No disponible"}
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Persona?.direccion ||
+                      "No disponible"}
+                  </td>
             
                   <td className="py-4 px-6 border-b">
                     <strong>
@@ -714,6 +644,41 @@ const EstudiantesReporte = () => {
                 }).join('')}
               </ul>
                   </td>
+
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+            
+                  const telefono = relacion.Persona.telefono || 'No disponible';
+          
+
+
+                  return `
+                 ${telefono} 
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+            
+                  const direccion = relacion.Persona.direccion || 'No disponible';
+          
+
+
+                  return `
+                 ${direccion} 
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
     
                   
                   <td className="py-4 px-6 border-b">
@@ -746,6 +711,41 @@ const EstudiantesReporte = () => {
 
                   return `
                   ${primerNombre} ${primerApellido}
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
+                  
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+            
+                  const telefono = relacion.Persona.telefono || 'No disponible';
+          
+
+
+                  return `
+                 ${telefono} 
+                    
+                  `;
+                }).join('')}
+              </ul>
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                  <ul>
+                   {estudiante.Relaciones
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                   .map(relacion => {
+            
+                  const direccion = relacion.Persona.direccion || 'No disponible';
+          
+
+
+                  return `
+                 ${direccion} 
                     
                   `;
                 }).join('')}
