@@ -289,6 +289,8 @@ const BenefactoresManagement = () => {
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
+        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Telefono</th>
+        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Direccion</th>
       </tr>
     </thead>
     <tbody>
@@ -304,6 +306,8 @@ const BenefactoresManagement = () => {
     ? 'Femenino'
     : 'Desconocido'}
 </td>
+<td className="border px-4 py-2">{Benefactor.telefono}</td>
+<td className="border px-4 py-2">{Benefactor.direccion}</td>
 
               {/* Acciones como editar o eliminar */}
 
