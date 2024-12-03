@@ -335,73 +335,16 @@ const handleBenefactorInputChange = (event) => {
 
 
 
-const handlePersonaSubmit = async (e) => {
-  e.preventDefault();
-  try {
-
-
-      let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
-
-
-      if (res != null) {
-        fetchEstudiantes(); // Llama a la función para actualizar la lista de estudiantes
-        
-        // Verifica si es una acción de registrar o actualizar
-        if (editId) {
-          toast.success("Registro Creado", {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-        } else {
-          toast.success("Registro Actualizado", {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: "colored",
-          });
-        }
-      }
-      
-
-   
-    
-    setPersonaDataRelacion({
-      Primer_Nombre: "",
-      Segundo_Nombre: "",
-      Primer_Apellido: "",
-      Segundo_Apellido: "",
-      Sexo: "",
-      Fecha_Nacimiento: "",
-      Lugar_Nacimiento: "",
-      Identidad: "",
-      Creado_Por: "",
-      esEstudiente:true,
-      esNuevo:true
-    });
-    
-
-  } catch (error) {
-    console.error("Error al guardar estudiante y persona", error);
-  }
-};
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editId) {
+      if (estudianteData.Id_Matricula!=null) {
 
    
 
-     let res= await axios.put(`/api/estudiantes/${editId}`, {
+     let res= await axios.put(`/api/matricula/${estudianteData.Id_Matricula}`, {
           estudianteData,
           personaData,
           
@@ -411,7 +354,7 @@ const handlePersonaSubmit = async (e) => {
           // alert("Registro creado")
         }
 
-        setEditId(null);
+      
       } else {
 
 
@@ -433,7 +376,7 @@ const handlePersonaSubmit = async (e) => {
           personaData.sexo=benefactorData.Sexo;
         }
 
-        await axios.post("/api/estudiantes", { personaData, estudianteData });
+        await axios.post("/api/matricula", { personaData, estudianteData });
       }
       setPersonaData({
         Primer_Nombre: "",
@@ -481,6 +424,7 @@ const handlePersonaSubmit = async (e) => {
       Id_Instituto: "",
       Creado_Por: "",
       Relaciones: [], 
+      MatriculaId:null
 
     });
     
@@ -489,11 +433,14 @@ const handlePersonaSubmit = async (e) => {
 
   const handleEdit = (estudiante) => {
 
-    if  (estudiante!=null){
     setPersonaDataRelacion({
       ...personaDataRelacion,
       Estudiante: estudiante, // Guarda el objeto completo del estudiante
     });
+
+ console.log("handleEdit")
+ console.log(estudiante)
+
     setSelectedStudent(estudiante); 
     setEditId(estudiante.Id_Estudiante);
     setEstudianteTemp(estudiante);
@@ -502,14 +449,22 @@ const handlePersonaSubmit = async (e) => {
       Id_Area: estudiante.Id_Area,
       Id_Instituto: estudiante.Id_Instituto,
       Creado_Por: estudiante.Creado_Por,
-      Relaciones:estudiante.Relaciones
+   
+      Id_Estudiante:estudiante.Id_Estudiante,
+      Id_Matricula:  estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Matricula:null,
+      Id_Grado:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Grado:null,
+      Id_Seccion:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Seccion:null,
+      Id_Modalidad:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Modalidad:null
     });
 
-    setEditPersonaId(estudiante.Persona?.Id_Persona);
+    setEditPersonaId(estudiante.Persona.Id_Persona);
     setPersonaData(estudiante.Persona);
-    if (estudiante.Persona?.Id_Departamento) {
-      fetchMunicipios(estudiante.Persona?.Id_Departamento);
-    }  }
+    if (estudiante.Persona.Id_Departamento) {
+      fetchMunicipios(estudiante.Persona.Id_Departamento);
+    }
+
+
+    
   };
 
 
@@ -691,28 +646,49 @@ if (!permisos) {
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
-                    <label htmlFor="Id_Grado" className="text-gray-700">Estudiante</label>
-        {/* <select
-          id="Id_Grado"
-          name="Id_Grado"
-          value={estudianteData}
-          onChange={ handleEdit(estudianteData)}
-                     className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
-          required
-        >
-          <option value="">Selecciona un Estudiante</option>
-          {filteredEstudiantes.map((estudianteitem) => (
-            <option key={estudianteitem} value={estudianteitem}>
-             {estudianteitem.Persona.Identidad +" - "+estudianteitem.Persona.Primer_Nombre + "" + estudianteitem.Persona.Primer_Apellido}
-            </option>
-          ))}
-        </select> */}
+                    {/* <label htmlFor="Id_Grado" className="text-gray-700">Estudiante</label>
+                    <select
+  id="Id_Estudiante"
+  name="Id_Estudiante"
+  value={estudianteData.Id_Grado || ""} // Agregar un valor por defecto si es undefined
+  onChange={(e) => {
+    const idGradoSeleccionado = e.target.value;
+    const estudianteSeleccionado = filteredEstudiantes.find(
+      (estudianteitem) => estudianteitem.Id_Estudiante === idGradoSeleccionado
+    );
+    handleEdit(estudianteSeleccionado, e); // Pasar el estudiante seleccionado
+  }}
+  className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
+  required
+>
+  <option value="">Selecciona un Estudiante</option>
+  {filteredEstudiantes.map((estudianteitem) => (
+    <option key={estudianteitem.Id_Estudiante} value={estudianteitem.Id_Estudiante}>
+      {estudianteitem.Persona.Identidad +
+        " - " +
+        estudianteitem.Persona.Primer_Nombre +
+        " " +
+        estudianteitem.Persona.Primer_Apellido}
+    </option>
+  ))}
+</select> */}
+
             <table className="min-w-full mt-4 border border-gray-300">
               <thead>
                 <tr classname ="bg-gray-100">
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Se</th>
+                <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Modalidad
+    </th>
+    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Grado
+    </th>
+    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
+      Seccion
+    </th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
+
                 </tr>
               </thead>
               {permisos?.Permiso_Consultar === "1" && (
@@ -723,6 +699,16 @@ if (!permisos) {
                 
                     <td className="border p-3 text-center">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
                 
+                    <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-"}
+                  </td>
+
+                  <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-"}
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-"}
+                  </td>
                     <td className="p-3 border-b flex justify-center items-center space-x-2">
   {permisos.Permiso_Actualizar === "1" && (
     <button
@@ -733,14 +719,14 @@ if (!permisos) {
     </button>
   )}
 
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-      onClick={() => handleDelete(estudiante.Id_Estudiante)}
-      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
+  {/* {permisos.Permiso_Eliminar === "1" && (
+    // <button
+    //   onClick={() => handleDelete(estudiante.Id_Estudiante)}
+    //   className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+    // >
+    //   <TrashIcon className="h-6 w-6" />
+    // </button>
+  )} */}
 </td>
 
                   </tr>
@@ -785,7 +771,7 @@ if (!permisos) {
         >
           <option value="">Selecciona un Modalidad</option>
           {modalidades.map((modalidaditem) => (
-            <option key={modalidaditem.Id_Instituto} value={modalidaditem.Id_Instituto}>
+            <option key={modalidaditem.Id_Modalidad} value={modalidaditem.Id_Modalidad}>
               {modalidaditem.Nombre}
             </option>
           ))}
@@ -802,7 +788,7 @@ if (!permisos) {
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
           required
         >
-          <option value="">Selecciona un Instituto</option>
+          <option value="">Selecciona un Grado</option>
           {grados.map((gradoitem) => (
             <option key={gradoitem.Id_Grado} value={gradoitem.Id_Grado}>
               {gradoitem.Nombre}
@@ -877,7 +863,7 @@ if (!permisos) {
 
   <br></br>
           <div className="flex justify-between">
-          {editId
+          {estudianteData?.Id_Matricula
               ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
                 permisos.Permiso_Actualizar === "1" && (
                   <button
@@ -893,7 +879,7 @@ if (!permisos) {
                     type="submit"
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    Agregar
+                    Guardar
                   </button>
                 )}
 

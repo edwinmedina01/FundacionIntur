@@ -82,7 +82,7 @@ const EstudiantesReporte = () => {
           ? "Masculino"
           : estudiante.Persona?.Sexo === 0
           ? "Femenino"
-          : "Sexo no disponible"
+          : "Sexo -"
       }
       
       ${estudiante.Persona?.Lugar_Nacimiento || ""} 
@@ -107,7 +107,7 @@ const EstudiantesReporte = () => {
           ? "Activo"
           : estudiante?.Persona?.Estado === 0
           ? "Inactivo"
-          : "Estado no disponible"
+          : "Estado -"
       }
     `;
 
@@ -163,18 +163,18 @@ const EstudiantesReporte = () => {
         Tutor: estudiante.Relaciones
         .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) // Filtra solo tutores
         .map((relacion) => {
-          const identidad = relacion.Persona.Identidad || "No disponible";
-          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
-          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          const identidad = relacion.Persona.Identidad || "-";
+          const primerNombre = relacion.Persona.Primer_Nombre || "-";
+          const primerApellido = relacion.Persona.Primer_Apellido || "-";
           return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
         })
         .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
         Benefactor: estudiante.Relaciones
         .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) // Filtra solo tutores
         .map((relacion) => {
-          const identidad = relacion.Persona.Identidad || "No disponible";
-          const primerNombre = relacion.Persona.Primer_Nombre || "No disponible";
-          const primerApellido = relacion.Persona.Primer_Apellido || "No disponible";
+          const identidad = relacion.Persona.Identidad || "-";
+          const primerNombre = relacion.Persona.Primer_Nombre || "-";
+          const primerApellido = relacion.Persona.Primer_Apellido || "-";
           return `${identidad} - ${primerNombre} ${primerApellido}`; // Concatenar los datos
         })
         .join(', '), // Unir las relaciones de tutores en una sola cadena separada por comas,
@@ -234,59 +234,59 @@ const exportToExcel = () => {
             month: "2-digit",
             year: "numeric",
           })
-        : "Fecha no disponible",
-      estudiante.Beneficio?.Nombre_Beneficio || "Beneficio no disponible",
-      estudiante.Area?.Nombre_Area || "Área no disponible",
-      estudiante.Persona?.Identidad || "Identidad no disponible",
+        : "Fecha -",
+      estudiante.Beneficio?.Nombre_Beneficio || "Beneficio -",
+      estudiante.Area?.Nombre_Area || "Área -",
+      estudiante.Persona?.Identidad || "Identidad -",
       `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
       estudiante.Persona?.Sexo === 1
         ? "Masculino"
         : estudiante.Persona?.Sexo === 0
         ? "Femenino"
-        : "Sexo no disponible",
+        : "Sexo -",
       Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
         ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
         : "-",
       Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
       Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
       Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
-      estudiante.Persona?.Lugar_Nacimiento || "Lugar de nacimiento no disponible",
-      estudiante.Instituto?.Nombre_Instituto || "Instituto no disponible",
-      estudiante.Persona?.Municipio?.Nombre_Municipio || "Municipio no disponible",
-      estudiante.Persona?.direccion || "No disponible",
-      estudiante.Persona?.telefono || "No disponible",
+      estudiante.Persona?.Lugar_Nacimiento || "Lugar de nacimiento -",
+      estudiante.Instituto?.Nombre_Instituto || "Instituto -",
+      estudiante.Persona?.Municipio?.Nombre_Municipio || "Municipio -",
+      estudiante.Persona?.direccion || "-",
+      estudiante.Persona?.telefono || "-",
       estudiante.Persona?.Estado === 1
         ? "Activo"
         : estudiante.Persona?.Estado === 0
         ? "Inactivo"
-        : "Estado no disponible",
+        : "Estado -",
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
       )
-        .map((relacion) => relacion.Persona.Identidad || "No disponible")
+        .map((relacion) => relacion.Persona.Identidad || "-")
         .join(", "),
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
       )
         .map(
           (relacion) =>
-            `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-              relacion.Persona.Primer_Apellido || "No disponible"
+            `${relacion.Persona.Primer_Nombre || "-"} ${
+              relacion.Persona.Primer_Apellido || "-"
             }`
         )
         .join(", "),
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
       )
-        .map((relacion) => relacion.Persona.Identidad || "No disponible")
+        .map((relacion) => relacion.Persona.Identidad || "-")
         .join(", "),
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
       )
         .map(
           (relacion) =>
-            `${relacion.Persona.Primer_Nombre || "No disponible"} ${
-              relacion.Persona.Primer_Apellido || "No disponible"
+            `${relacion.Persona.Primer_Nombre || "-"} ${
+              relacion.Persona.Primer_Apellido || "-"
             }`
         )
         .join(", "),
@@ -294,12 +294,12 @@ const exportToExcel = () => {
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
       )
-        .map((relacion) => relacion.Persona?.telefono || "No disponible")
+        .map((relacion) => relacion.Persona?.telefono || "-")
         .join(", "),
       estudiante.Relaciones.filter(
         (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
       )
-        .map((relacion) => relacion.Persona?.direccion || "No disponible")
+        .map((relacion) => relacion.Persona?.direccion || "-")
         .join(", "),
     ]),
   ];
@@ -530,18 +530,18 @@ const exportToExcel = () => {
                             year: "numeric",
                           }
                         )
-                      : "Fecha no disponible"}
+                      : "Fecha -"}
                   </td>
           
                   <td className="py-4 px-6 border-b">
                     {estudiante.Beneficio?.Nombre_Beneficio ||
-                      "Beneficio no disponible"}
+                      "Beneficio -"}
                   </td>
                   <td className="py-4 px-6 border-b">
-                    {estudiante.Area?.Nombre_Area || "Área no disponible"}
+                    {estudiante.Area?.Nombre_Area || "Área -"}
                   </td>
                   <td className="py-4 px-6 border-b">
-                    {estudiante.Persona?.Identidad || "Identidad no disponible"}
+                    {estudiante.Persona?.Identidad || "Identidad -"}
                   </td>
                   <td className="py-4 px-6 border-b">
                     {`${estudiante.Persona?.Primer_Nombre || ""} ${
@@ -555,7 +555,7 @@ const exportToExcel = () => {
                       ? "Masculino"
                       : estudiante.Persona?.Sexo === 0
                       ? "Femenino"
-                      : "Sexo no disponible"}
+                      : "Sexo -"}
                   </td>
                   <td className="py-4 px-6 border-b">
   {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
@@ -580,25 +580,25 @@ const exportToExcel = () => {
 
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Lugar_Nacimiento ||
-                      "Lugar de nacimiento no disponible"}
+                      "Lugar de nacimiento -"}
                   </td>
                   <td className="py-4 px-6 border-b">
                     {estudiante.Instituto?.Nombre_Instituto ||
-                      "Instituto no disponible"}
+                      "Instituto -"}
                   </td>
               
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Municipio?.Nombre_Municipio ||
-                      "Municipio no disponible"}
+                      "Municipio -"}
                   </td>
 
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.telefono ||
-                      "No disponible"}
+                      "-"}
                   </td>
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.direccion ||
-                      "No disponible"}
+                      "-"}
                   </td>
             
                   <td className="py-4 px-6 border-b">
@@ -607,7 +607,7 @@ const exportToExcel = () => {
                         ? "Activo"
                         : estudiante?.Persona?.Estado === 0
                         ? "Inactivo"
-                        : "Estado no disponible"}
+                        : "Estado -"}
                     </strong>
                   </td>
 
@@ -617,7 +617,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
 
-                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || '-';
    
 
                   return `
@@ -633,8 +633,8 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
-                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || '-';
+                  const primerApellido = relacion.Persona.Primer_Apellido || '-';
 
 
                   return `
@@ -651,7 +651,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const telefono = relacion.Persona.telefono || 'No disponible';
+                  const telefono = relacion.Persona.telefono || '-';
           
 
 
@@ -668,7 +668,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const direccion = relacion.Persona.direccion || 'No disponible';
+                  const direccion = relacion.Persona.direccion || '-';
           
 
 
@@ -687,7 +687,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
     
-                  const identidad = relacion.Persona.Identidad || 'No disponible';
+                  const identidad = relacion.Persona.Identidad || '-';
          
 
                   return `
@@ -705,8 +705,8 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
 
-                  const primerNombre = relacion.Persona.Primer_Nombre || 'No disponible';
-                  const primerApellido = relacion.Persona.Primer_Apellido || 'No disponible';
+                  const primerNombre = relacion.Persona.Primer_Nombre || '-';
+                  const primerApellido = relacion.Persona.Primer_Apellido || '-';
        
 
                   return `
@@ -723,7 +723,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const telefono = relacion.Persona.telefono || 'No disponible';
+                  const telefono = relacion.Persona.telefono || '-';
           
 
 
@@ -740,7 +740,7 @@ const exportToExcel = () => {
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const direccion = relacion.Persona.direccion || 'No disponible';
+                  const direccion = relacion.Persona.direccion || '-';
           
 
 
