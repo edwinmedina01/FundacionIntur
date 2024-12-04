@@ -145,6 +145,19 @@ const Inicio = () => {
             </Link>
           </div>
 
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <h2 className="text-xl font-semibold mb-2">Graduandos</h2>
+            <p className="text-gray-600 mb-4">
+              aqui se presenta el registro de Graduandos.
+            </p>
+            <Link href="/graduandos">
+              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                Ir a Graduandos
+              </button>
+            </Link>
+          </div>
+
+
           {/* Botón 6 
           <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl font-semibold mb-2">Estadistica General</h2>

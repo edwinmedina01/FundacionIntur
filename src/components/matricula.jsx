@@ -270,9 +270,10 @@ const MatriculaManagement = () => {
 
 
       {/* Tabla de matrículas */}
-      <table className="min-w-full bg-white shadow-lg rounded-lg mb-6">
+      <table className="xls_style-excel-table">
   <thead>
     <tr>
+    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Modalidad</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Grado</th>
@@ -284,6 +285,7 @@ const MatriculaManagement = () => {
         <tbody>
           {currentMatriculas.map((matricula) => (
             <tr key={matricula.Id_Matricula}>
+               <td className="py-2 px-4">{matricula.Identidad}</td>
 <td className="py-2 px-4">
   {matricula.Estudiante} {matricula.Segundo_Nombre}{matricula.Primer_Apellido}{matricula.Segundo_Apellido}
 </td>

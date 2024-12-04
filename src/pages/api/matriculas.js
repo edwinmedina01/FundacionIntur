@@ -13,7 +13,8 @@ export default async function handler(req, res) {
           mo.Nombre AS Modalidad,
           g.Nombre AS Grado,
           s.Nombre_Seccion AS Seccion,
-          m.Fecha_Matricula
+          m.Fecha_Matricula,
+          p.Identidad
         FROM tbl_matricula m
         LEFT JOIN tbl_estudiante e ON m.Id_Estudiante = e.Id_Estudiante
         LEFT JOIN tbl_persona p ON e.Id_Persona = p.Id_Persona

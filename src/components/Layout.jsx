@@ -220,7 +220,7 @@ const Layout = ({ children }) => {
                 </li>
                 <li>
                   <Link
-                    href="/"
+                    href="/graduandos"
                     className="block py-1 px-4 rounded hover:bg-blue-600"
                   >
                     <FolderIcon className="h-5 w-5 mr-2 inline" /> Graduandos
