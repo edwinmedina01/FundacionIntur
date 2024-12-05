@@ -190,20 +190,14 @@ const BenefactoresManagement = () => {
     setIsEditing(false);
   };
 
+  // Filtrado de Benefactores
   const filteredBenefactores = Benefactores.filter((Benefactor) => {
-    // Convertir el nombre completo a minúsculas para una comparación insensible a mayúsculas
     const nombreCompleto = `${Benefactor.Persona_Nombre} ${Benefactor.Persona_Apellido}`.toLowerCase();
-    
-    // Convertir Identidad a cadena antes de aplicar toLowerCase()
     const identidad = String(Benefactor.Identidad).toLowerCase();
-  
-    // Comparar si alguna de las cadenas contiene el valor de búsqueda
     return nombreCompleto.includes(search.toLowerCase()) || identidad.includes(search.toLowerCase());
   });
-  
-  
 
-  // Paginación
+  // Lógica de paginación
   const indexOfLastBenefactor = currentPage * BenefactoresPerPage;
   const indexOfFirstBenefactor = indexOfLastBenefactor - BenefactoresPerPage;
   const currentBenefactores = filteredBenefactores.slice(indexOfFirstBenefactor, indexOfLastBenefactor);
@@ -318,7 +312,7 @@ const BenefactoresManagement = () => {
     </thead>
     <tbody>
       {Benefactores && Benefactores.length > 0 ? (
-        filteredBenefactores.map(Benefactor => (
+        currentBenefactores.map(Benefactor => (
           <tr key={Benefactor.Id_Persona}>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
@@ -360,52 +354,48 @@ const BenefactoresManagement = () => {
   </table>
 </div>
 
-{/* Paginación */}
-<div className="flex justify-between items-center mt-4">
-  {/* Botón "Anterior" */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === 1
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Anterior
-  </button>
+      {/* Paginación */}
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+            currentPage === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
+          }`}
+        >
+          Anterior
+        </button>
 
-  {/* Páginas */}
-  <div className="flex space-x-2">
-    {Array.from({ length: totalPages }, (_, index) => (
-      <button
-        key={index + 1}
-        onClick={() => paginate(index + 1)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-          currentPage === index + 1
-            ? 'bg-white-600 text-black shadow-lg scale-105'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
-        }`}
-      >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+        <div className="flex space-x-2">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => paginate(index + 1)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+                currentPage === index + 1
+                  ? "bg-white-600 text-black shadow-lg scale-105"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
 
-  {/* Botón "Siguiente" */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === totalPages
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Siguiente
-  </button>
-</div>
-
+        <button
+          onClick={() => paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
+            currentPage === totalPages
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-black shadow-md hover:bg-gray-200 focus:outline-none'
+          }`}
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 };

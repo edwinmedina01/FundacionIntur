@@ -326,7 +326,7 @@ const TutorPadreManagement = () => {
     </thead>
     <tbody>
       {tutores && tutores.length > 0 ? (
-        filteredTutores.map(Benefactor => (
+        currentTutores.map(Benefactor => (
           <tr key={Benefactor.Id_Persona}>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
@@ -394,8 +394,8 @@ const TutorPadreManagement = () => {
         onClick={() => paginate(index + 1)}
         className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
           currentPage === index + 1
-            ? 'bg-white-600 text-black shadow-lg scale-105'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
+            ? "bg-white-600 text-black shadow-lg scale-105"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
         }`}
       >
         {index + 1}
