@@ -188,9 +188,9 @@ const GraduandoForm = ({ estudiante }) => {
   };
 
   const filteredEstudiantes = estudiantes.filter((estudiante) =>
-    `${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido} ${estudiante.Persona.Identidad}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    `${estudiante.Persona?.Primer_Nombre} ${estudiante.Persona?.Primer_Apellido} ${estudiante.Persona?.Identidad}`
+      ?.toLowerCase()
+      .includes(searchTerm?.toLowerCase())
   );
 
   // Manejar los cambios en los campos del formulario

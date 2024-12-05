@@ -337,9 +337,7 @@ const GraduandoForm = () => {
           </div>
         </div>
 
-          <div>
-            <button onClick={exportToExcel}>Exportar a Excel</button>
-          </div>
+      
           <table className="xls_style-excel-table">
             <thead>
               <tr>

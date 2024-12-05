@@ -11,7 +11,7 @@ const EstudiantesCrud = () => {
 
 
   const router = useRouter();
-  const { tab, idEstudiante } = router.query;
+  const { tab, idEstudiante, rela } = router.query;
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -166,6 +166,16 @@ const [benefactorData, setBenefactorData] = useState({
   
       handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
       setActiveTab(Number(tab))
+      switch (Number(tab))
+      
+      {
+          case 3:
+          case 2:
+        
+          break;
+
+
+      }
     }
       console.log(response.data)
     } catch (error) {
