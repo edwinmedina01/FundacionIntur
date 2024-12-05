@@ -263,18 +263,18 @@ const GraduandoForm = () => {
 
   }
 
-  const filteredGraduandosold = graduandos.filter((graduando) => {
-    const fullName = `${graduando.Estudiante.Persona.Primer_Nombre}  ${graduando.Estudiante.Persona.Primer_Apellido}`.toLowerCase();
-    const identidad = graduando.Estudiante.Persona.Identidad.toLowerCase();
+  // const filteredGraduandosold = graduandos.filter((graduando) => {
+  //   const fullName = `${graduando.Estudiante.Persona.Primer_Nombre}  ${graduando.Estudiante.Persona.Primer_Apellido}`.toLowerCase();
+  //   const identidad = graduando.Estudiante.Persona.Identidad.toLowerCase();
 
-    return (
-      fullName.includes(searchTerm) || identidad.includes(searchTerm)
-    );
-  });
+  //   return (
+  //     fullName.includes(searchTerm) || identidad.includes(searchTerm)
+  //   );
+  // });
 
   const filteredGraduandos = graduandos.filter((graduando) => {
     // Convierte el objeto `graduando` en una cadena JSON para buscar en todas las propiedades
-    const allProperties = JSON.stringify(graduando).toLowerCase();
+    const allProperties = JSON.stringify(graduando)?.toLowerCase();
   
     // Retorna true si el término de búsqueda está en alguna propiedad
     return allProperties.includes(searchTerm.toLowerCase());
