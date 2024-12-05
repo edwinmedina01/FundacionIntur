@@ -52,6 +52,7 @@ export default async function handler(req, res) {
 
         const [personas] = await sequelize.query(
           `SELECT 
+          r.Id as Id_Relacion,
   p.Id_Persona,
   p.Id_Municipio,
   p.Id_Tipo_Persona,

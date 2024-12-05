@@ -11,7 +11,7 @@ const EstudiantesCrud = () => {
 
 
   const router = useRouter();
-  const { tab, idEstudiante, rela } = router.query;
+  const { tab, idEstudiante, relacionId } = router.query;
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -171,6 +171,13 @@ const [benefactorData, setBenefactorData] = useState({
       {
           case 3:
           case 2:
+            const relacion = updatedStudent.Relaciones.find(
+              (e) =>  e.Id === Number( relacionId)
+            );
+            if (relacion){
+              handleEditTutor(relacion)
+            
+            }
         
           break;
 

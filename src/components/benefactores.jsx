@@ -141,11 +141,14 @@ const BenefactoresManagement = () => {
 
 
   const handleEdit = (data) => {
+    console.log("handleEdit")
+    console.log(data)
     router.push({
       pathname: '/estudiante', // Ruta de la página destino
       query: {
         tab: 3,
         idEstudiante: data.Id_Estudiante,
+        relacionId:data.Id_Relacion
       },
     });
   };

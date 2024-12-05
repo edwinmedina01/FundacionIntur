@@ -35,6 +35,21 @@ const TutorPadreManagement = () => {
     fetchPermisos();
   }, []);
 
+
+
+  const handleEdit = (data) => {
+    console.log("handleEdit")
+    console.log(data)
+    router.push({
+      pathname: '/estudiante', // Ruta de la página destino
+      query: {
+        tab: 2,
+        idEstudiante: data.Id_Estudiante,
+        relacionId:data.Id_Relacion
+      },
+    });
+  };
+
   // Verificación de permisos
   const fetchPermisos = async () => {
     try {
@@ -138,10 +153,10 @@ const TutorPadreManagement = () => {
     }
   };
 
-  const handleEdit = (tutor) => {
-    setFormData(tutor);
-    setIsEditing(true);
-  };
+  // const handleEdit = (tutor) => {
+  //   setFormData(tutor);
+  //   setIsEditing(true);
+  // };
 
   const handleDelete = async (Id_Persona) => {
     try {
@@ -285,7 +300,8 @@ const TutorPadreManagement = () => {
 
 {/* Tabla de tutores */}
 <div className="overflow-x-auto border-t border-b mb-4">
-<table className="min-w-full bg-white shadow-lg rounded-lg mb-6">
+
+<table className="xls_style-excel-table">
 <thead>
       <tr>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
@@ -293,34 +309,56 @@ const TutorPadreManagement = () => {
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Telefono</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Direccion</th>
+        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad E.</th>
+        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
+        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
       </tr>
     </thead>
     <tbody>
       {tutores && tutores.length > 0 ? (
-        tutores.map(tutor => (
-          <tr key={tutor.Id_Persona}>
-            <td className="border px-4 py-2">{tutor.Identidad}</td>
-           <td className="border px-4 py-2">{tutor.Primer_Nombre} {tutor.Primer_Apellido}</td>
+        tutores.map(Benefactor => (
+          <tr key={Benefactor.Id_Persona}>
+            <td className="border px-4 py-2">{Benefactor.Identidad}</td>
+           <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
            <td className="border px-4 py-2">
-  {tutor.Sexo === 1
+  {Benefactor.Sexo === 1
     ? 'Masculino'
-    : tutor.Sexo === 0
+    : Benefactor.Sexo === 0
     ? 'Femenino'
     : 'Desconocido'}
 </td>
-<td className="border px-4 py-2">{tutor.telefono}</td>
-<td className="border px-4 py-2">{tutor.direccion}</td>
-              {/* Acciones como editar o eliminar */}
+<td className="border px-4 py-2">{Benefactor.Persona_Telefono}</td>
+<td className="border px-4 py-2">{Benefactor.Persona_Direccion}</td>
+<td className="border px-4 py-2">{Benefactor.Estudiante_Identidad}</td>
+<td className="2 ">{Benefactor.Estudiante_Nombre}{""} {Benefactor.Estudiante_Apellido}</td>
+<td className='xls_center'>
+
+{permisos.Permiso_Actualizar === "1" && (
+    <button
+      onClick={() => handleEdit(Benefactor)}
+
+
+      
+      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-6 w-6" />
+    </button>
+  )}
+</td>
+              
 
           </tr>
         ))
       ) : (
         <tr>
-          <td colSpan="8">No hay tutores disponibles</td>
+          <td colSpan="8">No hay Benefactores disponibles</td>
         </tr>
       )}
     </tbody>
   </table>
+
+
+
 </div>
 
 {/* Paginación */}
