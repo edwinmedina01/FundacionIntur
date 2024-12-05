@@ -172,6 +172,22 @@ const [benefactorData, setBenefactorData] = useState({
       console.error("Error al obtener estudiantes", error);
     }
   };
+
+
+  const resizeTo=()=>{
+    setPersonaDataRelacion((prev) => ({
+      ...prev, // Mantiene las propiedades actuales de personaDataRelacion
+      Identidad: '',
+      Primer_Nombre: '',
+      Primer_Apellido: '',
+      Sexo: '',
+      direccion: '',
+      telefono: '',
+    }));
+
+  }
+
+
   const handleTabChange = (tabIndex) => {
     setActiveTab(tabIndex);
 
@@ -187,7 +203,7 @@ const [benefactorData, setBenefactorData] = useState({
       case 2:
         
         personaDataRelacion.Id_Tipo_Persona=2;
-
+        resizeTo();
 
       break;
            
@@ -195,6 +211,7 @@ const [benefactorData, setBenefactorData] = useState({
 
       personaDataRelacion.Id_Tipo_Persona=3;
 
+      resizeTo();
 
       break;
 
@@ -388,7 +405,7 @@ const handlePersonaSubmit = async (e) => {
           // alert("Registro creado")
         }
 
-        setEditId(null);
+        //setEditId(null);
       } else {
 
 
@@ -411,6 +428,7 @@ const handlePersonaSubmit = async (e) => {
         }
 
         await axios.post("/api/estudiantes", { personaData, estudianteData });
+        resizeTo();
       }
       setPersonaData({
         Primer_Nombre: "",
@@ -1332,7 +1350,7 @@ if (!permisos) {
       id="Direccion_Tutor"
       type="text"
       name="direccion"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Dirección del Tutor"
+      placeholder="Dirección del Benefactor"
       value={personaDataRelacion.direccion}
       onChange={handleTutorInputChange}
       required
@@ -1347,7 +1365,7 @@ if (!permisos) {
       id="Telefono_Tutor"
       type="text"
       name="telefono"  // Asegúrate de que el name coincida con la propiedad del estado
-      placeholder="Teléfono del Tutor"
+      placeholder="Teléfono del Benefactor"
       value={personaDataRelacion.telefono}
       onChange={handleTutorInputChange}
       required
@@ -1475,27 +1493,37 @@ if (!permisos) {
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
-            <table className="min-w-full mt-4 border border-gray-300">
+            <table className="xls_style-excel-table">
               <thead>
                 <tr classname ="bg-gray-100">
+                <th >#</th>
+                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
+
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
                 <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
                 </tr>
               </thead>
               {permisos?.Permiso_Consultar === "1" && (
               <tbody>
-                {filteredEstudiantes.map((estudiante) => (
-                  <tr key={estudiante.Id_Estudiante} className="hover:bg-gray-50">
-                    <td className="border p-3 text-center">{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
-                    <td className="border p-3 text-center">
+                {filteredEstudiantes.map((estudiante,index) => (
+                  
+                  <tr key={estudiante.Id_Estudiante}>
+                        <td >
+                      {index + 1}
+                    </td>
+                         <td >
+                      {estudiante.Persona.Identidad}
+                    </td>
+                    <td >{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
+                    <td >
                       {estudiante.Instituto.Nombre_Instituto}
                     </td>
-                    <td className="p-3 border-b flex justify-center items-center space-x-2">
+                    <td className="xls_center">
   {permisos.Permiso_Actualizar === "1" && (
     <button
       onClick={() => handleEdit(estudiante)}
-      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
     >
       <PencilSquareIcon className="h-6 w-6" />
     </button>
@@ -1504,7 +1532,7 @@ if (!permisos) {
   {permisos.Permiso_Eliminar === "1" && (
     <button
       onClick={() => handleDelete(estudiante.Id_Estudiante)}
-      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+      className="m-1 px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700 padd" 
     >
       <TrashIcon className="h-6 w-6" />
     </button>

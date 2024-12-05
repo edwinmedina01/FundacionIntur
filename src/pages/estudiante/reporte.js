@@ -4,6 +4,7 @@ import Layout from "../../components/Layout";
 import Link from "next/link";
 import * as XLSX from "xlsx"; // Importar la librería xlsx
 import AuthContext from "../../context/AuthContext";
+import { useRouter } from 'next/router';
 import {
   MagnifyingGlassIcon,
   ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
@@ -69,6 +70,19 @@ const EstudiantesReporte = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+
+  const handleEdit = (item) => {
+    router.push({
+      pathname: '/estudiante', // Ruta de la página destino
+      query: {
+        tab: 1,
+        idEstudiante: item.Id_Estudiante,
+      },
+    });
+  };
+
+  const router = useRouter();
 
   const filteredEstudiantes = estudiantes.filter((estudiante) => {
     const fullText = `
@@ -754,6 +768,19 @@ const exportToExcel = () => {
                   
                   <td className="py-4 px-6 border-b">
                     <div className="flex gap-2">
+
+                    {permisos[1]?.actualizar && (
+    <button
+      onClick={() => handleEdit(estudiante)}
+
+
+      
+      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-6 w-6" />
+    </button>
+  )}
+
 
                       {permisos[1]?.eliminar && (
                         <button

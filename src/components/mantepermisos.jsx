@@ -320,7 +320,7 @@ if (!permisos) {
 
           {/* Opciones de Permisos */}
           <div className="grid grid-cols-2 gap-4 mb-4">
-            {["Insertar", "Actualizar", "Consultar", "Eliminar"].map(
+            {["Consultar","Insertar", "Actualizar",  "Eliminar"].map(
               (action) => (
                 <div key={action} className="flex items-center">
                   <input
