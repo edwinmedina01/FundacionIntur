@@ -4,7 +4,14 @@ import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
 import { ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
+import GraduandoTable from '../../components/GraduandoTable';
+import GraduandoInner from '../../components/GraduandoInner';
+import { useRouter } from 'next/router';
 const EstudiantesCrud = () => {
+
+
+  const router = useRouter();
+  const { tab, idEstudiante } = router.query;
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -147,14 +154,18 @@ const [benefactorData, setBenefactorData] = useState({
       const response = await axios.get("/api/estudiantes");
       setEstudiantes(response.data);
 
+
+ 
+
        // Si hay un estudiante seleccionado, actualizarlo
-    if (selectedStudent) {
+    if (selectedStudent||idEstudiante) {
       const updatedStudent = response.data.find(
-        (e) => e.Id_Estudiante === selectedStudent.Id_Estudiante
+        (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
       );
       setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
   
       handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+      setActiveTab(Number(tab))
     }
       console.log(response.data)
     } catch (error) {
@@ -694,6 +705,15 @@ if (!permisos) {
     >
       Benefactor
     </button>
+    <button
+      type="button"
+      onClick={() => handleTabChange(4)}
+      className={`p-4 ${
+        activeTab === 4 ? "border-b-4 border-blue-600 text-blue-600" : "text-gray-700"
+      } transition duration-300 ease-in-out`}
+    >
+      Graduación
+    </button>
   </div>
 
   {/* Sección Estudiante */}
@@ -1004,6 +1024,21 @@ if (!permisos) {
 {/* Sección Tutor/Padre */}
 {activeTab === 2 && (
   <div>
+    <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Nombre Completo  Estudiante
+        </label>
+        <input
+  type="text"
+  name="NombreCompleto"
+  value={
+    `${personaData.Primer_Nombre || "Sin Nombre"} ${personaData.Segundo_Nombre || ""} ${personaData.Primer_Apellido || ""} ${personaData.Segundo_Apellido || ""}`.trim()
+  }
+  readOnly
+  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+/>
+      </div>
+
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
 
 
@@ -1206,10 +1241,24 @@ if (!permisos) {
 {/* Sección Benefactor */}
 {activeTab === 3 && (
   <div>
+    <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Nombre Completo  Estudiante
+        </label>
+        <input
+  type="text"
+  name="NombreCompleto"
+  value={
+    `${personaData.Primer_Nombre || "Sin Nombre"} ${personaData.Segundo_Nombre || ""} ${personaData.Primer_Apellido || ""} ${personaData.Segundo_Apellido || ""}`.trim()
+  }
+  readOnly
+  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+/>
+      </div>
+
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
 
-
-
+  
 
   <div className="flex flex-col">
 
@@ -1400,6 +1449,15 @@ if (!permisos) {
 
         </table>
       </div>
+</div>
+
+
+)}
+
+{/* Sección Graduandos */}
+{activeTab === 4 && (
+  <div>
+  <GraduandoInner estudiante={selectedStudent}  />
 </div>
 
 

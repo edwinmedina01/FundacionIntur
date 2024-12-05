@@ -6,11 +6,10 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
 
-
 import Select from "react-select";
 
 
-const GraduandoForm = () => {
+const GraduandoForm = ({ estudiante }) => {
   const [graduandos, setGraduandos] = useState([]);
   const [formData, setFormData] = useState({
     Anio: '',
@@ -29,6 +28,9 @@ const GraduandoForm = () => {
         // ------------------------------------------------------------//
         const [estudiantes, setEstudiantes] = useState([]);
         const [isEditing, setIsEditing] = useState(false);
+        const [notification, setNotification] = useState('');
+        const [updateNotification, setUpdateNotification] = useState('');
+        const [deleteNotification, setDeleteNotification] = useState('');
         const resetForm = () => {
           setFormData({ 
 
@@ -44,15 +46,23 @@ const GraduandoForm = () => {
         };
         const [searchTerm, setSearchTerm] = useState("");
         
-        const router = useRouter();
+
 
   useEffect(() => {
+
+    if (estudiante) {
+      setFormData((prev) => ({
+        ...prev,
+        Estudiante: estudiante, // Objeto completo del estudiante
+        Id_Estudiante: estudiante.Id_Estudiante, // ID del estudiante
+      }));
+    }
  
     fetchPermisos();
     fetchGraduandos();
-   fetchEstudiantes();
+   //fetchEstudiantes();
 
-  }, [user]);
+  }, [user,estudiante]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -119,7 +129,28 @@ const GraduandoForm = () => {
 
     
       const response = await axios.get('/api/graduando');
+      const graduandos = response.data; // Usa los datos directamente
       setGraduandos(response.data);
+
+      const graduandoRelacionado = graduandos.find(
+        (graduando) => graduando.Id_Estudiante === estudiante.Id_Estudiante
+      );
+
+      let data =graduandoRelacionado;
+      if (graduandoRelacionado) {
+        setFormData({
+          Id_Graduando:data.Id_Graduando,
+          Anio: data.Anio,
+          Fecha_Inicio: data.Fecha_Inicio,
+          Fecha_Final: data.Fecha_Final,
+          Creado_Por: data.Creado_Por,
+          Estudiante: estudiante, 
+          Id_Estudiante:estudiante.Id_Estudiante// Objeto esperado por el Select
+        });
+        setIsEditing(true)
+      }
+
+      
     } catch (error) {
       console.error('Error al obtener los graduandos:', error);
     }
@@ -209,14 +240,26 @@ const GraduandoForm = () => {
       if (!isEditing){
 
         await axios.post('/api/graduando', formData);
+        
+        setUpdateNotification('graduando agregado exitosamente');
+        setTimeout(() => {
+          setUpdateNotification('');
+        }, 3000);
       }else{
         await axios.put(`/api/graduando/${formData.Id_Graduando}`, formData);
+
+        
+        setUpdateNotification('graduando actualizado exitosamente');
+        setTimeout(() => {
+          setUpdateNotification('');
+        }, 3000);
       }
  
-      resetForm();
+   //   resetForm();
       // Recargar los graduandos después de agregar uno nuevo
       const response = await axios.get('/api/graduando');
-      setGraduandos(response.data);
+
+     // setGraduandos(response.data);
     } catch (error) {
       console.error('Error al crear un graduando:', error);
     }
@@ -234,17 +277,23 @@ const GraduandoForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEdit = (data) => {
 
-  const handleEdit = (graduando) => {
-    router.push({
-      pathname: '/estudiante', // Ruta de la página destino
-      query: {
-        tab: 4,
-        idEstudiante: graduando.Id_Estudiante,
-      },
+    const estudianteSeleccionado = options.find(
+      (option) => option.value === data.Id_Estudiante
+    );
+
+    setFormData({
+      Id_Graduando:data.Id_Graduando,
+      Anio: data.Anio,
+      Fecha_Inicio: data.Fecha_Inicio,
+      Fecha_Final: data.Fecha_Final,
+      Creado_Por: data.Creado_Por,
+      Estudiante: estudianteSeleccionado, // Objeto esperado por el Select
     });
-  };
 
+    setIsEditing(true);
+  };
 
   if (sinPermisos) {
     return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
@@ -285,122 +334,103 @@ const GraduandoForm = () => {
   return (
     <div>
 
-  
+      <h2 className="text-2xl font-bold text-gray-700 mb-4">Graduación</h2>
 
-      { (
-        <>
-          <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
-          Graduandos
-        </h1>
+      <form onSubmit={handleSubmit}>
 
 
-    {/* Contenedor para la búsqueda y el botón de exportación */}
-    <div className="mb-4 flex justify-between items-center">
-          {/* Barra de búsqueda */}
-          {permisos.Permiso_Consultar && (
-            <div className="flex items-center w-1/2 border border-gray-300 rounded-lg p-3">
-              <MagnifyingGlassIcon className="h-6 w-6 mr-1 text-black-500" />
-              <input
-                type="text"
-                placeholder="Buscar graduando"
-                value={searchTerm}
-                onChange={handleSearch}
-                className="border-none focus:ring-0 w-full p-1 text-gray-700 bg-transparent"
-              />
-            </div>
-          )}
-          <center>
-            {permisos[1]?.insertar && (
-              <button
-                onClick={() => (window.location.href = "/estudiante")}
-                className="block py-1 px-4 rounded bg-orange-500 text-white hover:bg-orange-600 focus:outline-none transition-colors"
-              >
-                <UserPlusIcon className="h-6 w-6 inline" /> Agregar Registro
-              </button>
-            )}
-          </center>
-          {permisos[1]?.actualizar && (
-                        <Link href={`/estudiante`}>
-                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
-                          <PencilSquareIcon className="h-6 w-6 inline" />  Editar Registros
-                          </button>
-                        </Link>
-                      )}
-          {/* Botón de exportación */}
-          <div className="flex justify-center ml-4">
-            <button
-              onClick={exportToExcel}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
-            >
-             <ArrowDownCircleIcon className="h-6 w-6 inline" />    Exportar Excel
-            </button>
-          </div>
-        </div>
+      <div>
+        <label className="block mb-2 text-sm font-medium text-gray-700">
+          Nombre Completo
+        </label>
+        <input
+  type="text"
+  name="NombreCompleto"
+  value={
+    `${formData.Estudiante?.Persona?.Primer_Nombre || "Sin Nombre"} ${formData.Estudiante?.Persona?.Segundo_Nombre || ""} ${formData.Estudiante?.Persona?.Primer_Apellido || ""} ${formData.Estudiante?.Persona?.Segundo_Apellido || ""}`.trim()
+  }
+  readOnly
+  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+/>
+      </div>
+      <div>
+        <label htmlFor="Anio" className="block mb-2 text-sm font-medium text-gray-700">
+          Año:
+        </label>
+        <input
+          type="number"
+          name="Anio"
+          value={formData.Anio}
+          onChange={handleChange}
+          required
+          className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Ingrese el año"
+        />
+      </div>
 
-          <div>
-            <button onClick={exportToExcel}>Exportar a Excel</button>
-          </div>
-          <table className="xls_style-excel-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Identidad</th>
-                <th>Nombre Completo</th>
-                <th>Año</th>
-                <th>Fecha de Inicio</th>
-                <th>Fecha de Finalización</th>
-       
-                <th>Fecha de Creación</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGraduandos.length > 0 ? (
-            filteredGraduandos.            
-              map((graduando) => (
-                <tr key={graduando.Id_Graduando}>
-                  <td>{graduando.Id_Graduando}</td>
-                  <td>{graduando.Estudiante.Persona.Identidad}</td>
-                  <td>{graduando.Estudiante.Persona.Primer_Nombre + " "+ graduando.Estudiante.Persona.Primer_Apellido}</td>
-                  <td>{graduando.Anio}</td>
-                  <td>{graduando.Fecha_Inicio}</td>
-                  <td>{graduando.Fecha_Final}</td>
-          
-                  <td>{graduando.Fecha_Creacion}</td>
-                  <td className="p-3 border-b flex justify-center items-center space-x-2">
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => handleEdit(graduando)}
+      <div>
+        <label htmlFor="Fecha_Inicio" className="block mb-2 text-sm font-medium text-gray-700">
+          Fecha de Inicio:
+        </label>
+        <input
+          type="date"
+          name="Fecha_Inicio"
+          value={formData.Fecha_Inicio}
+          onChange={handleChange}
+          required
+          className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
+      <div>
+        <label htmlFor="Fecha_Final" className="block mb-2 text-sm font-medium text-gray-700">
+          Fecha de Finalización:
+        </label>
+        <input
+          type="date"
+          name="Fecha_Final"
+          value={formData.Fecha_Final}
+          onChange={handleChange}
+          className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+<br></br>
 
-      
-      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
-
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-      onClick={() => handleDelete(graduando.Id_Graduando)}
-      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-                </tr>
-              ))):(
-                <tr>
-                  <td colSpan="7" className="text-center border px-4 py-2">
-                    No se encontraron graduandos.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </>
+<div className="flex justify-end">
+  {isEditing
+    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+      permisos.Permiso_Actualizar === "1" && (
+        <button
+        onClick={handleSubmit}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Actualizar
+        </button>
+      )
+    : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+      permisos.Permiso_Insertar === "1" && (
+        <button
+        onClick={handleSubmit}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Agregar
+        </button>
       )}
+
+  <button
+    type="button"
+    onClick={resetForm}
+    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Cancelar
+  </button>
+</div>
+        </form>
+
+        {notification && <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">{notification}</div>}
+        {updateNotification && <div className="mt-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700">{updateNotification}</div>}
+        {deleteNotification && <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">{deleteNotification}</div>}
+  
     </div>
   );
 }; 

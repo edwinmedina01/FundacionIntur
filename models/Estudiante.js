@@ -9,6 +9,7 @@ const Area = require('./Area');
 const Relacion = require('./Relacion');
 const Matricula = require('./Matricula');
 
+
 const Estudiante = sequelize.define('Tbl_Estudiante', {
     Id_Estudiante: {
         type: DataTypes.INTEGER,
@@ -71,7 +72,6 @@ Estudiante.hasMany(Matricula, {
   sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
   as: 'Matriculas',           // Alias para la relación
 });
-
 
 
 // Estudiante.hasMany(Relacion, {
