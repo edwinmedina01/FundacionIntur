@@ -4,6 +4,8 @@ import * as XLSX from "xlsx";
 import { useRouter } from "next/router";
 import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../context/AuthContext"; // para permisos
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
@@ -39,10 +41,7 @@ const UsersManagement = () => {
     Fecha_Modificacion: "",
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState("");
-  const [updateNotification, setUpdateNotification] = useState("");
-  const [deleteNotification, setDeleteNotification] = useState("");
-  const [visibleDetails, setVisibleDetails] = useState({});
+ const [visibleDetails, setVisibleDetails] = useState({});
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 
@@ -179,10 +178,22 @@ const fetchPermisos = async () => {
           throw new Error("Error al actualizar el usuario");
         }
 
-        setUpdateNotification("Usuario actualizado exitosamente");
-        setTimeout(() => {
-          setUpdateNotification("");
-        }, 3000);
+        toast.success("Usuario actualizado exitosamente",
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       } else {
         // Lógica para crear un nuevo usuario
         const response = await fetch("/api/usuarios", {
@@ -202,20 +213,30 @@ const fetchPermisos = async () => {
         }
 
         // Ya no se hashea la contraseña aquí
-        setNotification("Usuario agregado exitosamente");
-        setTimeout(() => {
-          setNotification("");
-        }, 3000);
+        toast.success("Usuario agregado exitosamente",
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       }
 
       fetchUsers();
       resetForm();
     } catch (error) {
-      console.error("Error al guardar el usuario:", error);
-      setNotification(error.message);
-      setTimeout(() => {
-        setNotification("");
-      }, 3000);
+      toast.error("Error al guardar el usuario:", error);
+      toast.error(error.message);
+     
     }
   };
 
@@ -244,12 +265,21 @@ const fetchPermisos = async () => {
 
       fetchUsers();
       resetForm();
-      setDeleteNotification("Usuario eliminado exitosamente");
-      setTimeout(() => {
-        setDeleteNotification("");
-      }, 3000);
+      toast.error("Usuario eliminado exitosamente", {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
-      console.error("Error al eliminar el usuario:", error);
+      toast.error("Error al eliminar el usuario:", error);
     }
   };
 
@@ -511,15 +541,7 @@ if (!permisos) {
     Cancelar
   </button>
 </div>
-          {notification && (
-            <p className="mt-2 text-green-500">{notification}</p>
-          )}
-          {updateNotification && (
-            <p className="mt-2 text-green-500">{updateNotification}</p>
-          )}
-          {deleteNotification && (
-            <p className="mt-2 text-red-500">{deleteNotification}</p>
-          )}
+
         </form>
       </div>
 

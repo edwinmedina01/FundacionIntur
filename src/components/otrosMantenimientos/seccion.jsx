@@ -4,6 +4,8 @@ import * as XLSX from 'xlsx';
 import { useRouter } from 'next/router';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const SeccionManagement = () => {
   const router = useRouter(); // Inicializar router dentro del useEffect
@@ -23,10 +25,7 @@ const SeccionManagement = () => {
     Id_Grado: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+ const [currentPage, setCurrentPage] = useState(1);
   const seccionesPerPage = 8;  // cantidad de secciones por página
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -181,10 +180,22 @@ useEffect(() => {
           throw new Error('Error al actualizar la sección');
         }
 
-        setUpdateNotification('Sección actualizada exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Sección actualizada exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       } else {
         const response = await fetch('/api/apis_mantenimientos/seccion', {
           method: 'POST',
@@ -198,16 +209,28 @@ useEffect(() => {
           throw new Error('Error al crear la sección');
         }
 
-        setNotification('Sección agregada exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Sección agregada exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       }
 
       fetchSecciones();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar la sección:', error);
+      toast.error('Error al guardar la sección:', error);
     }
   };
 
@@ -232,10 +255,19 @@ useEffect(() => {
 
       fetchSecciones();
       resetForm();
-      setDeleteNotification('Sección eliminada exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Sección eliminada exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
       console.error('Error al eliminar la sección:', error);
     }
@@ -334,11 +366,7 @@ if (!permisos) {
   </button>
 </div>
         </form>
-
-        {notification && <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">{notification}</div>}
-        {updateNotification && <div className="mt-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">{deleteNotification}</div>}
-      </div>
+</div>
 
       {/* Columna derecha: Tabla de Secciones */}
       <div className="w-2/3">

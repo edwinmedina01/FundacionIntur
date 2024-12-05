@@ -195,10 +195,20 @@ const TutorPadreManagement = () => {
     setIsEditing(false);
   };
 
-  const filteredTutores = tutores.filter((tutor) =>
-    (tutor.Nombre && tutor.Nombre.toLowerCase().includes(search.toLowerCase())) ||
-    (tutor.Apellido && tutor.Apellido.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredTutores = tutores.filter((tutor) => {
+    const searchLower = search.toLowerCase();
+    return (
+      (tutor.Identidad && String(tutor.Identidad).toLowerCase().includes(searchLower)) ||
+      (tutor.Persona_Nombre && String(tutor.Persona_Nombre).toLowerCase().includes(searchLower)) ||
+      (tutor.Persona_Apellido && String(tutor.Persona_Apellido).toLowerCase().includes(searchLower)) ||
+      (tutor.Persona_Telefono && String(tutor.Persona_Telefono).toLowerCase().includes(searchLower)) ||
+      (tutor.Persona_Direccion && String(tutor.Persona_Direccion).toLowerCase().includes(searchLower)) ||
+      (tutor.Estudiante_Nombre && String(tutor.Estudiante_Nombre).toLowerCase().includes(searchLower)) ||
+      (tutor.Estudiante_Apellido && String(tutor.Estudiante_Apellido).toLowerCase().includes(searchLower))
+    );
+  });
+  
+  
 
   // Paginación
   const indexOfLastTutor = currentPage * tutoresPerPage;
@@ -301,9 +311,9 @@ const TutorPadreManagement = () => {
 {/* Tabla de tutores */}
 <div className="overflow-x-auto border-t border-b mb-4">
 
-<table className="xls_style-excel-table">
+<table className="min-w-full border-collapse">
 <thead>
-      <tr>
+<tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
@@ -316,7 +326,7 @@ const TutorPadreManagement = () => {
     </thead>
     <tbody>
       {tutores && tutores.length > 0 ? (
-        tutores.map(Benefactor => (
+        filteredTutores.map(Benefactor => (
           <tr key={Benefactor.Id_Persona}>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>

@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const LineaBeneficioManagement = () => {
 
@@ -22,10 +24,7 @@ const LineaBeneficioManagement = () => {
     Responsable_Beneficio: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+ const [currentPage, setCurrentPage] = useState(1);
   const beneficiosPerPage = 8;
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -117,7 +116,7 @@ const LineaBeneficioManagement = () => {
       const response = await axios.get('/api/apis_mantenimientos/lineas_beneficio');
       setBeneficios(response.data);
     } catch (error) {
-      console.error('Error fetching beneficios:', error);
+      toast.error('Error fetching beneficios:', error);
     }
   };
 
@@ -141,10 +140,21 @@ const LineaBeneficioManagement = () => {
           throw new Error('Error al actualizar el beneficio');
         }
 
-        setUpdateNotification('Beneficio actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Beneficio actualizado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
       } else {
         const response = await fetch('/api/apis_mantenimientos/lineas_beneficio', {
           method: 'POST',
@@ -158,16 +168,28 @@ const LineaBeneficioManagement = () => {
           throw new Error('Error al crear el beneficio');
         }
 
-        setNotification('Beneficio agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Beneficio agregado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       }
 
       fetchBeneficios();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el beneficio:', error);
+      toast.error('Error al guardar el beneficio:', error);
     }
   };
 
@@ -192,12 +214,23 @@ const LineaBeneficioManagement = () => {
 
       fetchBeneficios();
       resetForm();
-      setDeleteNotification('Beneficio eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Beneficio eliminado exitosamente',
+        {
+          style: {
+            backgroundColor: '#ffebee', // Fondo suave rojo
+            color: '#d32f2f', // Texto rojo oscuro
+            fontWeight: 'bold',
+            border: '1px solid #f5c6cb',
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: true,
+        });
+      
     } catch (error) {
-      console.error('Error al eliminar el beneficio:', error);
+      toast.error('Error al eliminar el beneficio:', error);
     }
   };
 
@@ -314,12 +347,7 @@ if (!permisos) {
 </div>
 
         </form>
-
-        {/* Notificaciones */}
-        {notification && <div className="mt-4 text-green-600">{notification}</div>}
-        {updateNotification && <div className="mt-4 text-blue-600">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 text-red-600">{deleteNotification}</div>}
-      </div>
+ </div>
 
       {/* Columna derecha: Tabla de beneficios */}
       <div className="w-2/3">

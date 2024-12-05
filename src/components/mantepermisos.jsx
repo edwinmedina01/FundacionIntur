@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PermissionsManagement = () => {
   const [permissions, setPermissions] = useState([]);
@@ -25,7 +27,7 @@ const PermissionsManagement = () => {
     Permiso_Consultar: false,
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
+
   
  // Paginación
  const [currentPage, setCurrentPage] = useState(1);
@@ -132,13 +134,27 @@ const handleSubmit = async (e) => {
       throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el permiso`);
     }
 
-    setNotification(`Permiso ${isEditing ? 'actualizado' : 'agregado'} exitosamente`);
-    setTimeout(() => setNotification(''), 3000);
+    toast.success(`Permiso ${isEditing ? 'actualizado' : 'agregado'} exitosamente`,
+      {
+        style: {
+          backgroundColor: '#e6ffed', // Fondo verde suave
+          color: '#2e7d32', // Texto verde oscuro
+          fontWeight: 'bold',
+          border: '1px solid #a5d6a7', // Borde verde claro
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'top-right', // Posición en la esquina superior derecha
+        autoClose: 5000, // Cierra automáticamente en 5 segundos
+        hideProgressBar: true, // Ocultar barra de progreso
+      }
+    );
+    
 
     fetchPermissions();
     resetForm();
   } catch (error) {
-    console.error('Error al guardar el permiso:', error);
+    toast.error('Error al guardar el permiso:', error);
   }
 };
 
@@ -169,8 +185,19 @@ const handleSubmit = async (e) => {
 
       fetchPermissions();
       resetForm();
-      setNotification('Permiso eliminado exitosamente');
-      setTimeout(() => setNotification(''), 3000);
+      toast.error('Permiso eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
       console.error('Error al eliminar el permiso:', error);
     }
@@ -369,11 +396,6 @@ if (!permisos) {
 </div>
 
         </form>
-        {notification && (
-          <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-            {notification}
-          </div>
-        )}
       </div>
 
       {/* Columna derecha: Tabla de permisos */}

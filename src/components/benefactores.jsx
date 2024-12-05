@@ -190,10 +190,18 @@ const BenefactoresManagement = () => {
     setIsEditing(false);
   };
 
-  const filteredBenefactores = Benefactores.filter((Benefactor) =>
-    (Benefactor.Nombre && Benefactor.Nombre.toLowerCase().includes(search.toLowerCase())) ||
-    (Benefactor.Apellido && Benefactor.Apellido.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredBenefactores = Benefactores.filter((Benefactor) => {
+    // Convertir el nombre completo a minúsculas para una comparación insensible a mayúsculas
+    const nombreCompleto = `${Benefactor.Persona_Nombre} ${Benefactor.Persona_Apellido}`.toLowerCase();
+    
+    // Convertir Identidad a cadena antes de aplicar toLowerCase()
+    const identidad = String(Benefactor.Identidad).toLowerCase();
+  
+    // Comparar si alguna de las cadenas contiene el valor de búsqueda
+    return nombreCompleto.includes(search.toLowerCase()) || identidad.includes(search.toLowerCase());
+  });
+  
+  
 
   // Paginación
   const indexOfLastBenefactor = currentPage * BenefactoresPerPage;
@@ -295,9 +303,9 @@ const BenefactoresManagement = () => {
 
 {/* Tabla de Benefactores */}
 <div >
-<table className="xls_style-excel-table">
+<table className="min-w-full border-collapse">
 <thead>
-      <tr>
+<tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
@@ -310,7 +318,7 @@ const BenefactoresManagement = () => {
     </thead>
     <tbody>
       {Benefactores && Benefactores.length > 0 ? (
-        Benefactores.map(Benefactor => (
+        filteredBenefactores.map(Benefactor => (
           <tr key={Benefactor.Id_Persona}>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>

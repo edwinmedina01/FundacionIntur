@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GradoManagement = () => {
 
@@ -23,10 +25,7 @@ const GradoManagement = () => {
     Cantidad_Materias: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+const [currentPage, setCurrentPage] = useState(1);
   const gradosPerPage = 8;  // cantidad de grados por página
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -116,7 +115,7 @@ const GradoManagement = () => {
       const response = await axios.get('/api/apis_mantenimientos/grado');
       setGrados(response.data);
     } catch (error) {
-      console.error('Error fetching grados:', error);
+      toast.error('Error fetching grados:', error);
     }
   };
 
@@ -140,10 +139,23 @@ const GradoManagement = () => {
           throw new Error('Error al actualizar el grado');
         }
 
-        setUpdateNotification('Grado actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Grado actualizado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
+
       } else {
         const response = await fetch('/api/apis_mantenimientos/grado', {
           method: 'POST',
@@ -157,16 +169,29 @@ const GradoManagement = () => {
           throw new Error('Error al crear el grado');
         }
 
-        setNotification('Grado agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Grado agregado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
+
       }
 
       fetchGrados();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el grado:', error);
+      toast.error('Error al guardar el grado:', error);
     }
   };
 
@@ -191,12 +216,22 @@ const GradoManagement = () => {
 
       fetchGrados();
       resetForm();
-      setDeleteNotification('Grado eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Grado eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+
     } catch (error) {
-      console.error('Error al eliminar el grado:', error);
+      toast.error('Error al eliminar el grado:', error);
     }
   };
 
@@ -321,11 +356,7 @@ if (!permisos) {
   </button>
 </div>
         </form>
-
-        {notification && <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">{notification}</div>}
-        {updateNotification && <div className="mt-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">{deleteNotification}</div>}
-      </div>
+</div>
 
       {/* Columna derecha: Tabla de Grados */}
       

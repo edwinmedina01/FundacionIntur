@@ -4,6 +4,9 @@ import * as XLSX from 'xlsx';
 import { useRouter } from 'next/router';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const RolesManagement = () => {
 const router = useRouter();
   const [roles, setRoles] = useState([]);
@@ -20,10 +23,7 @@ const router = useRouter();
     Estado: ''
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [search, setSearchQuery] = useState('');
+ const [search, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rolesPerPage] = useState(5);
  
@@ -89,10 +89,22 @@ const router = useRouter();
           throw new Error('Error al actualizar el rol');
         }
 
-        setUpdateNotification('Rol actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Rol actualizado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       } else {
         const response = await fetch('/api/roles', {
           method: 'POST',
@@ -106,16 +118,28 @@ const router = useRouter();
           throw new Error('Error al crear el rol');
         }
 
-        setNotification('Rol agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Rol agregado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       }
 
       fetchRoles();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el rol:', error);
+      toast.error('Error al guardar el rol:', error);
     }
   };
 
@@ -126,7 +150,7 @@ const router = useRouter();
 
   const handleDelete = async (Id_Rol) => {
     try {
-      const response = await fetch('http://localhost:3000/api/roles', {
+      const response = await fetch('api/roles', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -140,12 +164,21 @@ const router = useRouter();
 
       fetchRoles();
       resetForm();
-      setDeleteNotification('Rol eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Rol eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
-      console.error('Error al eliminar el rol:', error);
+      toast.error('Error al eliminar el rol:', error);
     }
   };
 
@@ -291,11 +324,7 @@ if (!permisos) {
             </button>
           </div>
         </form>
-
-        {notification && <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">{notification}</div>}
-        {updateNotification && <div className="mt-4 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">{deleteNotification}</div>}
-      </div>
+</div>
 
       {/* Columna derecha: Tabla de roles */}
       <div className="w-2/3">
@@ -352,7 +381,7 @@ if (!permisos) {
                {/*Agregar la condicional para verificar si tiene permiso*/}
                {permisos.Permiso_Actualizar === "1" && (
                     <button
-                      onClick={() => handleEdit(objeto)}
+                      onClick={() => handleEdit(role)}
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                     >
                       Editar
@@ -361,7 +390,7 @@ if (!permisos) {
                    {/*Agregar la condicional para verificar si tiene permiso*/}
                   {permisos.Permiso_Eliminar === "1" && (
                     <button
-                      onClick={() => handleDelete(objeto.Id_Objeto)}
+                      onClick={() => handleDelete(role.Id_Rol)}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     >
                       X

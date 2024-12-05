@@ -405,72 +405,111 @@ const handlePersonaSubmit = async (e) => {
 };
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editId) {
-
-   
-
-     let res= await axios.put(`/api/estudiantes/${editId}`, {
-          estudianteData,
-          personaData,
-          
-          
-        })
-        if (res!=null){
-          // alert("Registro creado")
-        }
-
-        //setEditId(null);
-      } else {
-
-
-        if(tutorData.Identidad.length>10){
-          personaData.Identidad=tutorData.Identidad;
-          personaData.Nombre_Completo=tutorData.Nombre_Completo;
-          personaData.Primer_Nombre=tutorData.Nombre_Completo.split(" ")[0];;
-          personaData.Primer_Apellido=tutorData.Nombre_Completo.split(" ")[1];
-          personaData.telefono=tutorData.telefono;
-          personaData.direccion=tutorData.direccion;
-          personaData.sexo=tutorData.Sexo;
-        }
-
-        if(benefactorData.Identidad.length>10){
-          personaData.Identidad=benefactorData.Identidad;
-          personaData.Nombre_Completo=benefactorData.Nombre_Completo;
-          personaData.telefono=benefactorData.telefono;
-          personaData.direccion=benefactorData.direccion;
-          personaData.sexo=benefactorData.Sexo;
-        }
-
-        await axios.post("/api/estudiantes", { personaData, estudianteData });
-        resizeTo();
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    if (editId) {
+      // Actualización de registro
+      let res = await axios.put(`/api/estudiantes/${editId}`, {
+        estudianteData,
+        personaData,
+      });
+      if (res != null) {
+        toast.success('Registro actualizado exitosamente', {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        });
       }
-      setPersonaData({
-        Primer_Nombre: "",
-        Segundo_Nombre: "",
-        Primer_Apellido: "",
-        Segundo_Apellido: "",
-        Sexo: "",
-        Fecha_Nacimiento: "",
-        Lugar_Nacimiento: "",
-        Identidad: "",
-        Creado_Por: "",
-        esEstudiente:true,
-      });
-      setEstudianteData({
-        Id_Beneficio: "",
-        Id_Area: "",
-        Id_Instituto: "",
-        Creado_Por: "",
-        Relaciones: [], 
-      });
-      fetchEstudiantes();
-    } catch (error) {
-      console.error("Error al guardar estudiante y persona", error);
+      // setEditId(null); // Descomentar si se usa en otro contexto
+    } else {
+      // Creación de nuevo registro
+      if (tutorData.Identidad.length > 10) {
+        personaData.Identidad = tutorData.Identidad;
+        personaData.Nombre_Completo = tutorData.Nombre_Completo;
+        personaData.Primer_Nombre = tutorData.Nombre_Completo.split(" ")[0];
+        personaData.Primer_Apellido = tutorData.Nombre_Completo.split(" ")[1];
+        personaData.telefono = tutorData.telefono;
+        personaData.direccion = tutorData.direccion;
+        personaData.sexo = tutorData.Sexo;
+      }
+
+      if (benefactorData.Identidad.length > 10) {
+        personaData.Identidad = benefactorData.Identidad;
+        personaData.Nombre_Completo = benefactorData.Nombre_Completo;
+        personaData.telefono = benefactorData.telefono;
+        personaData.direccion = benefactorData.direccion;
+        personaData.sexo = benefactorData.Sexo;
+      }
+
+      let res = await axios.post("/api/estudiantes", { personaData, estudianteData });
+      if (res != null) {
+        toast.success('Registro creado exitosamente', {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        });
+      }
     }
-  };
+
+    // Resetear los formularios
+    setPersonaData({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      esEstudiente: true,
+    });
+    setEstudianteData({
+      Id_Beneficio: "",
+      Id_Area: "",
+      Id_Instituto: "",
+      Creado_Por: "",
+      Relaciones: [],
+    });
+
+    // Recargar lista de estudiantes
+    fetchEstudiantes();
+  } catch (error) {
+    // Notificación de error
+    console.error('Error al guardar estudiante y persona', {
+      style: {
+        backgroundColor: '#ffebee', // Fondo suave rojo
+        color: '#d32f2f', // Texto rojo oscuro
+        fontWeight: 'bold',
+        border: '1px solid #f5c6cb', // Borde rojo claro
+        padding: '16px',
+        borderRadius: '12px',
+      },
+      position: 'bottom-right', // Posición en la esquina inferior derecha
+      autoClose: 5000, // Cierra automáticamente en 5 segundos
+      hideProgressBar: true, // Ocultar barra de progreso
+    });
+    console.error("Error al guardar estudiante y persona", error);
+  }
+};
+
 
   const handleCancel = () => {
     setPersonaData({

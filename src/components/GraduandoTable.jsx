@@ -5,7 +5,8 @@ import { MagnifyingGlassIcon,ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Select from "react-select";
 
@@ -187,12 +188,22 @@ const GraduandoForm = () => {
 
       fetchGraduandos();
       resetForm();
-      setDeleteNotification('graduando eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('graduando eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+
     } catch (error) {
-      console.error('Error al eliminar la graduando:', error);
+      toast.error('Error al eliminar la graduando:', error);
     }
   };
 

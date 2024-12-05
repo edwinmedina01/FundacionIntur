@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const InstitucionManagement = () => {
 
@@ -22,10 +24,7 @@ const InstitucionManagement = () => {
     Director: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+ const [currentPage, setCurrentPage] = useState(1);
   const institucionesPerPage = 8;  // cantidad de instituciones por página
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -117,7 +116,7 @@ const InstitucionManagement = () => {
       const response = await axios.get('/api/apis_mantenimientos/instituciones');
       setInstituciones(response.data);
     } catch (error) {
-      console.error('Error fetching instituciones:', error);
+      toast.error('Error fetching instituciones:', error);
     }
   };
 
@@ -141,10 +140,8 @@ const InstitucionManagement = () => {
           throw new Error('Error al actualizar la institución');
         }
 
-        setUpdateNotification('Institución actualizada exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Institución actualizada exitosamente');
+        
       } else {
         const response = await fetch('/api/apis_mantenimientos/instituciones', {
           method: 'POST',
@@ -158,16 +155,14 @@ const InstitucionManagement = () => {
           throw new Error('Error al crear la institución');
         }
 
-        setNotification('Institución agregada exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Institución agregada exitosamente');
+        
       }
 
       fetchInstituciones();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar la institución:', error);
+      toast.error('Error al guardar la institución:', error);
     }
   };
 
@@ -192,12 +187,23 @@ const InstitucionManagement = () => {
 
       fetchInstituciones();
       resetForm();
-      setDeleteNotification('Institución eliminada exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Institución eliminada exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+      
+      
     } catch (error) {
-      console.error('Error al eliminar la institución:', error);
+      toast.error('Error al eliminar la institución:', error);
     }
   };
 
@@ -325,20 +331,6 @@ if (!permisos) {
 
         </form>
 
-        {/* Notificación de éxito */}
-        {notification && (
-          <div className="mt-4 text-green-600">{notification}</div>
-        )}
-
-        {/* Notificación de actualización */}
-        {updateNotification && (
-          <div className="mt-4 text-blue-600">{updateNotification}</div>
-        )}
-
-        {/* Notificación de eliminación */}
-        {deleteNotification && (
-          <div className="mt-4 text-red-600">{deleteNotification}</div>
-        )}
       </div>
 
       {/* Columna derecha: Tabla de instituciones */}

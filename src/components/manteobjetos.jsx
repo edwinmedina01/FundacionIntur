@@ -3,7 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import AuthContext from '../context/AuthContext'; //llamado del authcontext para extraer info de usuario logeado
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const ManejoObjetos = () => {
   const { user } = useContext(AuthContext); // Usuario logueado
   const [permisos, setPermisos] = useState(null); //obtener permiso
@@ -18,7 +19,7 @@ const ManejoObjetos = () => {
     Estado: '', // Estado predeterminado a activo
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
+
  // Paginación
  const [currentPage, setCurrentPage] = useState(1);
  const [perPage] = useState(8); // Número de elementos por página
@@ -112,13 +113,27 @@ const fetchPermisos = async () => {
         throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el objeto`);
       }
 
-      setNotification(`Objeto ${isEditing ? 'actualizado' : 'agregado'} exitosamente`);
-      setTimeout(() => setNotification(''), 3000);
+      toast.success(`Objeto ${isEditing ? 'actualizado' : 'agregado'} exitosamente`,
+        {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        }
+      );
+      
 
       fetchObjetos();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el objeto:', error);
+      toast.error('Error al guardar el objeto:', error);
     }
   };
   const handleSearch = (e) => {
@@ -152,10 +167,21 @@ const fetchPermisos = async () => {
 
       fetchObjetos();
       resetForm();
-      setNotification('Objeto eliminado exitosamente');
-      setTimeout(() => setNotification(''), 3000);
+      toast.error('Objeto eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
-      console.error('Error al eliminar el objeto:', error);
+      toast.error('Error al eliminar el objeto:', error);
     }
   };
 
@@ -289,11 +315,7 @@ if (!permisos) {
             </button>
           </div>
         </form>
-        {notification && (
-          <div className="mt-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700">
-            {notification}
-          </div>
-        )}
+
       </div>
 
       {/* Columna derecha: Tabla de objetos */}

@@ -1,10 +1,12 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, use } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
 import { ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
+import { useRouter } from "next/router";
 const MatriculaCrud = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -337,71 +339,110 @@ const handleBenefactorInputChange = (event) => {
 
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (estudianteData.Id_Matricula!=null) {
-
-   
-
-     let res= await axios.put(`/api/matricula/${estudianteData.Id_Matricula}`, {
-          estudianteData,
-          personaData,
-          
-          
-        })
-        if (res!=null){
-          // alert("Registro creado")
-        }
-
-      
-      } else {
-
-
-        if(tutorData.Identidad.length>10){
-          personaData.Identidad=tutorData.Identidad;
-          personaData.Nombre_Completo=tutorData.Nombre_Completo;
-          personaData.Primer_Nombre=tutorData.Nombre_Completo.split(" ")[0];;
-          personaData.Primer_Apellido=tutorData.Nombre_Completo.split(" ")[1];
-          personaData.Telefono=tutorData.Telefono;
-          personaData.Direccion=tutorData.Direccion;
-          personaData.sexo=tutorData.Sexo;
-        }
-
-        if(benefactorData.Identidad.length>10){
-          personaData.Identidad=benefactorData.Identidad;
-          personaData.Nombre_Completo=benefactorData.Nombre_Completo;
-          personaData.Telefono=benefactorData.Telefono;
-          personaData.Direccion=benefactorData.Direccion;
-          personaData.sexo=benefactorData.Sexo;
-        }
-
-        await axios.post("/api/matricula", { personaData, estudianteData });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    if (estudianteData.Id_Matricula != null) {
+      // Actualización de registro
+      let res = await axios.put(`/api/matricula/${estudianteData.Id_Matricula}`, {
+        estudianteData,
+        personaData,
+      });
+      if (res != null) {
+        toast.success('Registro actualizado exitosamente', {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        });
       }
-      setPersonaData({
-        Primer_Nombre: "",
-        Segundo_Nombre: "",
-        Primer_Apellido: "",
-        Segundo_Apellido: "",
-        Sexo: "",
-        Fecha_Nacimiento: "",
-        Lugar_Nacimiento: "",
-        Identidad: "",
-        Creado_Por: "",
-        esEstudiente:true,
-      });
-      setEstudianteData({
-        Id_Beneficio: "",
-        Id_Area: "",
-        Id_Instituto: "",
-        Creado_Por: "",
-        Relaciones: [], 
-      });
-      fetchEstudiantes();
-    } catch (error) {
-      console.error("Error al guardar estudiante y persona", error);
+    } else {
+      // Creación de nuevo registro
+      if (tutorData.Identidad.length > 10) {
+        personaData.Identidad = tutorData.Identidad;
+        personaData.Nombre_Completo = tutorData.Nombre_Completo;
+        personaData.Primer_Nombre = tutorData.Nombre_Completo.split(" ")[0];
+        personaData.Primer_Apellido = tutorData.Nombre_Completo.split(" ")[1];
+        personaData.Telefono = tutorData.Telefono;
+        personaData.Direccion = tutorData.Direccion;
+        personaData.sexo = tutorData.Sexo;
+      }
+
+      if (benefactorData.Identidad.length > 10) {
+        personaData.Identidad = benefactorData.Identidad;
+        personaData.Nombre_Completo = benefactorData.Nombre_Completo;
+        personaData.Telefono = benefactorData.Telefono;
+        personaData.Direccion = benefactorData.Direccion;
+        personaData.sexo = benefactorData.Sexo;
+      }
+
+      let res = await axios.post("/api/matricula", { personaData, estudianteData });
+      if (res != null) {
+        toast.success('Registro creado exitosamente', {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        });
+      }
     }
-  };
+
+    // Resetear los formularios
+    setPersonaData({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      esEstudiente: true,
+    });
+    setEstudianteData({
+      Id_Beneficio: "",
+      Id_Area: "",
+      Id_Instituto: "",
+      Creado_Por: "",
+      Relaciones: [],
+    });
+
+    // Recargar lista de estudiantes
+    fetchEstudiantes();
+  } catch (error) {
+    // Notificación de error
+    toast.error("Error al guardar estudiante y persona", {
+      style: {
+        backgroundColor: '#ffebee', // Fondo suave rojo
+        color: '#d32f2f', // Texto rojo oscuro
+        fontWeight: 'bold',
+        border: '1px solid #f5c6cb',
+        padding: '16px',
+        borderRadius: '12px',
+      },
+      position: 'bottom-right', // Posición en la esquina inferior derecha
+      autoClose: 5000, // Cierra automáticamente en 5 segundos
+      hideProgressBar: true, // Ocultar barra de progreso
+    });
+    console.error(error);
+  }
+};
+
 
   const handleCancel = () => {
     setPersonaData({
@@ -538,7 +579,7 @@ setPersonaDataRelacion({
         setSelectedStudent(null); // Limpiar la selección si fue eliminado
       }
     } catch (error) {
-      console.error("Error al eliminar estudiante", error);
+      toast.error("Error al eliminar estudiante", error);
     }
   };
 
@@ -639,13 +680,20 @@ if (!permisos) {
         <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
 
         <div className="mb-6">
+          
             <input
               type="text"
               placeholder="Buscar estudiante "
               value={searchTerm}
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
-            />
+            />    {/* Botón para ir a matricula */}
+            <button
+            onClick={() => router.push('/matriculageneral')}
+            className="bg-cyan-900 text-white px-3 py-1 rounded hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+            ><strong>
+            Ver Matriculas
+          </strong></button>
                     {/* <label htmlFor="Id_Grado" className="text-gray-700">Estudiante</label>
                     <select
   id="Id_Estudiante"

@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Departamentos = () => {
   const [departamentos, setDepartamentos] = useState([]);
@@ -18,10 +20,7 @@ const Departamentos = () => {
     Nombre_Departamento: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+ const [currentPage, setCurrentPage] = useState(1);
   const departamentosPerPage = 9;
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -107,7 +106,7 @@ const fetchPermisos = async () => {
       const response = await axios.get('/api/apis_mantenimientos/departamentos');
       setDepartamentos(response.data);
     } catch (error) {
-      console.error('Error fetching departamentos:', error);
+      toast.error('Error al cargar los departamentos');
     }
   };
 
@@ -131,10 +130,21 @@ const fetchPermisos = async () => {
           throw new Error('Error al actualizar el departamento');
         }
 
-        setUpdateNotification('Departamento actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Departamento actualizado exitosamente', {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        ;
       } else {
         const response = await fetch('/api/apis_mantenimientos/departamentos', {
           method: 'POST',
@@ -148,16 +158,28 @@ const fetchPermisos = async () => {
           throw new Error('Error al crear el departamento');
         }
 
-        setNotification('Departamento agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Departamento agregado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        ;
       }
 
       fetchDepartamentos();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el departamento:', error);
+      toast.error('Error al guardar el departamento:', error);
     }
   };
 
@@ -182,12 +204,21 @@ const fetchPermisos = async () => {
 
       fetchDepartamentos();
       resetForm();
-      setDeleteNotification('Departamento eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Departamento eliminado exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
-      console.error('Error al eliminar el departamento:', error);
+      toast.error('Error al eliminar el departamento');
     }
   };
 
@@ -270,10 +301,6 @@ if (!permisos) {
 </div>
         </form>
 
-        {/* Notificaciones */}
-        {notification && <div className="mt-4 text-green-600">{notification}</div>}
-        {updateNotification && <div className="mt-4 text-blue-600">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 text-red-600">{deleteNotification}</div>}
       </div>
 
       {/* Columna derecha: Tabla de departamentos */}

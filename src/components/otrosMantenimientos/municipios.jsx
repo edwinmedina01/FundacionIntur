@@ -3,6 +3,8 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const MunicipioManagement = () => {
   const [municipios, setMunicipios] = useState([]);
@@ -20,10 +22,7 @@ const MunicipioManagement = () => {
     Nombre_Municipio: '',
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+ const [currentPage, setCurrentPage] = useState(1);
   const municipiosPerPage = 12;
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -112,7 +111,7 @@ const MunicipioManagement = () => {
       const response = await axios.get('/api/apis_mantenimientos/municipios');
       setMunicipios(response.data);
     } catch (error) {
-      console.error('Error fetching municipios:', error);
+      toast.error('Error fetching municipios:', error);
     }
   };
 
@@ -121,7 +120,7 @@ const MunicipioManagement = () => {
       const response = await axios.get('/api/apis_mantenimientos/departamentos');
       setDepartamentos(response.data);
     } catch (error) {
-      console.error('Error fetching departamentos:', error);
+      toast.error('Error fetching departamentos:', error);
     }
   };
 
@@ -145,10 +144,22 @@ const MunicipioManagement = () => {
           throw new Error('Error al actualizar el municipio');
         }
 
-        setUpdateNotification('Municipio actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
+        toast.success('Municipio actualizado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       } else {
         const response = await fetch('/api/apis_mantenimientos/municipios', {
           method: 'POST',
@@ -162,16 +173,28 @@ const MunicipioManagement = () => {
           throw new Error('Error al crear el municipio');
         }
 
-        setNotification('Municipio agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
+        toast.success('Municipio agregado exitosamente',
+          {
+            style: {
+              backgroundColor: '#e6ffed', // Fondo verde suave
+              color: '#2e7d32', // Texto verde oscuro
+              fontWeight: 'bold',
+              border: '1px solid #a5d6a7', // Borde verde claro
+              padding: '16px',
+              borderRadius: '12px',
+            },
+            position: 'top-right', // Posición en la esquina superior derecha
+            autoClose: 5000, // Cierra automáticamente en 5 segundos
+            hideProgressBar: true, // Ocultar barra de progreso
+          }
+        );
+        
       }
 
       fetchMunicipios();
       resetForm();
     } catch (error) {
-      console.error('Error al guardar el municipio:', error);
+      toast.error('Error al guardar el municipio:', error);
     }
   };
 
@@ -196,12 +219,21 @@ const MunicipioManagement = () => {
 
       fetchMunicipios();
       resetForm();
-      setDeleteNotification('Municipio eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Municipio eliminado exitosamente',{
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } catch (error) {
-      console.error('Error al eliminar el municipio:', error);
+      toast.error('Error al eliminar el municipio:', error);
     }
   };
 
@@ -299,12 +331,7 @@ if (!permisos) {
   </button>
 </div>
         </form>
-
-        {/* Notificaciones */}
-        {notification && <div className="mt-4 text-green-600">{notification}</div>}
-        {updateNotification && <div className="mt-4 text-blue-600">{updateNotification}</div>}
-        {deleteNotification && <div className="mt-4 text-red-600">{deleteNotification}</div>}
-      </div>
+</div>
 
       {/* Columna derecha: Tabla de municipios */}
       <div className="w-full max-w-3xl mx-auto">

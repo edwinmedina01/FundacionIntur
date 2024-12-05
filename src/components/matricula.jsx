@@ -6,7 +6,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const MatriculaManagement = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext); // Usuario logueado
@@ -144,12 +145,22 @@ const MatriculaManagement = () => {
 
       fetchMatriculas();
       resetForm();
-      setDeleteNotification('Matrícula eliminada exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
+      toast.error('Matrícula eliminada exitosamente', {
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+      
     } catch (error) {
-      console.error('Error al eliminar la matrícula:', error);
+      toast.error('Error al eliminar la matrícula:', error);
     }
   };
 

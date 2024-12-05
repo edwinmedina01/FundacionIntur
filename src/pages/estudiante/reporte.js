@@ -9,7 +9,8 @@ import {
   MagnifyingGlassIcon,
   ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
 } from "@heroicons/react/24/outline";
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const EstudiantesReporte = () => {
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
@@ -55,9 +56,22 @@ const EstudiantesReporte = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/estudiantes/${id}`);
+      toast.error("Estudiante Eliminado Con Exito!",{
+        style: {
+          backgroundColor: '#ffebee', // Fondo suave rojo
+          color: '#d32f2f', // Texto rojo oscuro
+          fontWeight: 'bold',
+          border: '1px solid #f5c6cb',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+        position: 'bottom-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
       fetchEstudiantes();
     } catch (error) {
-      console.error("Error al eliminar estudiante", error);
+      toast.error("Error al eliminar estudiante", error);
     }
   };
   const handleSearch = (e) => {
@@ -424,107 +438,45 @@ const exportToExcel = () => {
         </div>
 
         {permisos[1]?.consultar ? (
-          <table className="xls_style-excel-table">
+                    <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+          <table className="min-w-full border-collapse">
 <thead>
-  <tr>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      #
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Fecha Registro
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Beneficio
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Area
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Identidad
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Nombre
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Sexo
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Año Matricula
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Modalidad
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Grado
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Seccion
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Lugar Nacimiento
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Instituto
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Municipio
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Direccion
-    </th>
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Telefono
-    </th>
-
-    <th rowSpan="2" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Estado
-    </th>
-
-    {/* Subencabezado de Tutor y Benefactor */}
-    <th colSpan="4" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Tutor
-    </th>
-    <th colSpan="4" className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Benefactor
-    </th>
-
-    <th rowSpan="2" className="py-4 px-12 bg-blue-200 text-blue-800 font-semibold text-left">
-      Acciones
-    </th>
-  </tr>
+<tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
+        <th rowSpan="2" className="py-2 px-4 border">#</th>
+        <th rowSpan="2" className="py-2 px-4 border">Fecha Registro</th>
+        <th rowSpan="2" className="py-2 px-4 border">Beneficio</th>
+        <th rowSpan="2" className="py-2 px-4 border">Área</th>
+        <th rowSpan="2" className="py-2 px-4 border">Identidad</th>
+        <th rowSpan="2" className="py-2 px-4 border">Nombre</th>
+        <th rowSpan="2" className="py-2 px-4 border">Sexo</th>
+        <th rowSpan="2" className="py-2 px-4 border">Año Matrícula</th>
+        <th rowSpan="2" className="py-2 px-4 border">Modalidad</th>
+        <th rowSpan="2" className="py-2 px-4 border">Grado</th>
+        <th rowSpan="2" className="py-2 px-4 border">Sección</th>
+        <th rowSpan="2" className="py-2 px-4 border">Lugar Nacimiento</th>
+        <th rowSpan="2" className="py-2 px-4 border">Instituto</th>
+        <th rowSpan="2" className="py-2 px-4 border">Municipio</th>
+        <th rowSpan="2" className="py-2 px-4 border">Teléfono</th>
+        <th rowSpan="2" className="py-2 px-4 border">Dirección</th>
+        <th rowSpan="2" className="py-2 px-4 border">Estado</th>
+        <th colSpan="4" className="py-2 px-4 bg-violet-400">Tutor</th>
+        <th colSpan="4" className="py-2 px-4 bg-emerald-400">Benefactor</th>
+        <th rowSpan="2" className="py-2 px-4 bg-orange-300">Acciones</th>
+      </tr>
 
   {/* Segunda fila con subcolumnas específicas de Tutor y Benefactor */}
-  <tr>
-    {/* Subcolumnas Tutor */}
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Identidad
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Nombre
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Telefono
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-    Direccion
-    </th>
- 
-
-    {/* Subcolumnas Benefactor */}
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Identidad
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Nombre
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-      Telefono
-    </th>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">
-    Direccion
-    </th>
-
-  </tr>
+  <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
+        {/* Subcolumnas de Tutor */}
+        <th className="py-2 px-4 bg-violet-400 ">Identidad</th>
+        <th className="py-2 px-4 bg-violet-400">Nombre</th>
+        <th className="py-2 px-4 bg-violet-400">Teléfono</th>
+        <th className="py-2 px-4 bg-violet-400">Dirección</th>
+        {/* Subcolumnas de Benefactor */}
+        <th className="py-2 px-4 bg-emerald-400">Identidad</th>
+        <th className="py-2 px-4 bg-emerald-400">Nombre</th>
+        <th className="py-2 px-4 bg-emerald-400">Teléfono</th>
+        <th className="py-2 px-4 bg-emerald-400">Dirección</th>
+      </tr>
 </thead>
 
 
@@ -795,7 +747,7 @@ const exportToExcel = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         ) : (
           // Mostrar el mensaje si no tiene permisos para consultar
 
