@@ -74,7 +74,7 @@ const MunicipioManagement = () => {
     fetchMunicipios();
     fetchDepartamentos();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
   // -------- PERMISOS -------- //
   const fetchPermisos = async () => {

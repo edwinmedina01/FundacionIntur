@@ -476,6 +476,8 @@ const handleSubmit = async (e) => {
       Segundo_Apellido: "",
       Sexo: "",
       Fecha_Nacimiento: "",
+      Direccion: "",
+      telefono: "",
       Lugar_Nacimiento: "",
       Identidad: "",
       Creado_Por: "",
@@ -520,6 +522,8 @@ const handleSubmit = async (e) => {
       Sexo: "",
       Fecha_Nacimiento: "",
       Lugar_Nacimiento: "",
+      direccion: "",
+      telefono: "",
       Identidad: "",
       Creado_Por: "", 
       Id_Departamento: "",
@@ -912,6 +916,24 @@ if (!permisos) {
           ))}
         </select>
       </div>
+      <div className="flex flex-col">
+  <label htmlFor="Lugar_Nacimiento" className="text-gray-700">Lugar de Nacimiento</label>
+  <input
+    type="text"
+    id="Lugar_Nacimiento"
+    name="Lugar_Nacimiento"
+    value={personaData.Lugar_Nacimiento} // Estado vinculado
+    onChange={(e) =>
+      setPersonaData({
+        ...personaData,
+        [e.target.name]: e.target.value,
+      })
+    } // Manejador para actualizar el estado
+    className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
+    placeholder="Ingresa el lugar de nacimiento"
+    required
+  />
+</div>
 
       
     </div>

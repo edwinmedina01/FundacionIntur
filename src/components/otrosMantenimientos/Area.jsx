@@ -75,7 +75,7 @@ const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     fetchAreas();
     fetchPermisos();
-  }, []);
+  }, [user]);
   // -------- PERMISOS -------- //
 const fetchPermisos = async () => {
   try {

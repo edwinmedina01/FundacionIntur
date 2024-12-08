@@ -21,7 +21,11 @@ const GraduandoForm = () => {
     Estudiante: null,
     Id_Estudiante:null
   });
-  
+    
+  useEffect(() => {
+    document.title = "Graduandos";
+}, []);
+
           // ------------------- FUNCIONALIDAD ROLES----------------------//
           const { user } = useContext(AuthContext); // Usuario logueado
           const [permisos, setPermisos] = useState(null); //obtener permiso

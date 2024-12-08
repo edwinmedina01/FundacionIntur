@@ -20,7 +20,7 @@ import {
   ClipboardDocumentListIcon,
   FolderIcon,
   RectangleGroupIcon,
-  UserGroupIcon,
+  UserGroupIcon, Bars4Icon
 } from "@heroicons/react/24/outline"; // Importa íconos necesarios
 
 const Layout = ({ children }) => {
@@ -35,9 +35,24 @@ const Layout = ({ children }) => {
   const [showApartadoDosNavbar, setShowApartadoDosNavbar] = useState(false); // Nuevo
   const [showApartadoTresNavbar, setShowApartadoTresNavbar] = useState(false); // Nuevo
   const [permisos, setPermisos] = useState([]);
-
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
   const router = useRouter();
+ // Lee el estado de la barra lateral desde localStorage
+ useEffect(() => {
+  const savedSidebarState = localStorage.getItem("sidebarVisible");
+  if (savedSidebarState) {
+    setSidebarVisible(JSON.parse(savedSidebarState)); // Restaurar el estado guardado
+  }
+  setIsLoaded(true); // Indicar que la carga ha terminado
+}, []);
 
+// Guardar el estado de la barra lateral en localStorage
+useEffect(() => {
+  if (isLoaded) {
+    localStorage.setItem("sidebarVisible", JSON.stringify(sidebarVisible)); // Guardar el estado actual solo después de cargar
+  }
+}, [sidebarVisible, isLoaded]);
   const fetchPermisos = async (rolId) => {
     try {
       const response = await axios.get(`/api/permisos?rolId=${rolId}`);
@@ -66,7 +81,7 @@ const Layout = ({ children }) => {
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-
+  const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const toggleAcademicoNavBar = () => {
     setShowAcademicoNavBar(!showAcademicoNavBar);
     if (showseguridadNavbar) setShowseguridadNavbar(false);
@@ -133,266 +148,267 @@ const Layout = ({ children }) => {
       console.error("Error al cerrar sesión:", error);
     }
   };
-
+if (!isLoaded) {
+    return null; // O podrías mostrar un spinner de carga mientras se obtiene el valor de localStorage
+  }
   return (
     <div className="flex min-h-screen bg-blue-50">
       {/* Menú Lateral */}
-      <aside className="w-64 bg-blue-800 text-white p-4 shadow-lg fixed h-full">
-        <div className="flex items-center mb-8">
-          <img src="/img/intur.png" alt="logo" className="h-16 w-auto" />
-        </div>
-        <ul className="space-y-4">
+      {sidebarVisible && (
+        <aside
+          className={`w-64 bg-blue-800 text-white p-6 shadow-lg fixed h-full transform transition-all duration-500 ease-in-out ${
+            sidebarVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+          }`}
+        >
+  <div className="flex items-center justify-center mb-10">
+    <img src="/img/intur.png" alt="logo" className="h-16 w-auto" />
+  </div>
+  <ul className="space-y-6">
+    <li>
+      <Link
+        href="/inicio"
+        className="flex items-center py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+      >
+        <HomeIcon className="h-6 w-6 mr-4" />
+        <strong>Inicio</strong>
+      </Link>
+    </li>
+
+    {/* Sección Académico */}
+    <li>
+      <button
+        onClick={toggleAcademicoNavBar}
+        className="w-full text-left py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center"
+      >
+        <AcademicCapIcon className="h-6 w-6 mr-4" />
+        <strong>Académico</strong>
+      </button>
+      {showAcademicoNavBar && (
+        <ul className="ml-8 mt-4 space-y-3 text-blue-200">
           <li>
             <Link
-              href="/inicio"
-              className=" py-2 px-4 rounded hover:bg-blue-700 flex items-center"
+              href="/estudiante/reporte"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
             >
-              <HomeIcon className="h-5 w-5 mr-2" />
-              <strong>Inicio</strong>
+              <QueueListIcon className="h-5 w-5 mr-3 inline" />
+              Estudiantes
             </Link>
           </li>
-          {/* Academico */}
           <li>
-            <button
-              onClick={toggleAcademicoNavBar}
-              className="w-full text-left py-2 px-4 rounded hover:bg-blue-700 flex items-center"
+            <Link
+              href="/benefactores"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
             >
-              <AcademicCapIcon className="h-5 w-5 mr-2" />
-              <strong>Académico</strong>
-            </button>
-            {showAcademicoNavBar && (
-              <ul className="ml-4 mt-2 space-y-2 text-blue-200">
-                <li>
-                  <Link
-                    href="/estudiante/reporte"
-                    className={`block py-1 px-4 rounded hover:bg-blue-600 ${
-                      permisos[1]?.consultar === false
-                        ? "cursor-not-allowed"
-                        : ""
-                    }`}
-                    onClick={(e) => {
-                      if (permisos[1]?.consultar === false) {
-                        e.preventDefault(); // Previene la navegación
-                        toast.error(
-                          "No tienes permiso para consultar estudiantes",
-                          {
-                            position: "top-right",
-                            autoClose: 3000,
-                            hideProgressBar: false,
-                            closeOnClick: true,
-                            pauseOnHover: true,
-                            draggable: true,
-                          }
-                        );
-                      }
-                    }}
-                  >
-                    <QueueListIcon className="h-5 w-5 mr-2 inline" />
-                    Estudiantes
-                  </Link>
-                </li>{" "}
-                <li>
-                  <Link
-                    href="/benefactores"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <QueueListIcon className="h-5 w-5 mr-1 inline" />
-                    Benefactores
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/tutorpadre"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <QueueListIcon className="h-5 w-5 mr-1 inline" />
-                    Tutores/Padres
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/matriculageneral"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <BookmarkSquareIcon className="h-5 w-5 mr-2 inline" />{" "}
-                    Matrícula
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/graduandos"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <FolderIcon className="h-5 w-5 mr-2 inline" /> Graduandos
-                  </Link>
-                </li>
-              </ul>
-            )}
+              <QueueListIcon className="h-5 w-5 mr-3 inline" />
+              Benefactores
+            </Link>
           </li>
-
-          {/*  Apartado3 */}
           <li>
-            <button
-              onClick={toggleApartadoTresNavbar}
-              className="w-full text-left py-2 px-4 rounded hover:bg-blue-700 flex items-center"
+            <Link
+              href="/tutorpadre"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
             >
-              <WrenchScrewdriverIcon className="h-5 w-5 mr-2" />
-              <strong>Mantenimientos</strong>
-            </button>
-            {showApartadoTresNavbar && (
-              <ul className="ml-4 mt-2 space-y-2 text-blue-200">
-                <li>
-                  <Link
-                    href="/mantenimientos/modalidades"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Modalidades
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/grado"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Grados
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/seccion"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Sección
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/instituciones"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Instituciones
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/area"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Áreas
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/departamentos"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Departamentos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/mantenimientos/municipios"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Municipios
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lineabeneficio"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <RectangleGroupIcon className="h-5 w-5 mr-2 inline" />
-                    Beneficios
-                  </Link>
-                </li>
-                {/*  <li>
-                                <Link href="/" className="block py-1 px-4 rounded hover:bg-blue-600">
-                                    Tipo de Persona
-                                </Link>
-                            </li>*/}
-              </ul>
-            )}
+              <QueueListIcon className="h-5 w-5 mr-3 inline" />
+              Tutores/Padres
+            </Link>
           </li>
-          {/* Seguridad */}
           <li>
-            <button
-              onClick={toggleseguridadNavbar}
-              className="w-full text-left py-2 px-4 rounded hover:bg-blue-700 flex items-center"
+            <Link
+              href="/matriculageneral"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
             >
-              <LockClosedIcon className="h-5 w-5 mr-2" />
-              <strong> Seguridad</strong>
-            </button>
-            {showseguridadNavbar && (
-              <ul className="ml-4 mt-2 space-y-2 text-blue-200">
-                <li>
-                  <Link
-                    href="/usuarios"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <UserGroupIcon className="h-5 w-5 mr-2 inline" /> Usuarios
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/roles"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <TagIcon className="h-5 w-5 mr-2 inline" />
-                    Roles
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/permisos"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2 inline" />{" "}
-                    Permisos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/objetos"
-                    className="block py-1 px-4 rounded hover:bg-blue-600"
-                  >
-                    <CubeIcon className="h-5 w-5 mr-2 inline" /> Objetos
-                  </Link>
-                </li>
-              </ul>
-            )}
+              <BookmarkSquareIcon className="h-5 w-5 mr-3 inline" />
+              Matrícula
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/graduandos"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <FolderIcon className="h-5 w-5 mr-3 inline" />
+              Graduandos
+            </Link>
           </li>
         </ul>
-      </aside>
+      )}
+    </li>
 
+    {/* Sección Mantenimientos */}
+    <li>
+      <button
+        onClick={toggleApartadoTresNavbar}
+        className="w-full text-left py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center"
+      >
+        <WrenchScrewdriverIcon className="h-6 w-6 mr-4" />
+        <strong>Mantenimientos</strong>
+      </button>
+      {showApartadoTresNavbar && (
+        <ul className="ml-8 mt-4 space-y-3 text-blue-200">
+          <li>
+            <Link
+              href="/mantenimientos/modalidades"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Modalidades
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/grado"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Grados
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/seccion"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Sección
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/instituciones"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Instituciones
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/area"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Áreas
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/departamentos"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Departamentos
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/mantenimientos/municipios"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Municipios
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/lineabeneficio"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
+              Beneficios
+            </Link>
+          </li>
+        </ul>
+      )}
+    </li>
+
+    {/* Sección Seguridad */}
+    <li>
+      <button
+        onClick={toggleseguridadNavbar}
+        className="w-full text-left py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center"
+      >
+        <LockClosedIcon className="h-6 w-6 mr-4" />
+        <strong>Seguridad</strong>
+      </button>
+      {showseguridadNavbar && (
+        <ul className="ml-8 mt-4 space-y-3 text-blue-200">
+          <li>
+            <Link
+              href="/usuarios"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <UserGroupIcon className="h-5 w-5 mr-3 inline" />
+              Usuarios
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/roles"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <TagIcon className="h-5 w-5 mr-3 inline" />
+              Roles
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/permisos"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <ClipboardDocumentListIcon className="h-5 w-5 mr-3 inline" />
+              Permisos
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/objetos"
+              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              <CubeIcon className="h-5 w-5 mr-3 inline" />
+              Objetos
+            </Link>
+          </li>
+        </ul>
+      )}
+    </li>
+  </ul>
+</aside>
+
+)}
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col ml-64">
-        {/* Barra de navegación superior */}
+      <div
+        className={`flex-1 flex flex-col ${
+          sidebarVisible ? "ml-64" : "ml-0"
+        } transition-all duration-300`}
+      >
+    
         <nav className="flex justify-between items-center bg p-4 shadow-md border-b border-gray-200">
-          <span className="text-black-700 font-semibold">
-            Gestión Académica
-          </span>
+        <div className="flex items-center space-x-4">
+    {/* Botón para abrir/cerrar el menú */}
+    <button
+      onClick={toggleSidebar}
+      className="text-black-700 focus:outline-none"
+    >
+      <Bars4Icon className="h-5 w-5" />
+    </button>
+
+    {/* Botón de inicio solo con el icono */}
+    <Link
+      href="/inicio"
+      className="text-black-700 focus:outline-none hover:text-black-500"
+    >
+      <HomeIcon className="h-6 w-6" />
+    </Link>
+  </div>
+          
+          <span className="text-black-700 font-semibold">Gestión Académica</span>
           <div className="relative">
             <button
               onClick={toggleMenu}
               className="text-Black-900 focus:outline-none hover:text-black-100"
             >
-              {/* Usuario:  {user.usuario} */}
               <UserCircleIcon className="w-9 h-9 inline mr-2" />
-              {user ? (
-                <p>
-                  <strong>{user.usuario}</strong> ▼
-                </p>
-              ) : (
-                <p>Cargando...</p>
-              )}
+              {user ? <strong>{user.usuario}</strong> : "Cargando..."} ▼
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-200">
@@ -412,13 +428,7 @@ const Layout = ({ children }) => {
             )}
           </div>
         </nav>
-
-        {/* Contenido */}
-        <main className="flex-1 p-6 bg-blue-50 overflow-y-auto">
-          {children}
-        </main>
-
-        {/* Pie de página */}
+        <main className="flex-1 p-6 bg-blue-50 overflow-y-auto">{children}</main>
         <footer className="bg-white p-4 text-center border-t border-gray-200">
           © 2024 Sistema Académico
         </footer>

@@ -79,7 +79,7 @@ const InstitucionManagement = () => {
   useEffect(() => {
     fetchInstituciones();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
  // -------- PERMISOS -------- //
  const fetchPermisos = async () => {

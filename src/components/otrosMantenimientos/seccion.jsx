@@ -110,7 +110,7 @@ useEffect(() => {
     fetchSecciones();
     fetchGrados();  // Fetch para obtener los grados
     fetchPermisos();
-  }, []);
+  }, [user]);
 
   // -------- PERMISOS -------- //
   const fetchPermisos = async () => {

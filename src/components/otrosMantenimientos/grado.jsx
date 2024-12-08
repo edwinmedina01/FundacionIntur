@@ -79,7 +79,7 @@ const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     fetchGrados();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
    // -------- PERMISOS -------- //
    const fetchPermisos = async () => {

@@ -70,7 +70,7 @@ const Departamentos = () => {
   useEffect(() => {
     fetchDepartamentos();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
     // -------- PERMISOS -------- //
 const fetchPermisos = async () => {

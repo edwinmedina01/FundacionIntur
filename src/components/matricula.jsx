@@ -35,7 +35,7 @@ const MatriculaManagement = () => {
   useEffect(() => {
     fetchMatriculas();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
   // Verificación de permisos
   const fetchPermisos = async () => {
@@ -180,9 +180,10 @@ const MatriculaManagement = () => {
     matricula.Estudiante.toLowerCase().includes(search.toLowerCase()) ||
     matricula.Modalidad.toLowerCase().includes(search.toLowerCase()) ||
     matricula.Grado.toLowerCase().includes(search.toLowerCase()) ||
-    matricula.Seccion.toLowerCase().includes(search.toLowerCase())
+    matricula.Seccion.toLowerCase().includes(search.toLowerCase()) ||
+    String(matricula.Identidad).toLowerCase().includes(search.toLowerCase()) // Asegurar que Identidad sea un string
   );
-
+  
   // Paginación
   const indexOfLastMatricula = currentPage * matriculasPerPage;
   const indexOfFirstMatricula = indexOfLastMatricula - matriculasPerPage;
@@ -280,8 +281,8 @@ const MatriculaManagement = () => {
       </div>
 
 
-      {/* Tabla de matrículas */}
-      <table className="xls_style-excel-table">
+      {/* Tabla de matrículas */}     
+      <table className="min-w-full border-collapse">
   <thead>
     <tr>
     <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>

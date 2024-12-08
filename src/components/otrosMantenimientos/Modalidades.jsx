@@ -77,7 +77,7 @@ const ModalidadesManagement = () => {
   useEffect(() => {
     fetchModalidades();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
    // -------- PERMISOS -------- //
    const fetchPermisos = async () => {

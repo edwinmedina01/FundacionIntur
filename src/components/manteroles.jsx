@@ -30,7 +30,7 @@ const router = useRouter();
   useEffect(() => {
     fetchRoles();
     fetchPermisos();
-  }, []);
+  }, [user]);
  // -------- PERMISOS -------- //
   const fetchPermisos = async () => {
     try {

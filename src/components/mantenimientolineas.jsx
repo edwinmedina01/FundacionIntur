@@ -78,7 +78,7 @@ const LineaBeneficioManagement = () => {
     fetchBeneficios();
     fetchPermisos();
 
-  }, []);
+  }, [user]);
 
  // -------- PERMISOS -------- //
  const fetchPermisos = async () => {

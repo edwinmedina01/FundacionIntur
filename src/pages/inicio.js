@@ -9,6 +9,9 @@ import {
   ListBulletIcon,
   PlusIcon,
   StarIcon,
+  UsersIcon,
+  GlobeAltIcon,
+  BookmarkSquareIcon
 } from "@heroicons/react/24/outline";
 import AuthContext from "../context/AuthContext";
 const SECRET_KEY = process.env.SECRET_KEY || "tu_clave_secreta";
@@ -17,30 +20,41 @@ const Inicio = () => {
   const [userName, setUserName] = useState("");
   const { user, loading } = useContext(AuthContext);
   const [permisos, setPermisos] = useState([]);
+  const [greeting, setGreeting] = useState("");
+  const [showGreeting, setShowGreeting] = useState(true);
+
   useEffect(() => {
     document.title = "Inicio";
-    // Extraer el nombre de usuario del token o establecer un valor predeterminado
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwt.decode(token);
       if (decoded) {
-        setUserName(decoded.nombre); // Asumiendo que el nombre se guarda en el token
+        setUserName(decoded.nombre);
       }
     }
-    // Llama a fetchPermisos solo si user está disponible
     if (!loading && user) {
-      //  setUserName(user.usuario); // Configura el nombre de usuario desde el contexto
-      fetchPermisos(user.rol); // Obtiene permisos según el rol del usuario
+      fetchPermisos(user.rol);
     }
-    //fetchPermisos(user.rol);
+
+    const currentHour = new Date().getHours();
+    if (currentHour < 12) {
+      setGreeting("Buenos días,");
+    } else if (currentHour < 18) {
+      setGreeting("Buenas tardes,");
+    } else {
+      setGreeting("Buenas noches, ");
+    }
+
+    const timer = setTimeout(() => {
+      setShowGreeting(false);
+    }, 15000); 
+
+    return () => clearTimeout(timer);
   }, [user]);
 
   const fetchPermisos = async (rolId) => {
     try {
       const response = await axios.get(`/api/permisos?rolId=${rolId}`);
-      // Convierte la lista de permisos en un objeto de permisos
-      console.log("permisos");
-      console.log(response);
       const permisosMap = response.data.reduce((acc, permiso) => {
         acc[permiso.Id_Objeto] = {
           insertar: permiso.Permiso_Insertar === "1",
@@ -58,26 +72,28 @@ const Inicio = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-100 p-8">
+      <div className="min-h-screen bg-transparent p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold">Menu</h1>
+          <h1 className="text-4xl font-bold">Menú</h1>
+          {showGreeting && (
+            <h3 className="text-xl text-gray-900 font-semibold">{greeting} {userName || "Usuario"}</h3>
+          )}
         </div>
 
         {/* Contenedor de Acciones Rápidas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Botón 1 */}
           {permisos[1]?.insertar && (
-            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-xl font-semibold mb-2">
-                <PlusIcon className="h-6 w-5 mr-6 inline" />
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-xl font-semibold mb-4 text-blue-600 flex items-center">
+                <PlusIcon className="h-8 w-8 mr-3" />
                 Nuevo Registro
               </h2>
               <p className="text-gray-600 mb-4">
-                Agregar un Nuevo Registro al Sistema acerca de el alumno,su
-                benefactor,su tutor.
+                Agregar un nuevo registro al sistema sobre el alumno, su benefactor, y su tutor.
               </p>
               <Link href="/estudiante">
-                <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                <button className="w-full bg-blue-500 text-white py-2 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300">
                   Nuevo Registro
                 </button>
               </Link>
@@ -86,17 +102,16 @@ const Inicio = () => {
 
           {/* Botón 2 */}
           {permisos[1]?.consultar && (
-            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-xl font-semibold mb-2">
-                <ListBulletIcon className="h-6 w-6 mr-2 inline" />
+            <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+              <h2 className="text-xl font-semibold mb-4 text-green-600 flex items-center">
+                <ListBulletIcon className="h-8 w-8 mr-3" />
                 Estudiantes
               </h2>
               <p className="text-gray-600 mb-4">
                 Ver y administrar la información de los estudiantes.
               </p>
-              <br></br>
               <Link href="/estudiante/reporte">
-                <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                <button className="w-full bg-green-500 text-white py-2 rounded-lg shadow-lg hover:bg-green-600 transition duration-300">
                   Ir a Estudiantes
                 </button>
               </Link>
@@ -104,72 +119,68 @@ const Inicio = () => {
           )}
 
           {/* Botón 3 */}
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">
-              <StarIcon className="h-6 w-6 mr-2 inline" />
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+            <h2 className="text-xl font-semibold mb-4 text-yellow-600 flex items-center">
+              <StarIcon className="h-8 w-8 mr-3" />
               Benefactores
             </h2>
             <p className="text-gray-600 mb-4">
-              Ver y Administrar la informacion de los benefactores
+              Ver y administrar la información de los benefactores.
             </p>
             <Link href="/benefactores">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+              <button className="w-full bg-yellow-500 text-white py-2 rounded-lg shadow-lg hover:bg-yellow-600 transition duration-300">
                 Ir a Benefactores
               </button>
             </Link>
           </div>
 
           {/* Botón 4 */}
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Tutores/Padres</h2>
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+            <h2 className="text-xl font-semibold mb-4 text-purple-600 flex items-center">
+              <UsersIcon className="h-8 w-8 mr-3" />
+              Tutores/Padres
+            </h2>
             <p className="text-gray-600 mb-4">
-              Administra la informacion de los tutores/padres.
+              Administra la información de los tutores/padres.
             </p>
             <Link href="/tutorpadre">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+              <button className="w-full bg-purple-500 text-white py-2 rounded-lg shadow-lg hover:bg-purple-600 transition duration-300">
                 Ir a Tutores
               </button>
             </Link>
           </div>
 
           {/* Botón 5 */}
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Matricula General</h2>
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+            <h2 className="text-xl font-semibold mb-4 text-teal-600 flex items-center">
+              <GlobeAltIcon className="h-8 w-8 mr-3" />
+              Matricula General
+            </h2>
             <p className="text-gray-600 mb-4">
-              aqui se presenta el registro general de matricula.
+              Aquí se presenta el registro general de matrícula.
             </p>
             <Link href="/matriculageneral">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Matricula
+              <button className="w-full bg-teal-500 text-white py-2 rounded-lg shadow-lg hover:bg-teal-600 transition duration-300">
+                Ir a Matrícula
               </button>
             </Link>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Graduandos</h2>
+          {/* Botón 6 */}
+          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+            <h2 className="text-xl font-semibold mb-4 text-indigo-600 flex items-center">
+              <BookmarkSquareIcon className="h-8 w-8 mr-3" />
+              Graduandos
+            </h2>
             <p className="text-gray-600 mb-4">
-              aqui se presenta el registro de Graduandos.
+              Aquí se presenta el registro de graduandos.
             </p>
             <Link href="/graduandos">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+              <button className="w-full bg-indigo-500 text-white py-2 rounded-lg shadow-lg hover:bg-indigo-600 transition duration-300">
                 Ir a Graduandos
               </button>
             </Link>
           </div>
-
-
-          {/* Botón 6 
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <h2 className="text-xl font-semibold mb-2">Estadistica General</h2>
-            <p className="text-gray-600 mb-4">
-              Dashboard general de los estudiantes por modalidad
-            </p>
-            <Link href="/">
-              <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
-                Ir a Estadisticas
-              </button>
-            </Link>
-          </div>*/}
         </div>
       </div>
     </Layout>

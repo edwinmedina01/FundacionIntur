@@ -39,7 +39,7 @@ const PermissionsManagement = () => {
     fetchRoles();
     fetchObjects(); // Llama a la función para obtener objetos
     fetchPermisos();
-  }, []);
+  }, [user]);
 // -------- PERMISOS -------- //
 const fetchPermisos = async () => {
   try {

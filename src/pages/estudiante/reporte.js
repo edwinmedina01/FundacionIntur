@@ -18,6 +18,10 @@ const EstudiantesReporte = () => {
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const [recordsPerPage] = useState(10); // Registros por página
   const [permisos, setPermisos] = useState([]);
+  
+  useEffect(() => {
+    document.title = "Estudiantes";
+}, []);
 
   useEffect(() => {
     if (user && user.rol) {
@@ -646,7 +650,7 @@ const exportToExcel = () => {
               </ul>
                   </td>
     
-                  
+      {/* para benefactores             */}
                   <td className="py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
@@ -686,7 +690,7 @@ const exportToExcel = () => {
                   <td className="py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
             
                   const telefono = relacion.Persona.telefono || '-';
@@ -703,7 +707,7 @@ const exportToExcel = () => {
                   <td className="py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
             
                   const direccion = relacion.Persona.direccion || '-';

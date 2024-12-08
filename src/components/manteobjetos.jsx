@@ -28,7 +28,7 @@ const ManejoObjetos = () => {
   useEffect(() => {
     fetchObjetos();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
  // Filtros por búsqueda
  const filteredObjetos = objetos.filter(objeto =>

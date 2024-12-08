@@ -29,11 +29,15 @@ const TutorPadreManagement = () => {
   const [search, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [tutoresPerPage] = useState(10);
+  
+  useEffect(() => {
+    document.title = "Tutores/Padres";
+}, []);
 
   useEffect(() => {
     fetchTutores();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
 
 
@@ -267,7 +271,7 @@ const TutorPadreManagement = () => {
   return (
     <div className="w-full lg:w-2/3 p-6 rounded-lg">
       <center>
-        <h2 className="text-2xl font-semibold mb-4">Listado Tutores</h2>
+        <h2 className="text-2xl font-semibold mb-4">Listado Tutores/Padres</h2>
       </center>
 
       {/* Barra de búsqueda */}
@@ -309,9 +313,9 @@ const TutorPadreManagement = () => {
       {deleteNotification && <div className="text-red-600">{deleteNotification}</div>}
 
 {/* Tabla de tutores */}
-<div className="overflow-x-auto border-t border-b mb-4">
 
-<table className="min-w-full border-collapse">
+
+<table className="min-w-full border-collapse ">
 <thead>
 <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
         <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
@@ -369,7 +373,7 @@ const TutorPadreManagement = () => {
 
 
 
-</div>
+
 
 {/* Paginación */}
 <div className="flex justify-between items-center mt-4">

@@ -76,7 +76,7 @@ const UsersManagement = () => {
     fetchRoles();
     fetchUserStates();
     fetchPermisos();
-  }, []);
+  }, [user]);
 // -------- PERMISOS -------- //
 const fetchPermisos = async () => {
   try {

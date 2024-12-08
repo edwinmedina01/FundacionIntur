@@ -29,11 +29,16 @@ const BenefactoresManagement = () => {
   const [search, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [BenefactoresPerPage] = useState(10);
+  
+  useEffect(() => {
+    document.title = "Benefactores";
+}, []);
+
 
   useEffect(() => {
     fetchBenefactores();
     fetchPermisos();
-  }, []);
+  }, [user]);
 
   // Verificación de permisos
   const fetchPermisos = async () => {
