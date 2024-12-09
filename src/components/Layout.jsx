@@ -38,6 +38,7 @@ const Layout = ({ children }) => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const router = useRouter();
+  const [currentTime, setCurrentTime] = useState(""); // Estado para la hora actual
  // Lee el estado de la barra lateral desde localStorage
  useEffect(() => {
   const savedSidebarState = localStorage.getItem("sidebarVisible");
@@ -75,6 +76,16 @@ useEffect(() => {
     if (user && user.rol) {
       fetchPermisos(user.rol);
     }
+
+    const updateClock = () => {
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setCurrentTime(time);
+    };
+
+    updateClock(); // Inicializar con la hora actual
+    const intervalId = setInterval(updateClock, 1000); // Actualizar cada segundo
+    return () => clearInterval(intervalId); // Limpiar intervalo al desmontar
   }, [user]);
 
   console.log("Estado actual del usuario en el contexto:", user);
@@ -401,7 +412,10 @@ if (!isLoaded) {
     </Link>
   </div>
           
-          <span className="text-black-700 font-semibold">Gestión Académica</span>
+           {/* Hora actual */}
+           <div className="text-black-700 font-semibold">
+            Gestión Académica - {currentTime}
+          </div>
           <div className="relative">
             <button
               onClick={toggleMenu}
