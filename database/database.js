@@ -1,6 +1,6 @@
 // database.js
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+//require('dotenv').config();
 try {
     require.resolve("mysql2");
     console.log("✅ mysql2 está instalado en Vercel");
