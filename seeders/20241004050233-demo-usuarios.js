@@ -11,7 +11,7 @@ module.exports = {
     const hashedPassword2 = await bcrypt.hash('password2', 10); // Ajusta 'password2' con la contraseña deseada
     const hashedPassword3 = await bcrypt.hash('password3', 10);
 
-    return queryInterface.bulkInsert('tbl_Usuario', [
+    return queryInterface.bulkInsert('tbl_usuario', [
       {
         Id_Rol: 1,
         Id_EstadoUsuario: 1,
@@ -34,6 +34,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('tbl_Usuario', null, {});
+    return queryInterface.bulkDelete('tbl_usuario', null, {});
   }
 };

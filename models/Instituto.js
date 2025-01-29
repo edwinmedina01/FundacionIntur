@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database');
 
-const Instituto = sequelize.define('Tbl_Instituto', {
+const Instituto = sequelize.define('tbl_instituto', {
   Id_Instituto: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -33,7 +33,7 @@ const Instituto = sequelize.define('Tbl_Instituto', {
     defaultValue: 1,
   },
 }, {
-  tableName: 'Tbl_Instituto',
+  tableName: 'tbl_instituto',
   timestamps: false,
 });
 

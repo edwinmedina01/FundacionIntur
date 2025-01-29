@@ -13,7 +13,7 @@ module.exports = {
      * }], {});
     */
 
-    await queryInterface.bulkInsert('Tbl_Objetos', [
+    await queryInterface.bulkInsert('tbl_objetos', [
       { Id_Objeto: 1, Objeto: 'User', Descripcion: 'Gestión de usuarios', Tipo_Objeto: 'Módulo', Creado_Por: 'system', Fecha_Creacion: new Date(), Estado: 1 },
       { Id_Objeto: 2, Objeto: 'Product', Descripcion: 'Gestión de productos', Tipo_Objeto: 'Módulo', Creado_Por: 'system', Fecha_Creacion: new Date(), Estado: 1 },
     ]);
@@ -27,6 +27,6 @@ module.exports = {
      * await queryInterface.bulkDelete('People', null, {});
      */
 
-    await queryInterface.bulkDelete('Tbl_Objetos', null, {});
+    await queryInterface.bulkDelete('tbl_objetos', null, {});
   }
 };

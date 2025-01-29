@@ -2,7 +2,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 
-const Usuario = sequelize.define('tbl_Usuario', {
+const Usuario = sequelize.define('tbl_usuario', {
     Id_Usuario: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -62,7 +62,7 @@ const Usuario = sequelize.define('tbl_Usuario', {
       type: DataTypes.BOOLEAN,
     },
   }, {
-    tableName: 'tbl_Usuario',
+    tableName: 'tbl_usuario',
     timestamps: false, // Desactiva los campos automáticos de createdAt y updatedAt
   });
   

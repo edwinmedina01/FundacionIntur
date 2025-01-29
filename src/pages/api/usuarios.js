@@ -5,7 +5,7 @@ const { QueryTypes } = require('sequelize');
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const usuarios = await sequelize.query('SELECT * FROM tbl_Usuario', {
+      const usuarios = await sequelize.query('SELECT * FROM tbl_usuario', {
         type: QueryTypes.SELECT,
       });
       res.status(200).json(usuarios);
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const { Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo } = req.body;
 
     try {
-      const existingUser = await sequelize.query('SELECT * FROM tbl_Usuario WHERE Usuario = ?', {
+      const existingUser = await sequelize.query('SELECT * FROM tbl_usuario WHERE Usuario = ?', {
         replacements: [Usuario],
         type: QueryTypes.SELECT,
       });
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       // Usar cryptPassword para hashear la contraseña
       const hashedPassword = await cryptPassword(Contrasena);
 
-      await sequelize.query('INSERT INTO tbl_Usuario (Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, Contrasena, Correo) VALUES (?, ?, ?, ?, ?, ?)', {
+      await sequelize.query('INSERT INTO tbl_usuario (Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, Contrasena, Correo) VALUES (?, ?, ?, ?, ?, ?)', {
         replacements: [Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, hashedPassword, Correo],
         type: QueryTypes.INSERT,
       });
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
     const { Id_Usuario, Id_Rol, Id_EstadoUsuario, Id_Persona, Usuario, Nombre_Usuario, Contrasena, Intentos_Fallidos, Fecha_Ultima_Conexion, Preguntas_Contestadas, Primer_Ingreso, Fecha_Vencimiento, Correo, Modificado_Por, Fecha_Modificacion } = req.body;
 
     try {
-        const existingUser = await sequelize.query('SELECT * FROM tbl_Usuario WHERE Usuario = ? AND Id_Usuario != ?', {
+        const existingUser = await sequelize.query('SELECT * FROM tbl_usuario WHERE Usuario = ? AND Id_Usuario != ?', {
             replacements: [Usuario, Id_Usuario],
             type: QueryTypes.SELECT,
         });
@@ -56,14 +56,14 @@ export default async function handler(req, res) {
         if (Contrasena) {
             hashedPassword = await cryptPassword(Contrasena);
         } else {
-            const usuarioActual = await sequelize.query('SELECT Contrasena FROM tbl_Usuario WHERE Id_Usuario = ?', {
+            const usuarioActual = await sequelize.query('SELECT Contrasena FROM tbl_usuario WHERE Id_Usuario = ?', {
                 replacements: [Id_Usuario],
                 type: QueryTypes.SELECT,
             });
             hashedPassword = usuarioActual[0].Contrasena;
         }
 
-        await sequelize.query('UPDATE tbl_Usuario SET Id_Rol = ?, Id_EstadoUsuario = ?, Id_Persona = ?, Usuario = ?, Nombre_Usuario = ?, Contrasena = ?, Intentos_Fallidos = ?, Fecha_Ultima_Conexion = ?, Preguntas_Contestadas = ?, Primer_Ingreso = ?, Fecha_Vencimiento = ?, Correo = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Usuario = ?', {
+        await sequelize.query('UPDATE tbl_usuario SET Id_Rol = ?, Id_EstadoUsuario = ?, Id_Persona = ?, Usuario = ?, Nombre_Usuario = ?, Contrasena = ?, Intentos_Fallidos = ?, Fecha_Ultima_Conexion = ?, Preguntas_Contestadas = ?, Primer_Ingreso = ?, Fecha_Vencimiento = ?, Correo = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Usuario = ?', {
             replacements: [Id_Rol, Id_EstadoUsuario, Id_Persona, Usuario, Nombre_Usuario, hashedPassword, Intentos_Fallidos, Fecha_Ultima_Conexion, Preguntas_Contestadas, Primer_Ingreso, Fecha_Vencimiento, Correo, Modificado_Por, Fecha_Modificacion, Id_Usuario],
             type: QueryTypes.UPDATE,
         });
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
     const { Id_Usuario } = req.body;
 
     try {
-      await sequelize.query('DELETE FROM tbl_Usuario WHERE Id_Usuario = ?', {
+      await sequelize.query('DELETE FROM tbl_usuario WHERE Id_Usuario = ?', {
         replacements: [Id_Usuario],
         type: QueryTypes.DELETE,
       });

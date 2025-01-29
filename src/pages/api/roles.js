@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     // Obtener roles
     try {
-      const roles = await sequelize.query('SELECT * FROM Tbl_Roles', {
+      const roles = await sequelize.query('SELECT * FROM tbl_roles', {
         type: QueryTypes.SELECT,
       });
       res.status(200).json(roles);
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     // CREA NUEVO ROL //
     const { Rol, Descripcion, Estado } = req.body;
     try {
-      await sequelize.query('INSERT INTO Tbl_Roles (Rol, Descripcion, Estado) VALUES (?, ?, ?)', {
+      await sequelize.query('INSERT INTO tbl_roles (Rol, Descripcion, Estado) VALUES (?, ?, ?)', {
         replacements: [Rol, Descripcion, Estado],
         type: QueryTypes.INSERT,
       });
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const { Id_Rol, Rol, Descripcion, Estado } = req.body; // Destructurar los valores del cuerpo
     try {
         // Actualiza el rol utilizando los parámetros recibidos
-        await sequelize.query('UPDATE Tbl_Roles SET Rol = ?, Descripcion = ?, Estado = ? WHERE Id_Rol = ?', {
+        await sequelize.query('UPDATE tbl_roles SET Rol = ?, Descripcion = ?, Estado = ? WHERE Id_Rol = ?', {
             replacements: [Rol, Descripcion, Estado, Id_Rol], // Asegúrate de que el orden sea correcto
             type: QueryTypes.UPDATE,
         });
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     const { Id_Rol } = req.body; // Obtener el ID desde el cuerpo de la solicitud
 
     try {
-        const result = await sequelize.query('DELETE FROM Tbl_Roles WHERE Id_Rol = ?', {
+        const result = await sequelize.query('DELETE FROM tbl_roles WHERE Id_Rol = ?', {
             replacements: [Id_Rol],
             type: QueryTypes.DELETE,
         });

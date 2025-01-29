@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 
     try {
       // Verificar si el Id_Rol existe
-      const rolExists = await sequelize.query('SELECT COUNT(*) as count FROM Tbl_Roles WHERE Id_Rol = ?', {
+      const rolExists = await sequelize.query('SELECT COUNT(*) as count FROM tbl_roles WHERE Id_Rol = ?', {
         replacements: [Id_Rol],
         type: QueryTypes.SELECT,
       });
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
     try {
       // Verificar si el Id_Rol existe
-      const rolExists = await sequelize.query('SELECT COUNT(*) as count FROM Tbl_Roles WHERE Id_Rol = ?', {
+      const rolExists = await sequelize.query('SELECT COUNT(*) as count FROM tbl_roles WHERE Id_Rol = ?', {
         replacements: [Id_Rol],
         type: QueryTypes.SELECT,
       });

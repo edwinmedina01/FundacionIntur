@@ -7,7 +7,7 @@ const TipoPersona = require('./TipoPersona');
 
 
 const Relacion = sequelize.define(
-    'tbl_Relacion',
+    'tbl_relacion',
     {
       Id: {
         type: DataTypes.INTEGER,
@@ -44,20 +44,20 @@ const Relacion = sequelize.define(
       },
     },
     {
-      tableName: 'tbl_Relacion', // Nombre de la tabla en la base de datos
+      tableName: 'tbl_relacion', // Nombre de la tabla en la base de datos
       timestamps: false, // Desactiva timestamps automáticos de Sequelize
     }
   );
   
   Relacion.belongsTo(Persona, {
-    foreignKey: 'Id_persona', // Campo en tbl_Relacion
-    targetKey: 'Id_Persona', // Clave primaria en Tbl_Persona
+    foreignKey: 'Id_persona', // Campo en tbl_relacion
+    targetKey: 'Id_Persona', // Clave primaria en tbl_persona
     as: 'Persona',           // Alias para consultas
   });
 
   Relacion.belongsTo(TipoPersona, {
-    foreignKey: 'Id_tipo_relacion', // Campo en tbl_Relacion
-    targetKey: 'Id_Tipo_Persona', // Clave primaria en Tbl_Persona
+    foreignKey: 'Id_tipo_relacion', // Campo en tbl_relacion
+    targetKey: 'Id_Tipo_Persona', // Clave primaria en tbl_persona
     as: 'TipoPersona',           // Alias para consultas
   });
 

@@ -5,7 +5,7 @@ const Municipio = require('./Municipio');
 //const Relacion = require('./Relacion');
 
 
-const Persona = sequelize.define('Tbl_Persona', {
+const Persona = sequelize.define('tbl_persona', {
     Id_Persona: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -71,7 +71,7 @@ const Persona = sequelize.define('Tbl_Persona', {
       type: DataTypes.STRING,
     },   
   }, {
-    tableName: 'Tbl_Persona',
+    tableName: 'tbl_persona',
     timestamps: false,
   } 
   ,
@@ -84,8 +84,8 @@ Persona.belongsTo(Municipio, { foreignKey: 'Id_Municipio', as: 'Municipio' });
 
 
 // Persona.hasMany(Relacion, {
-//   foreignKey: 'Id_persona', // Clave foránea en tbl_Relacion
-//   sourceKey: 'Id_Persona', // Clave primaria en Tbl_Estudiante
+//   foreignKey: 'Id_persona', // Clave foránea en tbl_relacion
+//   sourceKey: 'Id_Persona', // Clave primaria en tbl_estudiante
 //   as: 'Relaciones',           // Alias para la relación
 // });
 

@@ -2,7 +2,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 
-const Beneficio = sequelize.define('Tbl_Lineas_de_Beneficio', {
+const Beneficio = sequelize.define('tbl_lineas_de_beneficio', {
     Id_Beneficio: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -45,7 +45,7 @@ const Beneficio = sequelize.define('Tbl_Lineas_de_Beneficio', {
         allowNull: true,
     },
 }, {
-    tableName: 'Tbl_Lineas_de_Beneficio',
+    tableName: 'tbl_lineas_de_beneficio',
     timestamps: false,
 });
 

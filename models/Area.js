@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database');
 
-const Area = sequelize.define('Tbl_Area', {
+const Area = sequelize.define('tbl_area', {
   Id_Area: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -30,7 +30,7 @@ const Area = sequelize.define('Tbl_Area', {
     defaultValue: 1,
   },
 }, {
-  tableName: 'Tbl_Area',
+  tableName: 'tbl_area',
   timestamps: false,
 });
 

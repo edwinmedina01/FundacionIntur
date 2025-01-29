@@ -4,7 +4,7 @@ const sequelize = require('../database/database'); // Asegúrate de tener la rut
 const Municipio = require('./Municipio');
 const Persona = require('./Persona');
 
-const Departamento = sequelize.define('Tbl_Departamento', {
+const Departamento = sequelize.define('tbl_departamento', {
     Id_Departamento: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -36,7 +36,7 @@ const Departamento = sequelize.define('Tbl_Departamento', {
       allowNull: true,
     }
   }, {
-    tableName: 'Tbl_Departamento',
+    tableName: 'tbl_departamento',
     timestamps: false, // Si no tienes columnas 'createdAt' y 'updatedAt'
   });
 

@@ -12,7 +12,7 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-    await queryInterface.bulkInsert('Tbl_Lineas_de_Beneficio', [
+    await queryInterface.bulkInsert('tbl_lineas_de_beneficio', [
       {
         Id_Beneficio: 1,
         Nombre_Beneficio: 'Beca Completa',
@@ -35,7 +35,7 @@ module.exports = {
       },
     ]);
 
-  await queryInterface.bulkInsert('Tbl_Area', [
+  await queryInterface.bulkInsert('tbl_area', [
     {
       Id_Area: 1,
       Nombre_Area: 'Ciencias',
@@ -54,7 +54,7 @@ module.exports = {
     },
   ]);
 
-  await queryInterface.bulkInsert('Tbl_Instituto', [
+  await queryInterface.bulkInsert('tbl_instituto', [
     {
       Id_Instituto: 1,
       Nombre_Instituto: 'Instituto Nacional',
@@ -88,9 +88,9 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('Tbl_Beneficio', null, {});
-    await queryInterface.bulkDelete('Tbl_Area', null, {});
-    await queryInterface.bulkDelete('Tbl_Instituto', null, {});
+    await queryInterface.bulkDelete('tbl_beneficio', null, {});
+    await queryInterface.bulkDelete('tbl_area', null, {});
+    await queryInterface.bulkDelete('tbl_instituto', null, {});
 
   }
 };

@@ -76,20 +76,20 @@ const Matricula = sequelize.define('Matricula', {
 });
 
 Matricula.belongsTo(Modalidad, {
-  foreignKey: 'Id_Modalidad', // Campo en tbl_Relacion
-  targetKey: 'Id_Modalidad', // Clave primaria en Tbl_Persona
+  foreignKey: 'Id_Modalidad', // Campo en tbl_relacion
+  targetKey: 'Id_Modalidad', // Clave primaria en tbl_persona
   as: 'Modalidad',           // Alias para consultas
 });
 
 Matricula.belongsTo(Grado, {
-  foreignKey: 'Id_Grado', // Campo en tbl_Relacion
-  targetKey: 'Id_Grado', // Clave primaria en Tbl_Persona
+  foreignKey: 'Id_Grado', // Campo en tbl_relacion
+  targetKey: 'Id_Grado', // Clave primaria en tbl_persona
   as: 'Grado',           // Alias para consultas
 });
 
 Matricula.belongsTo(Seccion, {
-  foreignKey: 'Id_Seccion', // Campo en tbl_Relacion
-  targetKey: 'Id_Seccion', // Clave primaria en Tbl_Persona
+  foreignKey: 'Id_Seccion', // Campo en tbl_relacion
+  targetKey: 'Id_Seccion', // Clave primaria en tbl_persona
   as: 'Seccion',           // Alias para consultas
 });
 

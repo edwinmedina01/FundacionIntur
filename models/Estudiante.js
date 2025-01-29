@@ -10,7 +10,7 @@ const Relacion = require('./Relacion');
 const Matricula = require('./Matricula');
 
 
-const Estudiante = sequelize.define('Tbl_Estudiante', {
+const Estudiante = sequelize.define('tbl_estudiante', {
     Id_Estudiante: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -51,7 +51,7 @@ const Estudiante = sequelize.define('Tbl_Estudiante', {
         type: DataTypes.INTEGER,
       },
     }, {
-      tableName: 'Tbl_Estudiante',
+      tableName: 'tbl_estudiante',
       timestamps: false,
     }
 );
@@ -62,14 +62,14 @@ Estudiante.belongsTo(Beneficio, { foreignKey: 'Id_Beneficio', as: 'Beneficio' 
 Estudiante.belongsTo(Area, { foreignKey: 'Id_Area', as: 'Area' });
 // Relación: Un estudiante puede tener muchas relaciones
 Estudiante.hasMany(Relacion, {
-  foreignKey: 'Id_estudiante', // Clave foránea en tbl_Relacion
-  sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
+  foreignKey: 'Id_estudiante', // Clave foránea en tbl_relacion
+  sourceKey: 'Id_Estudiante', // Clave primaria en tbl_estudiante
   as: 'Relaciones',           // Alias para la relación
 });
 
 Estudiante.hasMany(Matricula, {
-  foreignKey: 'Id_estudiante', // Clave foránea en tbl_Relacion
-  sourceKey: 'Id_Estudiante', // Clave primaria en Tbl_Estudiante
+  foreignKey: 'Id_estudiante', // Clave foránea en tbl_relacion
+  sourceKey: 'Id_Estudiante', // Clave primaria en tbl_estudiante
   as: 'Matriculas',           // Alias para la relación
 });
 

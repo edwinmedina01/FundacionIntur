@@ -3,7 +3,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 
-const Municipio = sequelize.define('Tbl_Municipio', {
+const Municipio = sequelize.define('tbl_municipio', {
     Id_Municipio: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -39,7 +39,7 @@ const Municipio = sequelize.define('Tbl_Municipio', {
       allowNull: true,
     }
   }, {
-    tableName: 'Tbl_Municipio',
+    tableName: 'tbl_municipio',
     timestamps: false, // Si no tienes columnas 'createdAt' y 'updatedAt'
   });
 
