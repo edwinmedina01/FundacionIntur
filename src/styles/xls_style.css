@@ -102,11 +102,11 @@
 }
 
 .xls_style-excel-table th {
-    background-color: rgb(191 219 254);
+    /* background-color: rgb(191 219 254); */
     border: 1px solid #ddd;
     padding: 4px;
     text-align: center;
-    color: rgb(30 64 175);
+    /* color: rgb(30 64 175); */
     /* font-family: "Calibri", sans-serif; */
     /* font-size: 16px; */
     font-weight: 100;

@@ -393,65 +393,74 @@ const exportToExcel = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6  min-h-screen">
-        <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
-          Estudiantes
-        </h1>
+      <div className="container mx-auto p-1  min-h-screen">
+    
 
-        {/* Contenedor para la búsqueda y el botón de exportación */}
-        <div className="mb-4 flex justify-between items-center">
-          {/* Barra de búsqueda */}
-          {permisos[1]?.consultar && (
-            <div className="flex items-center w-1/2 border border-gray-300 rounded-lg p-3">
-              <MagnifyingGlassIcon className="h-6 w-6 mr-1 text-black-500" />
-              <input
-                type="text"
-                placeholder="Buscar estudiante"
-                value={searchTerm}
-                onChange={handleSearch}
-                className="border-none focus:ring-0 w-full p-1 text-gray-700 bg-transparent"
-              />
-            </div>
-          )}
-          <center>
-            {permisos[1]?.insertar && (
-              <button
-                onClick={() => (window.location.href = "/estudiante")}
-                className="block py-1 px-4 rounded bg-orange-500 text-white hover:bg-orange-600 focus:outline-none transition-colors"
-              >
-                <UserPlusIcon className="h-6 w-6 inline" /> Agregar Registro
-              </button>
-            )}
-          </center>
-          {permisos[1]?.actualizar && (
-                        <Link href={`/estudiante`}>
-                          <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
-                          <PencilSquareIcon className="h-6 w-6 inline" />  Editar Registros
-                          </button>
-                        </Link>
-                      )}
-          {/* Botón de exportación */}
-          <div className="flex justify-center ml-4">
-            <button
-              onClick={exportToExcel}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
-            >
-             <ArrowDownCircleIcon className="h-6 w-6 inline" />    Exportar Excel
-            </button>
-          </div>
-        </div>
+{/* Contenedor de acciones y encabezado */}
+<div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+  
+ 
+
+  {/* Barra de búsqueda */}
+  {permisos[1]?.consultar && (
+    <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+      <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+      <input
+        type="text"
+        placeholder="Buscar estudiante..."
+        value={searchTerm}
+        onChange={handleSearch}
+        className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+      />
+    </div>
+  )}
+   {/* Título de la sección */}
+   <p className="text-3xl font-bold text-blue-700">📋Reporte de Estudiantes</p>
+
+  {/* Botones de acciones */}
+  <div className="flex gap-x-2">
+    {permisos[1]?.insertar && (
+      <button
+        onClick={() => (window.location.href = "/estudiante")}
+        className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+      >
+        <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar
+      </button>
+    )}
+
+    {permisos[1]?.actualizar && (
+      <Link href={`/estudiante`}>
+        <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors shadow-md">
+          <PencilSquareIcon className="h-5 w-5 mr-2" /> Editar
+        </button>
+      </Link>
+    )}
+
+    {/* Botón de exportación */}
+    <button
+      onClick={exportToExcel}
+      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
+    >
+      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
+    </button>
+  </div>
+
+</div>
+
 
         {permisos[1]?.consultar ? (
                     <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-          <table className="min-w-full border-collapse">
+          <table className="xls_style-excel-table  w-full">
 <thead>
 <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-        <th rowSpan="2" className="py-2 px-4 border">#</th>
+<th rowSpan="2" className="py-2 px-4 border" >#</th>
+        <th rowSpan="2" className="py-2 px-4 bg-orange-300 ">Acciones</th>
+        <th rowSpan="2" className="py-2 px-4 border">Identidad</th>
+        <th rowSpan="2" className="py-2 px-5 border" style={{ width: '300px' }} >Nombre</th>
         <th rowSpan="2" className="py-2 px-4 border">Fecha Registro</th>
         <th rowSpan="2" className="py-2 px-4 border">Beneficio</th>
         <th rowSpan="2" className="py-2 px-4 border">Área</th>
-        <th rowSpan="2" className="py-2 px-4 border">Identidad</th>
-        <th rowSpan="2" className="py-2 px-4 border">Nombre</th>
+
         <th rowSpan="2" className="py-2 px-4 border">Sexo</th>
         <th rowSpan="2" className="py-2 px-4 border">Año Matrícula</th>
         <th rowSpan="2" className="py-2 px-4 border">Modalidad</th>
@@ -465,7 +474,7 @@ const exportToExcel = () => {
         <th rowSpan="2" className="py-2 px-4 border">Estado</th>
         <th colSpan="4" className="py-2 px-4 bg-violet-400">Tutor</th>
         <th colSpan="4" className="py-2 px-4 bg-emerald-400">Benefactor</th>
-        <th rowSpan="2" className="py-2 px-4 bg-orange-300">Acciones</th>
+
       </tr>
 
   {/* Segunda fila con subcolumnas específicas de Tutor y Benefactor */}
@@ -491,6 +500,42 @@ const exportToExcel = () => {
                          {index + 1}
                   </td>
                   <td className="py-4 px-6 border-b">
+                    <div className="flex gap-2">
+
+                    {permisos[1]?.actualizar && (
+    <button
+      onClick={() => handleEdit(estudiante)}
+
+
+      
+      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+    >
+      <PencilSquareIcon className="h-5 w-6" />
+    </button>
+  )}
+
+
+                      {permisos[1]?.eliminar && (
+                        <button
+                          onClick={() => handleDelete(estudiante.Id_Estudiante)}
+                          className="px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                        >
+                          <TrashIcon className="h-5 w-6" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 border-b">
+                    {estudiante.Persona?.Identidad || "Identidad -"}
+                  </td>
+                  <td className="min-w-60 max-w-60 border py-4 px-6 border-b" style={{ width: '300px' }}>
+                    {`${estudiante.Persona?.Primer_Nombre || ""} ${
+                      estudiante.Persona?.Segundo_Nombre || ""
+                    } ${estudiante.Persona?.Primer_Apellido || ""} ${
+                      estudiante.Persona?.Segundo_Apellido || ""
+                    }`}
+                  </td>
+                  <td className="py-4 px-6 border-b">
                     {estudiante.Fecha_Creacion
                       ? new Date(estudiante.Fecha_Creacion).toLocaleDateString(
                           "es-ES",
@@ -510,16 +555,7 @@ const exportToExcel = () => {
                   <td className="py-4 px-6 border-b">
                     {estudiante.Area?.Nombre_Area || "Área -"}
                   </td>
-                  <td className="py-4 px-6 border-b">
-                    {estudiante.Persona?.Identidad || "Identidad -"}
-                  </td>
-                  <td className="py-4 px-6 border-b">
-                    {`${estudiante.Persona?.Primer_Nombre || ""} ${
-                      estudiante.Persona?.Segundo_Nombre || ""
-                    } ${estudiante.Persona?.Primer_Apellido || ""} ${
-                      estudiante.Persona?.Segundo_Apellido || ""
-                    }`}
-                  </td>
+  
                   <td className="py-4 px-6 border-b">
                     {estudiante.Persona?.Sexo === 1
                       ? "Masculino"
@@ -552,12 +588,12 @@ const exportToExcel = () => {
                     {estudiante.Persona?.Lugar_Nacimiento ||
                       "Lugar de nacimiento -"}
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                     {estudiante.Instituto?.Nombre_Instituto ||
                       "Instituto -"}
                   </td>
               
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                     {estudiante.Persona?.Municipio?.Nombre_Municipio ||
                       "Municipio -"}
                   </td>
@@ -597,7 +633,7 @@ const exportToExcel = () => {
                 }).join('')}
               </ul>
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
@@ -669,7 +705,7 @@ const exportToExcel = () => {
                   </td>
               
                   
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -687,7 +723,7 @@ const exportToExcel = () => {
               </ul>
                   </td>
                   
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -704,7 +740,7 @@ const exportToExcel = () => {
                 }).join('')}
               </ul>
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -722,32 +758,7 @@ const exportToExcel = () => {
               </ul>
                   </td>
                   
-                  <td className="py-4 px-6 border-b">
-                    <div className="flex gap-2">
-
-                    {permisos[1]?.actualizar && (
-    <button
-      onClick={() => handleEdit(estudiante)}
-
-
-      
-      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
-
-
-                      {permisos[1]?.eliminar && (
-                        <button
-                          onClick={() => handleDelete(estudiante.Id_Estudiante)}
-                          className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                        >
-                          <TrashIcon className="h-6 w-6" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  
                 </tr>
               ))}
             </tbody>
