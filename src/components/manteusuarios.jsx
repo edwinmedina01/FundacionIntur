@@ -6,9 +6,13 @@ import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../context/AuthContext"; // para permisos
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
+import { validatePasswordDetails } from "../utils/passwordValidator";
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
   const router = useRouter();
   const [roles, setRoles] = useState([]);
   const [userStates, setUserStates] = useState([]);
@@ -20,7 +24,21 @@ const UsersManagement = () => {
   const [permisos, setPermisos] = useState(null); //obtener permiso
   const [error, setError] = useState(null); //mostrar error de permiso
   const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+  const [showModal, setShowModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 // ------------------------------------------------------------//
+
+
+const openResetModal = (user) => {
+  setSelectedUser(user);
+  setShowModal(true);
+};
+
+const handleReset = (user) => {
+  setSelectedUser(user); // Establece el usuario seleccionado
+};
 
   const [formData, setFormData] = useState({
     Id_Usuario: "",
@@ -30,6 +48,7 @@ const UsersManagement = () => {
     Usuario: "",
     Nombre_Usuario: "",
     Contrasena: "",
+    ConfirmarContrasena: "",
     Fecha_Ultima_Conexion: "",
     Preguntas_Contestadas: "",
     Primer_Ingreso: "",
@@ -40,14 +59,19 @@ const UsersManagement = () => {
     Modificado_Por: "",
     Fecha_Modificacion: "",
   });
+
+
+
+
+
   const [isEditing, setIsEditing] = useState(false);
  const [visibleDetails, setVisibleDetails] = useState({});
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordValidation, setPasswordValidation] = useState([]);
 
-  {
-    /* Filtros del buscador por usuario/nombre o correo */
-  }
   const filteredUsers = users.filter(
     (user) =>
       user.Usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -55,6 +79,55 @@ const UsersManagement = () => {
       user.Nombre_Usuario.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+
+  // ✅ Función para generar una nueva contraseña segura
+  const generateRandomPassword = () => {
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+  };
+
+
+// ✅ Restablecer contraseña y enviarla por correo
+const handleResetPassword = async (item) => {
+  const newPassword = generateRandomPassword();
+
+  console.log(user)
+  try {
+    const response = await axios.post("/api/enviarcorreoadmin", {
+      userId: selectedUser.Id_Usuario,
+      newPassword,
+      email: selectedUser.Correo,
+      adminId:user.id
+      
+    });
+
+
+
+    if (response.data.success) {
+      toast.success(`Se ha enviado una nueva contraseña al correo de ${selectedUser.Correo}`);
+      setIsOpen(false); 
+    } else {
+      throw new Error(response.data.message || "No se pudo restablecer la contraseña.");
+    }
+  } catch (error) {
+    toast.error("Error al restablecer la contraseña.");
+    console.error("Error al restablecer la contraseña:", error);
+  }
+};
+
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, Contrasena: newPassword });
+
+    // Obtener los resultados de validación
+    const validationResults = validatePasswordDetails(newPassword);
+    setPasswordValidation(validationResults);
+};
   const nextPage = () => {
     if (currentPage < Math.ceil(users.length / usersPerPage)) {
       setCurrentPage(currentPage + 1);
@@ -140,22 +213,46 @@ const fetchPermisos = async () => {
     const { name, value } = e.target;
 
     // For the "Usuario" field, enforce uppercase transformation
-    if (name === "Usuario") {
+    if (name === "Usuario" || name === "Nombre_Usuario") {
       setFormData({ ...formData, [name]: value.toUpperCase() });
     } else {
       setFormData({ ...formData, [name]: value });
     }
+
+    if (name === "Usuario" ){
+
+    }
+
   };
+
+
+
+  const checkUserOrEmailExists = async (usuario, correo) => {
+    try {
+        const response = await fetch(`/api/usuarios?usuario=${usuario}&correo=${correo}`);
+        const data = await response.json();
+        return data; // Devuelve { userExists: true/false, emailExists: true/false }
+    } catch (error) {
+        console.error("Error al verificar existencia:", error);
+        return { userExists: false, emailExists: false };
+    }
+};
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+
+
+
       const currentDate = new Date().toISOString();
       formData.Fecha_Ultima_Conexion = currentDate;
 
       // Verifica si se está editando o si se está creando un nuevo usuario
       if (isEditing) {
         // Si se está editando, solo asigna la contraseña si se cambió
+        formData.Primer_Ingreso = 1;
         if (formData.Contrasena) {
           // Aquí ya no se hashea la contraseña
         } else {
@@ -195,7 +292,32 @@ const fetchPermisos = async () => {
         );
         
       } else {
+
+        if (!validatePasswordDetails (formData.Contrasena)) {
+          toast.error("La contraseña no cumple con los requisitos.");
+          return;
+      }
+  
+      if (formData.Contrasena !== formData.ConfirmarContrasena) {
+          toast.error("Las contraseñas no coinciden.");
+          return;
+      }
+
         // Lógica para crear un nuevo usuario
+// 1. Verificar si el usuario o el correo ya existen con un GET
+const { userExists, emailExists } = await checkUserOrEmailExists(formData.Usuario, formData.Correo);
+
+if (userExists) {
+    toast.error("El usuario ya existe. Prueba con otro nombre.");
+    return;
+}
+
+if (emailExists) {
+    toast.error("El correo ya está registrado. Usa otro correo.");
+    return;
+}
+
+
         const response = await fetch("/api/usuarios", {
           method: "POST",
           headers: {
@@ -249,6 +371,8 @@ const fetchPermisos = async () => {
     setIsEditing(true);
   };
 
+
+
   const handleDelete = async (Id_Usuario) => {
     try {
       const response = await fetch("/api/usuarios", {
@@ -282,6 +406,11 @@ const fetchPermisos = async () => {
       toast.error("Error al eliminar el usuario:", error);
     }
   };
+
+  const checkUserExists = async (usuario) => {
+    const response = await axios.get(`/api/usuarios?usuario=${usuario}`);
+    return response.data.exists;
+}
 
   const resetForm = () => {
     setFormData({
@@ -387,14 +516,14 @@ if (!permisos) {
               value={formData.Usuario}
               onChange={handleInputChange}
               required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
+              className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
+              placeholder=" aaa"
               style={{ textTransform: "uppercase" }}
             />
             <label
               className={`absolute left-1 top-1 transition-all duration-200 transform ${
                 formData.Usuario
-                  ? "text-gray-1200 -translate-y-4 scale-100"
+                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
                   : "text-gray-400"
               }`}
             >
@@ -409,13 +538,14 @@ if (!permisos) {
               value={formData.Nombre_Usuario}
               onChange={handleInputChange}
               required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
+               className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
+            
               placeholder=" "
             />
             <label
               className={`absolute left-1 top-1 transition-all duration-200 transform ${
                 formData.Nombre_Usuario
-                  ? "text-gray-1200 -translate-y-4 scale-100"
+                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
                   : "text-gray-400"
               }`}
             >
@@ -430,13 +560,14 @@ if (!permisos) {
               value={formData.Correo}
               onChange={handleInputChange}
               required
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
+               className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
+            
               placeholder=" "
             />
             <label
               className={`absolute left-1 top-1 transition-all duration-200 transform ${
                 formData.Correo
-                  ? "text-gray-1200 -translate-y-4 scale-100"
+                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
                   : "text-gray-400"
               }`}
             >
@@ -445,27 +576,82 @@ if (!permisos) {
           </div>
 
           <div className="relative mb-4">
-            <input
-              type="password"
-              name="Contrasena"
-              value={formData.Contrasena}
-              onChange={handleInputChange}
-              className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent"
-              placeholder=" "
-              // No es obligatorio si estamos editando
-              required={!isEditing}
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Contrasena
-                  ? "text-gray-1200 -translate-y-4 scale-100"
-                  : "text-gray-400"
-              }`}
-            >
-              Contraseña
-            </label>
-          </div>
+      <input
+        type={showPassword ? "text" : "password"}
+        name="Contrasena"
+        value={formData.Contrasena}
+        onChange={handlePasswordChange} // 
 
+        className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
+        placeholder=""
+        required={!isEditing}
+      />
+
+
+ {/* Lista de validaciones */}
+ <ul className="mt-2 text-sm">
+    {passwordValidation?.map(({ label, passed }, index) => (
+        <li key={index} className={passed ? "text-green-600" : "text-red-600"}>
+            {passed ? "✔️" : "❌"} {label}
+        </li>
+    ))}
+</ul>
+      <label
+                  className={`absolute left-1 top-1 transition-all duration-200 transform ${
+          formData.Contrasena
+                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
+            : "text-gray-400"
+        }`}
+      >
+        Contraseña
+      </label>
+      
+      {/* Botón de mostrar/ocultar */}
+      <button
+        type="button"
+        className="absolute right-3 top-4 text-gray-600 hover:text-gray-900 focus:outline-none"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? (
+          <EyeSlashIcon className="w-5 h-5" />
+        ) : (
+          <EyeIcon className="w-5 h-5" />
+        )}
+      </button>
+    </div>
+    <div className="relative mb-4">
+      <input
+        type={showPassword2 ? "text" : "password"}
+        name="ConfirmarContrasena"
+        value={formData.ConfirmarContrasena}
+        onChange={handleInputChange}
+        className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
+        placeholder=""
+        required={!isEditing}
+      />
+      <label
+                  className={`absolute left-1 top-1 transition-all duration-200 transform ${
+          formData.Contrasena
+                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
+            : "text-gray-400"
+        }`}
+      >
+               Confirmar Contraseña
+      </label>
+      
+      {/* Botón de mostrar/ocultar */}
+      <button
+        type="button"
+        className="absolute right-3 top-4 text-gray-600 hover:text-gray-900 focus:outline-none"
+        onClick={() => setShowPassword2(!showPassword2)}
+      >
+        {showPassword2 ? (
+          <EyeSlashIcon className="w-5 h-5" />
+        ) : (
+          <EyeIcon className="w-5 h-5" />
+        )}
+      </button>
+    </div>
           <label
             htmlFor="Id_Rol"
             className="block mb-2 text-sm font-medium text-gray-700"
@@ -581,7 +767,7 @@ if (!permisos) {
           </div>
         </div>
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <table className="xls_style-excel-table">
           <thead className="bg-slate-200">
             <tr>
               <th className="py-4 px-6 text-left">ID</th>
@@ -648,6 +834,17 @@ if (!permisos) {
       X
     </button>
   )}
+  {permisos.Permiso_Actualizar === "1" && (
+  <button
+    onClick={() => {
+      handleReset(user); // Guarda el usuario seleccionado
+      setIsOpen(true); // Abre el modal
+    }}
+    className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 focus:outline-none ml-2"
+  >
+    Reset
+  </button>
+)}
 </div>
 
                       </td>
@@ -745,6 +942,38 @@ if (!permisos) {
           </button>
         </div>
       </div>
+    
+ {/* Modal */}
+ {isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-semibold text-gray-800">
+              ¿Restablecer contraseña?
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Se enviará una nueva contraseña al correo del usuario.
+            </p>
+
+            <div className="flex justify-end mt-4">
+              <button
+                className="px-4 py-2 bg-gray-400 text-white rounded-lg mr-2 hover:bg-gray-500"
+                onClick={() => setIsOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                onClick={handleResetPassword}
+                disabled={loading}
+              >
+                {loading ? "Enviando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

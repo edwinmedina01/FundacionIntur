@@ -4,7 +4,26 @@ const { QueryTypes } = require('sequelize');
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
+    const { usuario, correo } = req.query;
+
     try {
+
+      if (usuario || correo) {
+        // Si se pasa un nombre de usuario, verificar si existe
+        const existingUser = await sequelize.query(
+          'SELECT * FROM tbl_usuario WHERE Usuario = ? OR Correo = ?',
+            {
+                replacements: [usuario,correo],
+                type: QueryTypes.SELECT,
+            }
+        );
+
+        const userExists = existingUser.some(user => user.Usuario === usuario);
+        const emailExists = existingUser.some(user => user.Correo === correo);
+
+        return res.status(200).json({ userExists, emailExists });
+    }
+
       const usuarios = await sequelize.query('SELECT * FROM tbl_usuario', {
         type: QueryTypes.SELECT,
       });

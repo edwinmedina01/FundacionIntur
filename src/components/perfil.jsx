@@ -2,6 +2,8 @@ import { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify'; // Importar toast
+import { validatePasswordDetails } from "../utils/passwordValidator";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 
 // Asegúrate de tener el CSS de react-toastify en tu archivo principal
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,6 +13,10 @@ const Profile = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordValidation, setPasswordValidation] = useState([]);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword2, setShowPassword2] = useState(false);
+    const [showPasswordcurrent , setcurrentShowPassword] = useState(false);
  //   const [message, setMessage] = useState('');
 
  useEffect(() => {
@@ -27,12 +33,29 @@ const Profile = () => {
     fetchProfile();
 }, []);
 
+
+const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setNewPassword(newPassword); // Actualiza la contraseña
+  
+    // Ejecuta validación en tiempo real
+    const validationResults = validatePasswordDetails(newPassword);
+    setPasswordValidation(validationResults); // Guarda los resultados de la validación
+  };
+
 const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
         toast.info("Las contraseñas no coinciden."); // Usar toast.info
         return;
     }
+
+
+    if (newPassword === currentPassword) {
+        toast.warning("La nueva contraseña no puede ser igual a la actual.");
+        return;
+    }
+
 
     const response = await fetch('/api/change-password', {
         method: 'POST',
@@ -118,39 +141,82 @@ const handleCopyEmail = () => {
         <div className="space-y-8 border-l-4 border-gray-200 pl-12">
             <h3 className="text-3xl font-semibold text-blue-700 mb-6 text-center md:text-left">Cambiar Contraseña</h3>
             <form onSubmit={handleChangePassword} className="space-y-6">
-                <div>
-                    <label className="block text-gray-700 font-medium" htmlFor="currentPassword">Contraseña Actual</label>
-                    <input
-                        type="password"
-                        id="currentPassword"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className="mt-3 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-medium" htmlFor="newPassword">Nueva Contraseña</label>
-                    <input
-                        type="password"
-                        id="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="mt-3 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-gray-700 font-medium" htmlFor="confirmPassword">Confirmar Nueva Contraseña</label>
-                    <input
-                        type="password"
-                        id="confirmPassword"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="mt-3 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-                        required
-                    />
-                </div>
+
+       
+           {/* Actual Contraseña */}
+           <div className="relative">
+            <label className="block text-gray-700">Contraseña Actual*</label>
+            <input
+               id="currentPassword"
+              type={showPasswordcurrent ? "text" : "password"}
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+            {/* Botón de mostrar/ocultar */}
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-600 hover:text-gray-900 focus:outline-none"
+              onClick={() => setcurrentShowPassword(!showPasswordcurrent)}
+            >
+              {showPasswordcurrent ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+            </button>
+
+    
+          </div>
+
+
+       
+            {/* Nueva Contraseña */}
+     <div className="relative">
+            <label className="block text-gray-700">Nueva Contraseña *</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              value={newPassword}
+              onChange={handlePasswordChange} 
+              required
+            />
+            {/* Botón de mostrar/ocultar */}
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-600 hover:text-gray-900 focus:outline-none"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+            </button>
+
+            {/* Lista de validaciones */}
+            <ul className="mt-2 text-sm">
+              {passwordValidation?.map(({ label, passed }, index) => (
+                <li key={index} className={passed ? "text-green-600" : "text-red-600"}>
+                  {passed ? "✔️" : "❌"} {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Confirmar Nueva Contraseña */}
+          <div className="relative">
+            <label className="block text-gray-700">Confirmar Nueva Contraseña *</label>
+            <input
+              type={showPassword2 ? "text" : "password"}
+              className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            {/* Botón de mostrar/ocultar */}
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-600 hover:text-gray-900 focus:outline-none"
+              onClick={() => setShowPassword2(!showPassword2)}
+            >
+              {showPassword2 ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+            </button>
+          </div>
+
                 <button
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition duration-200"
