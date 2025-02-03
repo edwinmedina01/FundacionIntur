@@ -1,19 +1,51 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 
 export default function ChangePassword() {
+
+
+ 
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+  const { token } = router.query;;
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState([]);
   const [showPasswordcurrent , setcurrentShowPassword] = useState(false);
+  const [email, setEmail] = useState(null); // Guardar el email del usuario verificado
+  const [ttl, setTtl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [expired, setExpired] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+
+    fetch(`/api/verifyToken?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.email) {
+          setEmail(data.email);
+          setTtl(data.ttl);
+        } else {
+          setError(data.error || "❌ Token inválido o expirado.");
+          setExpired(true);
+          
+        }
+      })
+      .catch(() => {
+        setError("❌ Error verificando el token.");
+        setExpired(true);
+      });
+  }, [token]);
+
 
     
   const handlePasswordChange = (e) => {
@@ -57,6 +89,7 @@ export default function ChangePassword() {
 
       if (response.ok) {
         setSuccess('Contraseña actualizada exitosamente');
+        
         router.push('/inicio');
         setError('');
       } else {
@@ -70,12 +103,16 @@ export default function ChangePassword() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      
+      
+      {email ? (
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
         <h2 className="text-2xl font-semibold text-center text-gray-700">Cambiar Contraseña</h2>
         
         {error && <p className="text-red-500">{error}</p>}
         {success && <p className="text-green-500">{success}</p>}
         
+       
         <form onSubmit={handleChangePassword} className="space-y-4">
          {/* Actual Contraseña */}
          <div className="relative">
@@ -155,7 +192,16 @@ export default function ChangePassword() {
             Cambiar Contraseña
           </button>
         </form>
-      </div>
+        </div>
+        ): 
+           <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+           <h1 className="text-3xl font-bold text-red-600">❌ Error</h1>
+           <p className="text-gray-600">El token es inválido o ha expirado.</p>
+
+          </div>
+        
+        }
+    
     </div>
   );
 }

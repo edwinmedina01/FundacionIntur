@@ -1,6 +1,7 @@
 // /api/enviarcorreo.js
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import client from "../../lib/redis";
 import User from '../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
 
 // Configuración del transporte de nodemailer
@@ -9,8 +10,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: 'proyectoevaluacion03@gmail.com', // Tu usuario de email
-        pass: 'jnuc qyru wplz otto', // Usa la contraseña de aplicación aquí
+        user: process.env.EMAIL_USER, // Tu usuario de email
+        pass: process.env.EMAIL_APP_PASS, // Usa la contraseña de aplicación aquí
     },
     tls: {
         rejectUnauthorized: false,
@@ -56,26 +57,29 @@ export default async function handler(req, res) {
             const token = crypto.randomBytes(20).toString('hex');
 
             // Almacenar el token en el objeto en memoria
-            storeToken(email, token);
+    
+            // Guardar en Redis con una expiración de 15 minutos (900 segundos)
+             await client.setEx(`verify:${token}`, 900, email);
 
             // URL para cambiar la contraseña
-            const url = `http://localhost:3000/resetpassword`;
-
+           // const url = `http://localhost:3000/resetpassword`;
+            const url = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"; 
+            const verificationUrl = `${url}/resetpassword?token=${token}`;
             // Configurar el contenido del correo electrónico
             const mailOptions = {
-                from: 'proyectoimplementacion24@gmail.com',
+                from: process.env.EMAIL_USER,
                 to: email,
                 subject: 'Solicitud de Recuperación de Contraseña',
                 html: `
                     <h1 style="font-family: Arial, sans-serif; color: #333;">Solicitud de Recuperación de Contraseña</h1>
                     <p style="font-family: Arial, sans-serif; color: #555;">
-                        Estimado/a ${nombreUsuario},
+                        Estimado/a ,
                     </p>
                     <p style="font-family: Arial, sans-serif; color: #555;">
                         Hemos recibido una solicitud para restablecer la contraseña de la cuenta con Nombre de usuario > <strong>${nombreUsuario}</strong> < . Para proceder, por favor haz clic en el siguiente enlace:
                     </p>
                     <div style="text-align: center; margin: 20px 0;">
-                        <a href="${url}" style="padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+                        <a href="${verificationUrl}" style="padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
                     </div>
                     <p style="font-family: Arial, sans-serif; color: #555;">
                         Si no solicitaste este cambio, puedes ignorar este correo. Tu contraseña permanecerá sin cambios.

@@ -1,14 +1,29 @@
 import Usuario from '../../../models/Usuario'; // Asegúrate de que la ruta es correcta
 import bcrypt from 'bcryptjs';
+import client from "../../lib/redis";
+
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { username, newPassword } = req.body; // Solo requerir 'username' y 'newPassword'
+        const { username, newPassword , token } = req.body; // Solo requerir 'username' y 'newPassword'
 
         // Validar que se haya proporcionado el nombre de usuario y la nueva contraseña
         if (!username || !newPassword) {
             return res.status(400).json({ message: 'Se requieren el nombre de usuario y la nueva contraseña.' });
         }
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: "❌ token invalido" });
+          }
+          // Obtener el email vinculado al token desde Redis
+          const email = await client.get(`verify:${token}`);
+      
+          if (!email) {
+            return res.status(400).json({ message: "❌ Token inválido o expirado." });
+          }
+      
+
+
 
         try {
             // Validar la nueva contraseña (ajusta las reglas según tus necesidades)
@@ -39,7 +54,7 @@ export default async function handler(req, res) {
                 { Contrasena: hashedPassword }, // Actualizar solo la contraseña
                 { where: { Usuario: username } } // Busca por nombre de usuario
             );
-
+            await client.del(`verify:${token}`);
             return res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
         } catch (error) {
             console.error('Error al actualizar la contraseña:', error);
