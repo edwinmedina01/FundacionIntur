@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
             // URL para cambiar la contraseña
            // const url = `http://localhost:3000/resetpassword`;
-            const url = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"; 
+            const url = process.env.NEXT_PUBLIC_APP_URL; 
             const verificationUrl = `${url}/resetpassword?token=${token}`;
             // Configurar el contenido del correo electrónico
             const mailOptions = {
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
                         Estimado/a ,
                     </p>
                     <p style="font-family: Arial, sans-serif; color: #555;">
-                        Hemos recibido una solicitud para restablecer la contraseña de la cuenta con Nombre de usuario > <strong>${nombreUsuario}</strong> < . Para proceder, por favor haz clic en el siguiente enlace:
+                        Hemos recibido una solicitud para restablecer la contraseña. Para proceder, por favor haz clic en el siguiente enlace:
                     </p>
                     <div style="text-align: center; margin: 20px 0;">
                         <a href="${verificationUrl}" style="padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
