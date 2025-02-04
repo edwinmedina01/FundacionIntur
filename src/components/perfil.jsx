@@ -4,6 +4,7 @@ import { DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify'; // Importar toast
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
+import PreguntasSeguridad from "../components/otrosMantenimientos/PreguntasSeguridad";
 
 // Asegúrate de tener el CSS de react-toastify en tu archivo principal
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,6 +18,7 @@ const Profile = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showPassword2, setShowPassword2] = useState(false);
     const [showPasswordcurrent , setcurrentShowPassword] = useState(false);
+    const [mostrarPreguntas, setMostrarPreguntas] = useState(false);
  //   const [message, setMessage] = useState('');
 
  useEffect(() => {
@@ -101,7 +103,18 @@ const handleCopyEmail = () => {
         />
         <h1 className="text-4xl font-bold text-blue-800 mt-6">Perfil de Usuario</h1>
     </div>
+    <button
+          className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200"
+          onClick={() => setMostrarPreguntas(true)}
+        >
+          Configurar Preguntas de Seguridad
+        </button>
 
+        {mostrarPreguntas && (
+          <div className="mt-6">
+            <PreguntasSeguridad idUsuario={profile.id} onSave={() => setMostrarPreguntas(false)} />
+          </div>
+        )}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-10 border-t border-gray-200 pt-10">
         {/* Columna de Detalles del Perfil */}
         <div className="space-y-10">

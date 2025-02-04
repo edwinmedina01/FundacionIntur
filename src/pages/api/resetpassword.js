@@ -40,18 +40,24 @@ export default async function handler(req, res) {
 
             // Verificar que el correo electrónico coincide (aquí podrías ajustar la lógica)
             // No se requiere que el correo sea ingresado por el usuario, solo se verifica que exista
-            const email = usuario.Correo; // Obtener el correo del usuario encontrado
+          //  const email = usuario.Correo; // Obtener el correo del usuario encontrado
 
             if (!email) {
                 return res.status(400).json({ message: 'El usuario no tiene un correo electrónico asociado.' });
             }
+
+            if (email!= usuario.Correo) {
+                return res.status(400).json({ message: 'El correo no coincide con el correo proporcionado' });
+            }
+
+
 
             // Si el correo electrónico existe, proceder a hashear la nueva contraseña
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
             // Actualiza la contraseña en la base de datos
             await Usuario.update(
-                { Contrasena: hashedPassword }, // Actualizar solo la contraseña
+                { Contrasena: hashedPassword , Primer_Login:0 }, // Actualizar solo la contraseña
                 { where: { Usuario: username } } // Busca por nombre de usuario
             );
             await client.del(`verify:${token}`);

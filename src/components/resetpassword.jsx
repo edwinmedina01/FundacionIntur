@@ -77,7 +77,10 @@ if (validationResults.some(rule => !rule.passed)) {
       if (response.ok) {
         setSuccess('Contraseña actualizada exitosamente');
         setError('');
-        setShowModal(true); // Mostrar el modal de éxito
+        setTimeout(() => {
+          router.push("/inicio"); // Reemplaza con la ruta correcta de tu login
+        }, 3000);
+        //setShowModal(true); // Mostrar el modal de éxito
       } else {
         const data = await response.json();
         setError(data.message || 'Hubo un error al actualizar la contraseña');
