@@ -23,6 +23,7 @@ const ForgotPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState('');
+  const router = useRouter();
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
