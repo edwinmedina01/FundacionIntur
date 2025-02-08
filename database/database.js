@@ -20,10 +20,10 @@ try {
 
 
 ///////////////////Crea una nueva instancia de Sequelize
- const sequelize = new Sequelize('gestion_academica_db', 'root', 'soren1' , {
-     host: 'localhost',
-     dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
-  });
+//  const sequelize = new Sequelize('gestion_academica_db', 'root', 'soren1' , {
+//      host: 'localhost',
+//      dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
+//   });
 
 
 //   const sequelize = new Sequelize('gestion_academica_db', 'root', 'JjGbmRqkujBejmrjINqrYfCvzVwUxFdS' , {
@@ -31,13 +31,13 @@ try {
 //     dialect: 'mysql', // Cambia a 'postgres', 'sqlite', etc., si es necesario
 //  });
 
-//  const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
-//     host: process.env.DB_HOST,
-//     dialect: 'mysql',
-//     port: process.env.DB_PORT,
+ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
+    host: process.env.DB_HOST,
+    dialect: 'mysql',
+    port: process.env.DB_PORT,
 
-//     logging: false,
-// });
+    logging: false,
+});
 
 
 // Verifica la conexión
