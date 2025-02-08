@@ -47,7 +47,7 @@ export default function ChangePassword() {
 
     // Aquí va la lógica para enviar la solicitud al backend
     try {
-      const response = await fetch('/api/change-password', {
+      const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

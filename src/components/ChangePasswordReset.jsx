@@ -26,7 +26,7 @@ const ForgotPassword = () => {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/enviarcorreo", { email });
+      const response = await axios.post("/api/auth/enviarcorreo", { email });
       setMessage(response.data.message);
       setError("");
     } catch (error) {
@@ -37,7 +37,7 @@ const ForgotPassword = () => {
 
   const handleGetSecurityQuestions = async () => {
     try {
-      const response = await axios.post("/api/restablecer/obtener-preguntas", { username });
+      const response = await axios.post("/api/auth/restablecer/obtener-preguntas", { username });
       setPreguntas(response.data.preguntas);
       setIdUsuario(response.data.idUsuario);
       setShowSecurityQuestions(true);
@@ -51,7 +51,7 @@ const ForgotPassword = () => {
   const handleValidateSecurityAnswers = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/restablecer/validar-respuestas", {
+      const response = await axios.post("/api/auth/restablecer/validar-respuestas", {
         idUsuario,
         respuestas: preguntas.map((p) => ({
           idPregunta: p.idPregunta,
@@ -86,7 +86,7 @@ const ForgotPassword = () => {
     }
 
     try {
-      await axios.post("/api/restablecer/cambiar-contrasena", {
+      await axios.post("/api/auth/restablecer/cambiar-contrasena", {
         idUsuario,
         nuevaContrasena: newPassword,
       });

@@ -21,6 +21,7 @@ const EstudiantesReporte = ({token}) => {
   const [recordsPerPage] = useState(10); // Registros por página
   const [permisos, setPermisos] = useState([]);
   const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+ // const [currentEstudiantes, setCurrentEstudiantes] = useState([]);
   useEffect(() => {
     document.title = "Estudiantes";
 }, []);
@@ -179,89 +180,230 @@ const EstudiantesReporte = ({token}) => {
 
  
   
-    const exportToExcel = async (currentEstudiantes) => {
+  //   const exportToExcel = async (currentEstudiantes) => {
+  //   const workbook = new ExcelJS.Workbook();
+  //   const worksheet = workbook.addWorksheet("Estudiantes");
+  
+  //   // 📌 **Encabezado de la Tabla**
+  //   const headers = [
+  //     "#", "Fecha Registro", "Beneficio", "Área", "Identidad", "Nombre", "Sexo",
+  //     "Año Matrícula", "Modalidad", "Grado", "Sección", "Lugar Nacimiento",
+  //     "Instituto", "Municipio", "Dirección", "Teléfono", "Estado",
+  //     "Tutor Identidad", "Tutor Nombre", "Benefactor Identidad",
+  //     "Benefactor Nombre", "Benefactor Teléfono", "Benefactor Dirección"
+  //   ];
+  
+  //   worksheet.addRow(headers);
+  
+  //   // Aplicar estilos al encabezado
+  //   worksheet.getRow(1).eachCell((cell) => {
+  //     cell.font = { bold: true, color: { argb: "FFFFFF" } };
+  //     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  //     cell.alignment = { horizontal: "center", vertical: "middle" };
+  //     cell.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+  //   });
+  
+  //   // 📌 **Agregar Datos de los Estudiantes**
+  //   currentEstudiantes.forEach((estudiante, index) => {
+  //     const row = [
+  //       index + 1,
+  //       estudiante.Fecha_Creacion ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+  //       estudiante.Beneficio?.Nombre_Beneficio || "-",
+  //       estudiante.Area?.Nombre_Area || "-",
+  //       estudiante.Persona?.Identidad || "-",
+  //       `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
+  //       estudiante.Persona?.Sexo === 1 ? "Masculino" : estudiante.Persona?.Sexo === 0 ? "Femenino" : "-",
+  //       Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
+  //         ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
+  //         : "-",
+  //       estudiante.Matriculas?.[0]?.Modalidad?.Nombre || "-",
+  //       estudiante.Matriculas?.[0]?.Grado?.Nombre || "-",
+  //       estudiante.Matriculas?.[0]?.Seccion?.Nombre_Seccion || "-",
+  //       estudiante.Persona?.Lugar_Nacimiento || "-",
+  //       estudiante.Instituto?.Nombre_Instituto || "-",
+  //       estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
+  //       estudiante.Persona?.direccion || "-",
+  //       estudiante.Persona?.telefono || "-",
+  //       estudiante.Persona?.Estado === 1 ? "Activo" : estudiante.Persona?.Estado === 0 ? "Inactivo" : "-",
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2).map(r => r.Persona.Identidad || "-").join(", "),
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2).map(r => `${r.Persona.Primer_Nombre || "-"} ${r.Persona.Primer_Apellido || "-"}`).join(", "),
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona.Identidad || "-").join(", "),
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => `${r.Persona.Primer_Nombre || "-"} ${r.Persona.Primer_Apellido || "-"}`).join(", "),
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona?.telefono || "-").join(", "),
+  //       estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona?.direccion || "-").join(", ")
+  //     ];
+  //     worksheet.addRow(row);
+  //   });
+  
+  //   // 📌 **Aplicar Estilos a los Datos**
+  //   worksheet.eachRow((row, rowNumber) => {
+  //     row.eachCell((cell) => {
+  //       cell.border = {
+  //         top: { style: "thin" },
+  //         left: { style: "thin" },
+  //         right: { style: "thin" },
+  //         bottom: { style: "thin" },
+  //       };
+  //       if (rowNumber > 1) {
+  //         cell.alignment = { horizontal: "center" };
+  //       }
+  //     });
+  //   });
+  
+  //   // 📌 **Ajustar Columnas al Contenido**
+  //   worksheet.columns.forEach(column => {
+  //     column.width = Math.max(...column.values.map(v => (v ? v.toString().length : 10))) + 2;
+  //   });
+  
+  //   // 📌 **Generar y Descargar el Archivo**
+  //   const buffer = await workbook.xlsx.writeBuffer();
+  //   const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  
+  //   saveAs(blob, "reporte_estudiantes.xlsx");
+  // };
+  
+
+
+  const exportToExcel = async () => {
+    // 1️⃣ Crear un nuevo libro y hoja de Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Estudiantes");
   
-    // 📌 **Encabezado de la Tabla**
-    const headers = [
-      "#", "Fecha Registro", "Beneficio", "Área", "Identidad", "Nombre", "Sexo",
-      "Año Matrícula", "Modalidad", "Grado", "Sección", "Lugar Nacimiento",
-      "Instituto", "Municipio", "Dirección", "Teléfono", "Estado",
-      "Tutor Identidad", "Tutor Nombre", "Benefactor Identidad",
-      "Benefactor Nombre", "Benefactor Teléfono", "Benefactor Dirección"
+    // 2️⃣ Definir las columnas y encabezados
+    worksheet.columns = [
+      { header: "#", key: "Index", width: 5 },
+      { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
+      { header: "Beneficio", key: "Beneficio", width: 20 },
+      { header: "Área", key: "Area", width: 20 },
+      { header: "Identidad", key: "Identidad", width: 20 },
+      { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Sexo", key: "Sexo", width: 10 },
+      { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
+      { header: "Modalidad", key: "Modalidad", width: 20 },
+      { header: "Grado", key: "Grado", width: 15 },
+      { header: "Sección", key: "Seccion", width: 15 },
+      { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
+      { header: "Instituto", key: "Instituto", width: 30 },
+      { header: "Municipio", key: "Municipio", width: 20 },
+      { header: "Dirección", key: "Direccion", width: 30 },
+      { header: "Teléfono", key: "Telefono", width: 15 },
+      { header: "Estado", key: "Estado", width: 15 },
+      { header: "Tutor Identidad", key: "Tutor_Identidad", width: 20 },
+      { header: "Tutor Nombre", key: "Tutor_Nombre", width: 30 },
+      { header: "Benefactor Identidad", key: "Benefactor_Identidad", width: 20 },
+      { header: "Benefactor Nombre", key: "Benefactor_Nombre", width: 30 },
+      { header: "Benefactor Teléfono", key: "Benefactor_Telefono", width: 15 },
+      { header: "Benefactor Dirección", key: "Benefactor_Direccion", width: 30 },
     ];
   
-    worksheet.addRow(headers);
-  
-    // Aplicar estilos al encabezado
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: "FFFFFF" } };
-      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
-      cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
-    });
-  
-    // 📌 **Agregar Datos de los Estudiantes**
-    currentEstudiantes.forEach((estudiante, index) => {
-      const row = [
-        index + 1,
-        estudiante.Fecha_Creacion ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
-        estudiante.Beneficio?.Nombre_Beneficio || "-",
-        estudiante.Area?.Nombre_Area || "-",
-        estudiante.Persona?.Identidad || "-",
-        `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
-        estudiante.Persona?.Sexo === 1 ? "Masculino" : estudiante.Persona?.Sexo === 0 ? "Femenino" : "-",
+    // 3️⃣ Transformar los datos antes de agregarlos
+    const exportData = currentEstudiantes.map((estudiante, index) => ({
+      Index: index + 1,
+      Fecha_Creacion: estudiante.Fecha_Creacion
+        ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+        : "-",
+      Beneficio: estudiante.Beneficio?.Nombre_Beneficio || "-",
+      Area: estudiante.Area?.Nombre_Area || "-",
+      Identidad: estudiante.Persona?.Identidad || "-",
+      Nombre: `${estudiante.Persona?.Primer_Nombre || ""} ${
+        estudiante.Persona?.Segundo_Nombre || ""
+      } ${estudiante.Persona?.Primer_Apellido || ""} ${
+        estudiante.Persona?.Segundo_Apellido || ""
+      }`,
+      Sexo:
+        estudiante.Persona?.Sexo === 1
+          ? "Masculino"
+          : estudiante.Persona?.Sexo === 0
+          ? "Femenino"
+          : "-",
+      Año_Matricula:
         Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
           ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
           : "-",
-        estudiante.Matriculas?.[0]?.Modalidad?.Nombre || "-",
-        estudiante.Matriculas?.[0]?.Grado?.Nombre || "-",
-        estudiante.Matriculas?.[0]?.Seccion?.Nombre_Seccion || "-",
-        estudiante.Persona?.Lugar_Nacimiento || "-",
-        estudiante.Instituto?.Nombre_Instituto || "-",
-        estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
-        estudiante.Persona?.direccion || "-",
-        estudiante.Persona?.telefono || "-",
-        estudiante.Persona?.Estado === 1 ? "Activo" : estudiante.Persona?.Estado === 0 ? "Inactivo" : "-",
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2).map(r => r.Persona.Identidad || "-").join(", "),
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2).map(r => `${r.Persona.Primer_Nombre || "-"} ${r.Persona.Primer_Apellido || "-"}`).join(", "),
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona.Identidad || "-").join(", "),
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => `${r.Persona.Primer_Nombre || "-"} ${r.Persona.Primer_Apellido || "-"}`).join(", "),
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona?.telefono || "-").join(", "),
-        estudiante.Relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map(r => r.Persona?.direccion || "-").join(", ")
-      ];
-      worksheet.addRow(row);
+      Modalidad:
+        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
+      Grado:
+        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
+      Seccion:
+        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion ||
+        "-",
+      Lugar_Nacimiento: estudiante.Persona?.Lugar_Nacimiento || "-",
+      Instituto: estudiante.Instituto?.Nombre_Instituto || "-",
+      Municipio: estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
+      Direccion: estudiante.Persona?.direccion || "-",
+      Telefono: estudiante.Persona?.telefono || "-",
+      Estado:
+        estudiante.Persona?.Estado === 1
+          ? "Activo"
+          : estudiante.Persona?.Estado === 0
+          ? "Inactivo"
+          : "-",
+      Tutor_Identidad: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
+      )
+        .map((relacion) => relacion.Persona.Identidad || "-")
+        .join(", "),
+      Tutor_Nombre: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
+      )
+        .map(
+          (relacion) =>
+            `${relacion.Persona.Primer_Nombre || "-"} ${
+              relacion.Persona.Primer_Apellido || "-"
+            }`
+        )
+        .join(", "),
+      Benefactor_Identidad: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona.Identidad || "-")
+        .join(", "),
+      Benefactor_Nombre: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map(
+          (relacion) =>
+            `${relacion.Persona.Primer_Nombre || "-"} ${
+              relacion.Persona.Primer_Apellido || "-"
+            }`
+        )
+        .join(", "),
+      Benefactor_Telefono: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona?.telefono || "-")
+        .join(", "),
+      Benefactor_Direccion: estudiante.Relaciones.filter(
+        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
+      )
+        .map((relacion) => relacion.Persona?.direccion || "-")
+        .join(", "),
+    }));
+  
+    // 4️⃣ Agregar los datos a la hoja de cálculo
+    exportData.forEach((estudiante) => {
+      worksheet.addRow(estudiante);
     });
   
-    // 📌 **Aplicar Estilos a los Datos**
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          bottom: { style: "thin" },
-        };
-        if (rowNumber > 1) {
-          cell.alignment = { horizontal: "center" };
-        }
-      });
+    // 5️⃣ Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: "center" };
     });
   
-    // 📌 **Ajustar Columnas al Contenido**
-    worksheet.columns.forEach(column => {
-      column.width = Math.max(...column.values.map(v => (v ? v.toString().length : 10))) + 2;
-    });
-  
-    // 📌 **Generar y Descargar el Archivo**
+    // 6️⃣ Generar el archivo y descargarlo
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const fileBlob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
   
-    saveAs(blob, "reporte_estudiantes.xlsx");
+    saveAs(fileBlob, "reporte_estudiantes.xlsx");
   };
   
-
 
 
 // const exportToExcel = () => {

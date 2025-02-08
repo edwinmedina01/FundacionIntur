@@ -15,6 +15,8 @@ import Select from "react-select";
 
 const GraduandoForm = () => {
   const [graduandos, setGraduandos] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null); // ✅ Inicializar con null
+
   const [formData, setFormData] = useState({
     Anio: '',
     Fecha_Inicio: '',
@@ -35,6 +37,7 @@ const GraduandoForm = () => {
           const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
         // ------------------------------------------------------------//
         const [estudiantes, setEstudiantes] = useState([]);
+     
         const [isEditing, setIsEditing] = useState(false);
         const resetForm = () => {
           setFormData({ 
