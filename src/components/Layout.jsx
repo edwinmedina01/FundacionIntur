@@ -5,6 +5,8 @@ import axios from "axios";
 import AuthContext from "../context/AuthContext";
 import { toast } from "react-toastify";
 import jwt from "jsonwebtoken";
+import Image from "next/image";
+
 import {
   HomeIcon,
   AcademicCapIcon,
@@ -211,7 +213,8 @@ if (!isLoaded) {
           }`}
         >
   <div className="flex items-center justify-center mb-10">
-    <img src="/img/intur.png" alt="logo" className="h-16 w-auto" />
+    {/* <img src="/img/intur.png" alt="logo" className="h-16 w-auto" /> */}
+    <Image src="/img/intur.png" alt="logo" width={150} height={50} priority />
   </div>
   <ul className="space-y-6">
     <li>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 
 const LineaBeneficioManagement = () => {
 
@@ -58,21 +59,65 @@ const LineaBeneficioManagement = () => {
   };
 
   // Exportación a Excel
-  const exportToExcel = () => {
-    const exportData = currentBeneficios.map(beneficio => ({
-      ID: beneficio.Id_Beneficio,
-      Nombre: beneficio.Nombre_Beneficio,
-      Tipo: beneficio.Tipo_Beneficio,
-      Monto: beneficio.Monto_Beneficio,
-      Responsable: beneficio.Responsable_Beneficio,
-    }));
+  // const exportToExcel = () => {
+  //   const exportData = currentBeneficios.map(beneficio => ({
+  //     ID: beneficio.Id_Beneficio,
+  //     Nombre: beneficio.Nombre_Beneficio,
+  //     Tipo: beneficio.Tipo_Beneficio,
+  //     Monto: beneficio.Monto_Beneficio,
+  //     Responsable: beneficio.Responsable_Beneficio,
+  //   }));
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Líneas de Beneficio');
+  //   const worksheet = XLSX.utils.json_to_sheet(exportData);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Líneas de Beneficio');
 
-    XLSX.writeFile(workbook, 'LineasBeneficio.xlsx');
-  };
+  //   XLSX.writeFile(workbook, 'LineasBeneficio.xlsx');
+  // };
+
+const exportToExcel = async () => {
+  // 1️⃣ Crear un nuevo libro y hoja de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Líneas de Beneficio");
+
+  // 2️⃣ Definir las columnas y encabezados
+  worksheet.columns = [
+    { header: "ID", key: "ID", width: 10 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Tipo", key: "Tipo", width: 20 },
+    { header: "Monto", key: "Monto", width: 15 },
+    { header: "Responsable", key: "Responsable", width: 30 },
+  ];
+
+  // 3️⃣ Transformar los datos antes de agregarlos
+  const exportData = currentBeneficios.map((beneficio) => ({
+    ID: beneficio.Id_Beneficio,
+    Nombre: beneficio.Nombre_Beneficio,
+    Tipo: beneficio.Tipo_Beneficio,
+    Monto: beneficio.Monto_Beneficio,
+    Responsable: beneficio.Responsable_Beneficio,
+  }));
+
+  // 4️⃣ Agregar los datos a la hoja de cálculo
+  exportData.forEach((beneficio) => {
+    worksheet.addRow(beneficio);
+  });
+
+  // 5️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 6️⃣ Generar el archivo y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileBlob, "LineasBeneficio.xlsx");
+};
+
 
   // Fetch de beneficios desde el backend
   useEffect(() => {

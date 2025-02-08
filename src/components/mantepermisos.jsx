@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+//import * as XLSX from 'xlsx';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 
 const PermissionsManagement = () => {
   const [permissions, setPermissions] = useState([]);
@@ -253,22 +255,72 @@ const paginate = (pageNumber) => {
 };
 
 // Exportación a Excel
-const exportToExcel = () => {
+// const exportToExcel = () => {
+//   const transformedPermissions = permissions.map(permission => ({
+//     ...permission,
+//     Rol: roleMap[permission.Id_Rol] || 'Desconocido', // Mapea el Id_Rol a su nombre
+//     Objeto: objectMap[permission.Id_Objeto] || 'Desconocido', // Mapea el Id_Objeto a su nombre
+//     Permiso_Consultar: permission.Permiso_Consultar === '1' ? 'Sí' : 'No',
+//     Permiso_Insertar: permission.Permiso_Insertar === '1' ? 'Sí' : 'No',
+//     Permiso_Actualizar: permission.Permiso_Actualizar === '1' ? 'Sí' : 'No',
+//     Permiso_Eliminar: permission.Permiso_Eliminar === '1' ? 'Sí' : 'No',
+//   }));
+
+//   const ws = XLSX.utils.json_to_sheet(transformedPermissions);
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, "Permisos");
+//   XLSX.writeFile(wb, "permisos.xlsx");
+// };
+
+
+
+const exportToExcel = async () => {
+  // 1️⃣ Crear un nuevo libro de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Permisos");
+
+  // 2️⃣ Definir encabezados de las columnas
+  worksheet.columns = [
+    { header: "ID Rol", key: "Id_Rol", width: 15 },
+    { header: "Rol", key: "Rol", width: 25 },
+    { header: "ID Objeto", key: "Id_Objeto", width: 15 },
+    { header: "Objeto", key: "Objeto", width: 25 },
+    { header: "Consultar", key: "Permiso_Consultar", width: 15 },
+    { header: "Insertar", key: "Permiso_Insertar", width: 15 },
+    { header: "Actualizar", key: "Permiso_Actualizar", width: 15 },
+    { header: "Eliminar", key: "Permiso_Eliminar", width: 15 },
+  ];
+
+  // 3️⃣ Transformar los datos para el Excel
   const transformedPermissions = permissions.map(permission => ({
-    ...permission,
-    Rol: roleMap[permission.Id_Rol] || 'Desconocido', // Mapea el Id_Rol a su nombre
-    Objeto: objectMap[permission.Id_Objeto] || 'Desconocido', // Mapea el Id_Objeto a su nombre
-    Permiso_Consultar: permission.Permiso_Consultar === '1' ? 'Sí' : 'No',
-    Permiso_Insertar: permission.Permiso_Insertar === '1' ? 'Sí' : 'No',
-    Permiso_Actualizar: permission.Permiso_Actualizar === '1' ? 'Sí' : 'No',
-    Permiso_Eliminar: permission.Permiso_Eliminar === '1' ? 'Sí' : 'No',
+    Id_Rol: permission.Id_Rol,
+    Rol: roleMap[permission.Id_Rol] || "Desconocido",
+    Id_Objeto: permission.Id_Objeto,
+    Objeto: objectMap[permission.Id_Objeto] || "Desconocido",
+    Permiso_Consultar: permission.Permiso_Consultar === "1" ? "Sí" : "No",
+    Permiso_Insertar: permission.Permiso_Insertar === "1" ? "Sí" : "No",
+    Permiso_Actualizar: permission.Permiso_Actualizar === "1" ? "Sí" : "No",
+    Permiso_Eliminar: permission.Permiso_Eliminar === "1" ? "Sí" : "No",
   }));
 
-  const ws = XLSX.utils.json_to_sheet(transformedPermissions);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Permisos");
-  XLSX.writeFile(wb, "permisos.xlsx");
+  // 4️⃣ Agregar los datos a la hoja de cálculo
+  transformedPermissions.forEach((data) => {
+    worksheet.addRow(data);
+  });
+
+  // 5️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 6️⃣ Generar el archivo Excel y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  
+  saveAs(fileBlob, "permisos.xlsx");
 };
+
 
 // Renderizado
 if (!user) {

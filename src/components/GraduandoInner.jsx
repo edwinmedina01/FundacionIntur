@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { MagnifyingGlassIcon,ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon,TrashIcon  } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Select from "react-select";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 
 
 const GraduandoForm = ({ estudiante }) => {
@@ -45,7 +46,13 @@ const GraduandoForm = ({ estudiante }) => {
         };
         const [searchTerm, setSearchTerm] = useState("");
         
+const fetchPermisosMemo = useCallback(() => {
+  fetchPermisos(); // Llama a la función sin que cambie en cada render
+}, []);
 
+const fetchGraduandosMemo = useCallback(() => {
+  fetchGraduandos();
+}, []);
 
   useEffect(() => {
 
@@ -61,7 +68,7 @@ const GraduandoForm = ({ estudiante }) => {
     fetchGraduandos();
    //fetchEstudiantes();
 
-  }, [user,estudiante]);
+  }, [user,estudiante,fetchPermisos,fetchGraduandos]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
 import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -8,6 +7,10 @@ import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 const MatriculaManagement = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext); // Usuario logueado
@@ -194,21 +197,67 @@ const MatriculaManagement = () => {
   const totalPages = Math.ceil(filteredMatriculas.length / matriculasPerPage);
 
   // Función para exportar a Excel
-  const handleExport = () => {
-    const transformedMatriculas = filteredMatriculas.map((matricula) => ({
-      Id_Matricula: matricula.Id_Matricula,
-      Estudiante: matricula.Estudiante,
-      Modalidad: matricula.Modalidad,
-      Grado: matricula.Grado,
-      Seccion: matricula.Seccion,
-      Fecha_Matricula: new Date(matricula.Fecha_Matricula).toLocaleDateString('es-ES'),
-    }));
+  // const handleExport = () => {
+  //   const transformedMatriculas = filteredMatriculas.map((matricula) => ({
+  //     Id_Matricula: matricula.Id_Matricula,
+  //     Estudiante: matricula.Estudiante,
+  //     Modalidad: matricula.Modalidad,
+  //     Grado: matricula.Grado,
+  //     Seccion: matricula.Seccion,
+  //     Fecha_Matricula: new Date(matricula.Fecha_Matricula).toLocaleDateString('es-ES'),
+  //   }));
 
-    const worksheet = XLSX.utils.json_to_sheet(transformedMatriculas);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Matriculas');
-    XLSX.writeFile(workbook, 'matriculas.xlsx');
-  };
+  //   const worksheet = XLSX.utils.json_to_sheet(transformedMatriculas);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Matriculas');
+  //   XLSX.writeFile(workbook, 'matriculas.xlsx');
+  // };
+
+const handleExport = async () => {
+  // 1️⃣ Crear un nuevo libro y hoja de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Matrículas");
+
+  // 2️⃣ Definir las columnas y encabezados
+  worksheet.columns = [
+    { header: "ID Matrícula", key: "Id_Matricula", width: 15 },
+    { header: "Estudiante", key: "Estudiante", width: 30 },
+    { header: "Modalidad", key: "Modalidad", width: 20 },
+    { header: "Grado", key: "Grado", width: 15 },
+    { header: "Sección", key: "Seccion", width: 10 },
+    { header: "Fecha Matrícula", key: "Fecha_Matricula", width: 20 },
+  ];
+
+  // 3️⃣ Transformar los datos antes de agregarlos
+  const transformedMatriculas = filteredMatriculas.map((matricula) => ({
+    Id_Matricula: matricula.Id_Matricula,
+    Estudiante: matricula.Estudiante,
+    Modalidad: matricula.Modalidad,
+    Grado: matricula.Grado,
+    Seccion: matricula.Seccion,
+    Fecha_Matricula: new Date(matricula.Fecha_Matricula).toLocaleDateString("es-ES"),
+  }));
+
+  // 4️⃣ Agregar los datos a la hoja de cálculo
+  transformedMatriculas.forEach((matricula) => {
+    worksheet.addRow(matricula);
+  });
+
+  // 5️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 6️⃣ Generar el archivo y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileBlob, "matriculas.xlsx");
+};
+
 
   if (!user) {
     return <p>Cargando usuario...</p>;

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 
 const InstitucionManagement = () => {
 
@@ -57,23 +59,69 @@ const InstitucionManagement = () => {
     setCurrentPage(pageNumber);
   };
 
-  // Función para exportar a Excel
-  const exportToExcel = () => {
-    const exportData = currentInstituciones.map(instituto => ({
+  // // Función para exportar a Excel
+  //     const exportToExcel = () => {
+  //       const exportData = currentInstituciones.map(instituto => ({
+  //         ID: instituto.Id_Instituto,
+  //         Nombre: instituto.Nombre_Instituto,
+  //         Dirección: instituto.Direccion,
+  //         Teléfono: instituto.Telefono,
+  //         Correo: instituto.Correo,
+  //         Director: instituto.Director,
+  //       }));
+
+  //       const worksheet = XLSX.utils.json_to_sheet(exportData);
+  //       const workbook = XLSX.utils.book_new();
+  //       XLSX.utils.book_append_sheet(workbook, worksheet, 'Instituciones');
+
+  //       XLSX.writeFile(workbook, 'Instituciones.xlsx');
+  //     };
+ 
+  const exportToExcel = async () => {
+    // 1️⃣ Crear un nuevo libro y hoja de Excel
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Instituciones");
+  
+    // 2️⃣ Definir las columnas y encabezados
+    worksheet.columns = [
+      { header: "ID", key: "ID", width: 10 },
+      { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Dirección", key: "Direccion", width: 40 },
+      { header: "Teléfono", key: "Telefono", width: 15 },
+      { header: "Correo", key: "Correo", width: 30 },
+      { header: "Director", key: "Director", width: 25 },
+    ];
+  
+    // 3️⃣ Transformar los datos antes de agregarlos
+    const exportData = currentInstituciones.map((instituto) => ({
       ID: instituto.Id_Instituto,
       Nombre: instituto.Nombre_Instituto,
-      Dirección: instituto.Direccion,
-      Teléfono: instituto.Telefono,
+      Direccion: instituto.Direccion,
+      Telefono: instituto.Telefono,
       Correo: instituto.Correo,
       Director: instituto.Director,
     }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Instituciones');
-
-    XLSX.writeFile(workbook, 'Instituciones.xlsx');
+  
+    // 4️⃣ Agregar los datos a la hoja de cálculo
+    exportData.forEach((instituto) => {
+      worksheet.addRow(instituto);
+    });
+  
+    // 5️⃣ Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: "center" };
+    });
+  
+    // 6️⃣ Generar el archivo y descargarlo
+    const buffer = await workbook.xlsx.writeBuffer();
+    const fileBlob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+  
+    saveAs(fileBlob, "Instituciones.xlsx");
   };
+  
 
   // Fetch de instituciones desde el backend
   useEffect(() => {

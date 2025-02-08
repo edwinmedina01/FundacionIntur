@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'; // Importar toast
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 import PreguntasSeguridad from "../components/otrosMantenimientos/PreguntasSeguridad";
+import Image from "next/image";
 
 // Asegúrate de tener el CSS de react-toastify en tu archivo principal
 import 'react-toastify/dist/ReactToastify.css';
@@ -96,11 +97,17 @@ const handleCopyEmail = () => {
     return (
 <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-10 my-8">
     <div className="flex flex-col items-center mb-8">
-        <img
+        {/* <img
             src="/img/user.png"
             alt="user"
             className="w-28 h-28 object-cover rounded-full border-4 border-blue-600 shadow-xl"
-        />
+        /> */}
+
+<Image src="/img/user.png"  alt="user"
+            className="w-28 h-28 object-cover rounded-full border-4 border-blue-600 shadow-xl"
+   width={150} height={50} priority />
+    
+
         <h1 className="text-4xl font-bold text-blue-800 mt-6">Perfil de Usuario</h1>
     </div>
     <button

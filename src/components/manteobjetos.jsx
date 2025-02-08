@@ -1,10 +1,14 @@
 import React, { useState, useEffect,useContext} from 'react'; //agregar el useContex
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+
 import AuthContext from '../context/AuthContext'; //llamado del authcontext para extraer info de usuario logeado
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 const ManejoObjetos = () => {
   const { user } = useContext(AuthContext); // Usuario logueado
   const [permisos, setPermisos] = useState(null); //obtener permiso
@@ -45,13 +49,53 @@ const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 const totalPages = Math.ceil(filteredObjetos.length / perPage);
 
-// Exportar a Excel
-const exportToExcel = () => {
-  const ws = XLSX.utils.json_to_sheet(filteredObjetos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Objetos');
-  XLSX.writeFile(wb, 'objetos.xlsx');
+
+
+const exportToExcel = async () => {
+  // 1️⃣ Crear un nuevo libro y hoja de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Objetos");
+
+  // 2️⃣ Definir las columnas y encabezados
+  worksheet.columns = [
+    { header: "ID", key: "Id_Objeto", width: 10 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Descripción", key: "Descripcion", width: 40 },
+    { header: "Estado", key: "Estado", width: 15 },
+  ];
+
+  // 3️⃣ Agregar los datos a la hoja de cálculo
+  filteredObjetos.forEach((objeto) => {
+    worksheet.addRow({
+      Id_Objeto: objeto.Id_Objeto,
+      Nombre: objeto.Nombre,
+      Descripcion: objeto.Descripcion,
+      Estado: objeto.Estado === "1" ? "Activo" : "Inactivo",
+    });
+  });
+
+  // 4️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 5️⃣ Generar el archivo y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileBlob, "objetos.xlsx");
 };
+
+// Exportar a Excel
+// const exportToExcel = () => {
+//   const ws = XLSX.utils.json_to_sheet(filteredObjetos);
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, 'Objetos');
+//   XLSX.writeFile(wb, 'objetos.xlsx');
+// };
 // Obtener permisos
 const fetchPermisos = async () => {
   try {

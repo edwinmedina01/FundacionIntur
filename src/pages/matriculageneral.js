@@ -1,5 +1,3 @@
-// pages/dashboard.js
-
 import Layout from '../components/Layout';
 import MatriculaManagement from '../components/matricula'; // Asegúrate de que la ruta sea correcta
 import jwt from 'jsonwebtoken';

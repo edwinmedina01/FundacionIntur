@@ -1,5 +1,3 @@
-// pages/dashboard.js
-
 import Layout from '../components/Layout';
 import RolesManagement from '../components/manteroles'; // Asegúrate de que la ruta sea correcta
 import jwt from 'jsonwebtoken';

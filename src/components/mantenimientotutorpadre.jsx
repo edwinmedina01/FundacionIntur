@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
 import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 
 const TutorPadreManagement = () => {
   const router = useRouter();
@@ -223,6 +226,22 @@ const TutorPadreManagement = () => {
 
   const totalPages = Math.ceil(filteredTutores.length / tutoresPerPage);
 
+  // const handleExport = () => {
+  //   const transformedTutores = tutores.map((tutor) => ({
+  //     Identidad: tutor.Identidad,
+  //     Nombre: `${tutor.Primer_Nombre} ${tutor.Primer_Apellido}`,
+  //     Sexo: tutor.Sexo === 1 ? 'Masculino' : 'Femenino',
+  //     telefono: `${tutor.telefono}`,
+  //     direccion: `${tutor.direccion}`,
+  //   }));
+
+  //   const worksheet = XLSX.utils.json_to_sheet(transformedTutores);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tutores');
+  //   XLSX.writeFile(workbook, 'tutores.xlsx');
+  // };
+
+  
   const handleExport = () => {
     const transformedTutores = tutores.map((tutor) => ({
       Identidad: tutor.Identidad,

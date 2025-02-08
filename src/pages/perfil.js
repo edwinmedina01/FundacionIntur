@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { useEffect, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
+
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
 const ProfilePage = () => {

@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import ReactLoading from 'react-loading';  // Importa la librería de carga
 import { ToastContainer, toast } from 'react-toastify';  // Importa las notificaciones
 import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de las notificaciones
-
+import Image from "next/image";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);  // Estado para saber si está cargando
@@ -30,7 +30,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        {/* <img src={logo} className="App-logo" alt="logo" /> */}
+        <Image src="/img/intur.png" alt="logo" width={150} height={50} priority />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>

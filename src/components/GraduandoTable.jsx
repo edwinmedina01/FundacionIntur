@@ -8,6 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 
 import Select from "react-select";
 

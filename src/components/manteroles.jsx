@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+
 import { useRouter } from 'next/router';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 
 const RolesManagement = () => {
 const router = useRouter();
@@ -206,24 +210,66 @@ const router = useRouter();
 
   const totalPages = Math.ceil(filteredRoles.length / rolesPerPage);
 
-  // Función para exportar a Excel usando XLSX
-  const handleExport = () => {
-    // Transformar los datos para exportación
-    const transformedRoles = filteredRoles.map(role => ({
-      Id_Rol: role.Id_Rol,
-      Rol: role.Rol,
-      Descripcion: role.Descripcion,
-      Estado: convertEstado(role.Estado), // Convertir estado
-    }));
+  // // Función para exportar a Excel usando XLSX
+  // const handleExport = () => {
+  //   // Transformar los datos para exportación
+  //   const transformedRoles = filteredRoles.map(role => ({
+  //     Id_Rol: role.Id_Rol,
+  //     Rol: role.Rol,
+  //     Descripcion: role.Descripcion,
+  //     Estado: convertEstado(role.Estado), // Convertir estado
+  //   }));
   
-    // Crear un nuevo libro de Excel
-    const worksheet = XLSX.utils.json_to_sheet(transformedRoles);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Roles");
+  //   // Crear un nuevo libro de Excel
+  //   const worksheet = XLSX.utils.json_to_sheet(transformedRoles);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Roles");
   
-    // Generar archivo Excel
-    XLSX.writeFile(workbook, "roles.xlsx");
-  };
+  //   // Generar archivo Excel
+  //   XLSX.writeFile(workbook, "roles.xlsx");
+  // };
+
+const handleExport = async () => {
+  // 1️⃣ Crear un nuevo libro y hoja de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Roles");
+
+  // 2️⃣ Definir las columnas y encabezados
+  worksheet.columns = [
+    { header: "ID Rol", key: "Id_Rol", width: 10 },
+    { header: "Rol", key: "Rol", width: 25 },
+    { header: "Descripción", key: "Descripcion", width: 40 },
+    { header: "Estado", key: "Estado", width: 15 },
+  ];
+
+  // 3️⃣ Transformar los datos para exportación
+  const transformedRoles = filteredRoles.map((role) => ({
+    Id_Rol: role.Id_Rol,
+    Rol: role.Rol,
+    Descripcion: role.Descripcion,
+    Estado: convertEstado(role.Estado), // Convertir estado
+  }));
+
+  // 4️⃣ Agregar los datos a la hoja de cálculo
+  transformedRoles.forEach((data) => {
+    worksheet.addRow(data);
+  });
+
+  // 5️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 6️⃣ Generar el archivo y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileBlob, "roles.xlsx");
+};
+
 
 // Renderizado
 if (!user) {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
 import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -38,7 +37,7 @@ const BenefactoresManagement = () => {
   useEffect(() => {
     fetchBenefactores();
     fetchPermisos();
-  }, [user]);
+  }, [user,fetchPermisos]);
 
   // Verificación de permisos
   const fetchPermisos = async () => {
@@ -211,20 +210,64 @@ const BenefactoresManagement = () => {
 
   const totalPages = Math.ceil(filteredBenefactores.length / BenefactoresPerPage);
 
-  const handleExport = () => {
-    const transformedBenefactores = Benefactores.map((Benefactor) => ({
-      Identidad: Benefactor.Identidad,
-      Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
-      Sexo: Benefactor.Sexo === 1 ? 'Masculino' : 'Femenino',
-      telefono: `${Benefactor.telefono}`,
-      direccion: `${Benefactor.direccion}`,
-    }));
+  // const handleExport = () => {
+  //   const transformedBenefactores = Benefactores.map((Benefactor) => ({
+  //     Identidad: Benefactor.Identidad,
+  //     Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
+  //     Sexo: Benefactor.Sexo === 1 ? 'Masculino' : 'Femenino',
+  //     telefono: `${Benefactor.telefono}`,
+  //     direccion: `${Benefactor.direccion}`,
+  //   }));
 
-    const worksheet = XLSX.utils.json_to_sheet(transformedBenefactores);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Benefactores');
-    XLSX.writeFile(workbook, 'Benefactores.xlsx');
-  };
+  //   const worksheet = XLSX.utils.json_to_sheet(transformedBenefactores);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Benefactores');
+  //   XLSX.writeFile(workbook, 'Benefactores.xlsx');
+  // };
+
+
+const handleExport = async () => {
+  // 1️⃣ Crear un nuevo libro y hoja de Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Benefactores");
+
+  // 2️⃣ Definir las columnas y encabezados
+  worksheet.columns = [
+    { header: "Identidad", key: "Identidad", width: 20 },
+    { header: "Nombre Completo", key: "Nombre", width: 30 },
+    { header: "Sexo", key: "Sexo", width: 15 },
+    { header: "Teléfono", key: "Telefono", width: 20 },
+    { header: "Dirección", key: "Direccion", width: 40 },
+  ];
+
+  // 3️⃣ Transformar los datos antes de agregarlos
+  const transformedBenefactores = Benefactores.map((Benefactor) => ({
+    Identidad: Benefactor.Identidad,
+    Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
+    Sexo: Benefactor.Sexo === 1 ? "Masculino" : "Femenino",
+    Telefono: Benefactor.telefono,
+    Direccion: Benefactor.direccion,
+  }));
+
+  // 4️⃣ Agregar los datos a la hoja de cálculo
+  transformedBenefactores.forEach((Benefactor) => {
+    worksheet.addRow(Benefactor);
+  });
+
+  // 5️⃣ Aplicar estilos a los encabezados
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center" };
+  });
+
+  // 6️⃣ Generar el archivo y descargarlo
+  const buffer = await workbook.xlsx.writeBuffer();
+  const fileBlob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(fileBlob, "Benefactores.xlsx");
+};
 
 
   if (!user) {

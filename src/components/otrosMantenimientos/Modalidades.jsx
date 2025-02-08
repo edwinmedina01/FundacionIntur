@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+
 import { useRouter } from 'next/router';
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
 
 const ModalidadesManagement = () => {
 
@@ -57,21 +61,67 @@ const ModalidadesManagement = () => {
   };
 
   // Función para exportar a Excel
-  const exportToExcel = () => {
-    const exportData = currentModalidades.map(modalidad => ({
+  // const exportToExcel = () => {
+  //   const exportData = currentModalidades.map(modalidad => ({
+  //     ID: modalidad.Id_Modalidad,
+  //     Nombre: modalidad.Nombre,
+  //     Descripción: modalidad.Descripcion,
+  //     Duración: modalidad.Duracion,
+  //     Horario: modalidad.Horario,
+  //   }));
+
+  //   const worksheet = XLSX.utils.json_to_sheet(exportData);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Modalidades');
+
+  //   XLSX.writeFile(workbook, 'Modalidades.xlsx');
+  // };
+
+
+  const exportToExcel = async () => {
+    // 1️⃣ Crear un nuevo libro y hoja de Excel
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Modalidades");
+  
+    // 2️⃣ Definir las columnas y encabezados
+    worksheet.columns = [
+      { header: "ID", key: "ID", width: 10 },
+      { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Descripción", key: "Descripcion", width: 40 },
+      { header: "Duración", key: "Duracion", width: 15 },
+      { header: "Horario", key: "Horario", width: 20 },
+    ];
+  
+    // 3️⃣ Transformar los datos antes de agregarlos
+    const exportData = currentModalidades.map((modalidad) => ({
       ID: modalidad.Id_Modalidad,
       Nombre: modalidad.Nombre,
-      Descripción: modalidad.Descripcion,
-      Duración: modalidad.Duracion,
+      Descripcion: modalidad.Descripcion,
+      Duracion: modalidad.Duracion,
       Horario: modalidad.Horario,
     }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Modalidades');
-
-    XLSX.writeFile(workbook, 'Modalidades.xlsx');
+  
+    // 4️⃣ Agregar los datos a la hoja de cálculo
+    exportData.forEach((modalidad) => {
+      worksheet.addRow(modalidad);
+    });
+  
+    // 5️⃣ Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { horizontal: "center" };
+    });
+  
+    // 6️⃣ Generar el archivo y descargarlo
+    const buffer = await workbook.xlsx.writeBuffer();
+    const fileBlob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+  
+    saveAs(fileBlob, "Modalidades.xlsx");
   };
+  
+
 
   // Fetch de modalidades desde el backend
   useEffect(() => {

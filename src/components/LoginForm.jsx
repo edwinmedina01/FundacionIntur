@@ -3,6 +3,8 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import Image from "next/image";
+
 
 const LoginForm = () => {
     const [email, setEmail] = useState('');
@@ -104,7 +106,8 @@ const LoginForm = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="p-8 bg-white rounded-lg shadow-lg w-full max-w-sm">
-                <img src="/img/intur.png" className="App-logo mb-6 mx-auto" alt="logo" />
+                {/* <img src="/img/intur.png" className="App-logo mb-6 mx-auto" alt="logo" /> */}
+                <Image src="/img/intur.png" alt="logo" width={150} height={50} priority />
                 <h2 className="mb-4 text-2xl font-semibold text-center text-blue-700">Iniciar Sesión</h2>
                 {mensaje && <p className="mb-4 text-red-500 text-center">{mensaje}</p>}
                 <form onSubmit={handleSubmit}>
@@ -178,7 +181,10 @@ const LoginForm = () => {
                         Entrar
                     </button>
                     <div className="mt-4 text-center">
-                        <a href='/forgot-password' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a>
+                        {/* <a href='/forgot-password' className="text-blue-600 hover:underline">¿Olvidaste tu contraseña?</a> */}
+                        <Link href="/forgot-password">
+  ¿Olvidaste tu contraseña?
+</Link>
                     </div>
                 </form>
             </div>
