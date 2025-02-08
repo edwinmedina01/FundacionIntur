@@ -1,8 +1,10 @@
 // /api/enviarcorreo.js
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-import client from "../../lib/redis";
-import User from '../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
+import client from "../../../lib/redis";
+
+import User from '../../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
+import { use } from 'react';
 
 // Configuración del transporte de nodemailer
 const transporter = nodemailer.createTransport({
@@ -47,9 +49,18 @@ export default async function handler(req, res) {
             // Verificar si el usuario existe en la base de datos
             const user = await User.findOne({ where: { Correo: email } });
             if (!user) {
-                return res.status(404).json({ error: 'Correo no encontrado.' });
+                return res.status(404).json({ mensaje: 'Correo no encontrado.' });
             }
 
+            switch(user.Id_EstadoUsuario){
+                        case 2:
+                        return    res.status(404).json({ mensaje: 'Usuario Inactivo.' });
+                        break
+                        case 3:
+                            return     res.status(404).json({ mensaje: 'Usuario Suspendido.' });
+                        break
+
+            }
             // Obtener el nombre del usuario (campo "Usuario")
             const nombreUsuario = user.Usuario;
 

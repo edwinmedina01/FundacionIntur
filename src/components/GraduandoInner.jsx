@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
 import { MagnifyingGlassIcon,ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon,TrashIcon  } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -8,6 +7,8 @@ import AuthContext from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Select from "react-select";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 
 const GraduandoForm = ({ estudiante }) => {
@@ -96,31 +97,52 @@ const GraduandoForm = ({ estudiante }) => {
 
 
 
-  const exportToExcel = () => {
-    // Crear un array de objetos para representar las filas del Excel
 
-    const data = graduandos.map((graduando) => ({
-      "ID Graduando": graduando.Id_Graduando,
-      "Identidad Estudiante": graduando.Estudiante.Persona.Identidad,
-      "Nombre Completo Estudiante":
-        graduando.Estudiante.Persona.Primer_Nombre +
-        " " +
-        graduando.Estudiante.Persona.Primer_Apellido,
-      Año: graduando.Anio,
-      "Fecha de Inicio": graduando.Fecha_Inicio,
-      "Fecha de Finalización": graduando.Fecha_Final,
-      "Fecha de Creación": graduando.Fecha_Creacion,
-    }));
-  
-    // Crear el workbook y la hoja de trabajo
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Graduandos");
-  
-    // Generar archivo Excel
-    XLSX.writeFile(workbook, "Graduandos.xlsx");
-  };
-  
+
+ const exportToExcel = async (graduandos) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Graduandos");
+
+    // 📌 **Definir Encabezados**
+    const headers = [
+        { header: "ID Graduando", key: "Id_Graduando", width: 15 },
+        { header: "Identidad Estudiante", key: "Identidad", width: 20 },
+        { header: "Nombre Completo Estudiante", key: "NombreCompleto", width: 25 },
+        { header: "Año", key: "Anio", width: 10 },
+        { header: "Fecha de Inicio", key: "Fecha_Inicio", width: 18 },
+        { header: "Fecha de Finalización", key: "Fecha_Final", width: 18 },
+        { header: "Fecha de Creación", key: "Fecha_Creacion", width: 18 }
+    ];
+
+    // Asignar columnas al worksheet
+    worksheet.columns = headers;
+
+    // Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFF" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+    });
+
+    // 📌 **Agregar Datos al Excel**
+    graduandos.forEach((graduando) => {
+        worksheet.addRow({
+            Id_Graduando: graduando.Id_Graduando,
+            Identidad: graduando.Estudiante.Persona.Identidad,
+            NombreCompleto: `${graduando.Estudiante.Persona.Primer_Nombre} ${graduando.Estudiante.Persona.Primer_Apellido}`,
+            Anio: graduando.Anio,
+            Fecha_Inicio: graduando.Fecha_Inicio ? new Date(graduando.Fecha_Inicio).toLocaleDateString("es-ES") : "-",
+            Fecha_Final: graduando.Fecha_Final ? new Date(graduando.Fecha_Final).toLocaleDateString("es-ES") : "-",
+            Fecha_Creacion: graduando.Fecha_Creacion ? new Date(graduando.Fecha_Creacion).toLocaleDateString("es-ES") : "-"
+        });
+    });
+
+    // 📌 **Descargar el Archivo**
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(blob, "Graduandos.xlsx");
+};
 
   const fetchGraduandos = async () => {
     try {
@@ -298,12 +320,7 @@ const GraduandoForm = ({ estudiante }) => {
   };
 
   // Función para exportar los datos de graduandos a Excel
-  const exportToExcelold = () => {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(graduandos);
-    XLSX.utils.book_append_sheet(wb, ws, 'Graduandos');
-    XLSX.writeFile(wb, 'graduandos.xlsx');
-  };
+
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx";
+
 import { useRouter } from "next/router";
 import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 import AuthContext from "../context/AuthContext"; // para permisos
@@ -8,6 +8,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 import { validatePasswordDetails } from "../utils/passwordValidator";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
@@ -225,6 +228,17 @@ const fetchPermisos = async () => {
 
   };
 
+  const validateUsername = (username) => {
+    const regex = /^[a-zA-Z0-9]{3,80}$/; // Permite solo letras y números, sin espacios, entre 3 y 80 caracteres
+    return regex.test(username) && !/\s/.test(username); // Verifica que no tenga espacios
+};
+
+const validateEmail = (email) => {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Validación de email
+  return regex.test(email);
+};
+
+
 
 
   const checkUserOrEmailExists = async (usuario, correo) => {
@@ -240,7 +254,7 @@ const fetchPermisos = async () => {
 
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmitold = async (e) => {
     e.preventDefault();
     try {
 
@@ -293,15 +307,21 @@ const fetchPermisos = async () => {
         
       } else {
 
-        if (!validatePasswordDetails (formData.Contrasena)) {
-          toast.error("La contraseña no cumple con los requisitos.");
+        if (!validateEmail(formData.Correo)) {
+          toast.error("El correo electrónico no es válido. Usa un formato correcto (ejemplo: nombre@dominio.com).");
           return;
       }
-  
+
+      if (!validatePasswordDetails(formData.Contrasena)) {
+          toast.error("La contraseña debe ser fuerte (mayúsculas, minúsculas, números y caracteres especiales).");
+          return;
+      }
+
       if (formData.Contrasena !== formData.ConfirmarContrasena) {
           toast.error("Las contraseñas no coinciden.");
           return;
       }
+
 
         // Lógica para crear un nuevo usuario
 // 1. Verificar si el usuario o el correo ya existen con un GET
@@ -362,6 +382,99 @@ if (emailExists) {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+        const currentDate = new Date().toISOString();
+        formData.Fecha_Ultima_Conexion = currentDate;
+
+        // 🔍 Validación del nombre de usuario
+        if (!validateUsername(formData.Usuario)) {
+            toast.error("El nombre de usuario debe tener entre 3 y 20 caracteres y no contener caracteres especiales.");
+            return;
+        }
+
+        if (!validatePasswordDetails(formData.Contrasena)) {
+            toast.error("La contraseña no cumple con los requisitos.");
+            return;
+        }
+
+        if (formData.Contrasena !== formData.ConfirmarContrasena) {
+            toast.error("Las contraseñas no coinciden.");
+            return;
+        }
+
+        // ✅ Verificar si el usuario o el correo ya existen antes de continuar
+        const { userExists, emailExists } = await checkUserOrEmailExists(formData.Usuario, formData.Correo);
+
+        if (userExists) {
+            toast.error("El usuario ya existe. Prueba con otro nombre.");
+            return;
+        }
+
+        if (emailExists) {
+            toast.error("El correo ya está registrado. Usa otro correo.");
+            return;
+        }
+
+        let response;
+        if (isEditing) {
+            formData.Primer_Ingreso = 1;
+            if (!formData.Contrasena) {
+                delete formData.Contrasena;
+                delete formData.ConfirmarContrasena;
+            }
+
+            response = await fetch(`/api/usuarios`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+        } else {
+            response = await fetch("/api/usuarios", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            if (errorData.error) {
+                throw new Error(errorData.error);
+            }
+            throw new Error("Error al procesar la solicitud.");
+        }
+
+        toast.success(isEditing ? "Usuario actualizado exitosamente" : "Usuario agregado exitosamente", {
+            style: {
+                backgroundColor: '#e6ffed',
+                color: '#2e7d32',
+                fontWeight: 'bold',
+                border: '1px solid #a5d6a7',
+                padding: '16px',
+                borderRadius: '12px',
+            },
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: true,
+        });
+
+        // 🔄 Limpiar el formulario después de éxito
+        fetchUsers();
+        resetForm();
+
+    } catch (error) {
+        toast.error(error.message || "Error al guardar el usuario.");
+    }
+};
+
   const handleEdit = (user) => {
     // Carga los datos del usuario, pero deja la contraseña vacía
     setFormData({
@@ -421,6 +534,7 @@ if (emailExists) {
       Usuario: "",
       Nombre_Usuario: "",
       Contrasena: "",
+     ConfirmarContrasena:"",
       Fecha_Ultima_Conexion: "",
       Preguntas_Contestadas: "",
       Primer_Ingreso: "",
@@ -452,28 +566,59 @@ if (emailExists) {
   };
 
   // Función para exportar a Excel
-  const exportToExcel = () => {
-    const exportData = users.map((user) => ({
-      ID: user.Id_Usuario,
-      Usuario: user.Usuario,
-      Nombre: user.Nombre_Usuario,
-      Correo: user.Correo,
-      Rol: getRoleNameById(user.Id_Rol),
-      Estado: getUserStateNameById(user.Id_EstadoUsuario),
-      FechaUltimaConexion: user.Fecha_Ultima_Conexion,
-      CreadoPor: user.Creado_Por,
-      FechaCreacion: user.Fecha_Creacion,
-      ModificadoPor: user.Modificado_Por,
-      FechaModificacion: user.Fecha_Modificacion,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Usuarios");
-
-    XLSX.writeFile(workbook, "Usuarios.xlsx");
+ const exportToExcel = async (users, getRoleNameById, getUserStateNameById) => {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Usuarios");
+  
+      // 📌 **Definir Encabezados**
+      const headers = [
+          { header: "ID", key: "Id_Usuario", width: 10 },
+          { header: "Usuario", key: "Usuario", width: 15 },
+          { header: "Nombre", key: "Nombre_Usuario", width: 20 },
+          { header: "Correo", key: "Correo", width: 25 },
+          { header: "Rol", key: "Rol", width: 15 },
+          { header: "Estado", key: "Estado", width: 15 },
+          { header: "Fecha Última Conexión", key: "Fecha_Ultima_Conexion", width: 18 },
+          { header: "Creado Por", key: "Creado_Por", width: 15 },
+          { header: "Fecha Creación", key: "Fecha_Creacion", width: 18 },
+          { header: "Modificado Por", key: "Modificado_Por", width: 15 },
+          { header: "Fecha Modificación", key: "Fecha_Modificacion", width: 18 }
+      ];
+  
+      // Asignar columnas al worksheet
+      worksheet.columns = headers;
+  
+      // Aplicar estilos a los encabezados
+      worksheet.getRow(1).eachCell((cell) => {
+          cell.font = { bold: true, color: { argb: "FFFFFF" } };
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+          cell.alignment = { horizontal: "center", vertical: "middle" };
+          cell.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+      });
+  
+      // 📌 **Agregar Datos al Excel**
+      users.forEach((user) => {
+          worksheet.addRow({
+              Id_Usuario: user.Id_Usuario,
+              Usuario: user.Usuario,
+              Nombre_Usuario: user.Nombre_Usuario,
+              Correo: user.Correo,
+              Rol: getRoleNameById(user.Id_Rol),
+              Estado: getUserStateNameById(user.Id_EstadoUsuario),
+              Fecha_Ultima_Conexion: user.Fecha_Ultima_Conexion ? new Date(user.Fecha_Ultima_Conexion).toLocaleDateString("es-ES") : "-",
+              Creado_Por: user.Creado_Por,
+              Fecha_Creacion: user.Fecha_Creacion ? new Date(user.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+              Modificado_Por: user.Modificado_Por,
+              Fecha_Modificacion: user.Fecha_Modificacion ? new Date(user.Fecha_Modificacion).toLocaleDateString("es-ES") : "-",
+          });
+      });
+  
+      // 📌 **Descargar el Archivo**
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(blob, "Usuarios.xlsx");
   };
-
+  
 // Renderizado
 if (!user) {
   return <p>Cargando usuario...</p>;

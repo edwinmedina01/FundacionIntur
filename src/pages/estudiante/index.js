@@ -10,7 +10,10 @@ import { useRouter } from 'next/router';
 const EstudiantesCrud = () => {
 
 
+
   const router = useRouter();
+
+
   const { tab, idEstudiante, relacionId } = router.query;
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);

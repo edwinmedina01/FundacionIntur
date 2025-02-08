@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-const Usuario = require('../../../models/Usuario');
-import { matchPassword } from '../../lib/helpers'; 
+const Usuario = require('../../../../models/Usuario');
+import { matchPassword } from '../../../lib/helpers'; 
 import bcrypt from 'bcryptjs';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';

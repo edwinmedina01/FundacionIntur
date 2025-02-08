@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     //     { where: { Id_Usuario: idUsuario } }
     //   );
 
-      res.status(200).json({ message: "✅ Contraseña actualizada con éxito.", token: token, usuario:usuario.Usuario });
+      res.status(200).json({ message: "✅Respuestas Correctas.", token: token, usuario:usuario.Usuario });
     } catch (error) {
       console.error("Error validando respuestas:", error);
       res.status(500).json({ message: "Error en el servidor." });

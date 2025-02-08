@@ -1,6 +1,6 @@
-import Usuario from '../../../models/Usuario'; // Asegúrate de que la ruta es correcta
+import Usuario from '../../../../models/Usuario'; // Asegúrate de que la ruta es correcta
 import bcrypt from 'bcryptjs';
-import client from "../../lib/redis";
+import client from "../../../lib/redis";
 
 
 export default async function handler(req, res) {

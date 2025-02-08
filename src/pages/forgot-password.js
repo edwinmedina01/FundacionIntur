@@ -32,27 +32,30 @@ const ForgotPassword = () => {
       setMessage(response.data.message);
       setError("");
     } catch (error) {
-      setError(error.response?.data?.error || "Hubo un error, intenta nuevamente.");
+      setError(error.response?.data?.mensaje || "Hubo un error, intenta nuevamente.");
       setMessage("");
     }
   };
 
   const handleGetSecurityQuestions = async () => {
     try {
-      const response = await axios.post("/api/restablecer/obtener-preguntas", { username });
+      const response = await axios.post("/api/auth/obtener-preguntas", { username });
       setPreguntas(response.data.preguntas);
       setIdUsuario(response.data.idUsuario);
       setShowSecurityQuestions(true);
       setMensaje("");
     } catch (error) {
-      setMensaje(error.response?.data?.message || "Error al obtener preguntas.");
+
+     // setMensaje(error.response?.data?.error || "Error al obtener preguntas.");
+      setError("Error al obtener preguntas: "+error.response?.data?.mensaje  );
+      
     }
   };
 
   const handleValidateSecurityAnswers = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/restablecer/validar-respuestas", {
+      const response = await axios.post("/api/auth/validar-respuestas", {
         idUsuario,
         respuestas: preguntas.map((p) => ({
           idPregunta: p.idPregunta,
@@ -96,7 +99,7 @@ const ForgotPassword = () => {
 
     // Lógica para enviar la solicitud al backend
     try {
-      const response = await fetch('/api/resetpassword', {
+      const response = await fetch('/api/auth/resetpassword', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,9 +111,9 @@ const ForgotPassword = () => {
       if (response.ok) {
         setSuccess('Contraseña actualizada exitosamente');
         setError('');
-        setTimeout(() => {
-          router.push("/login"); // Reemplaza con la ruta correcta de tu login
-        }, 3000);
+        // setTimeout(() => {
+        //   router.push("/login"); // Reemplaza con la ruta correcta de tu login
+        // }, 3000);
       } else {
         const data = await response.json();
         setError(data.message || 'Hubo un error al actualizar la contraseña');
@@ -123,18 +126,18 @@ const ForgotPassword = () => {
     }
 
 
-    try {
-      await axios.post("/api/resetpassword", {
-        username:username,
-        nuevaContrasena: newPassword,
-        token:token
-      });
+    // try {
+    //   await axios.post("/api/auth/resetpassword", {
+    //     username:username,
+    //     nuevaContrasena: newPassword,
+    //     token:token
+    //   });
 
-      setMessage("✅ Contraseña cambiada con éxito.");
-      setShowPasswordFields(false);
-    } catch (error) {
-      setError(error.message);
-    }
+    //   setMessage("✅ Contraseña cambiada con éxito.");
+    //   setShowPasswordFields(false);
+    // } catch (error) {
+    //   setError(error.message);
+    // }
   };
 
   return (
@@ -169,7 +172,7 @@ const ForgotPassword = () => {
             </form>
 
             <div className="mt-4 text-center">
-              <button className="text-gray-500 hover:underline" onClick={() => setShowSecurityQuestions(true)}>
+              <button className="text-gray-500 hover:underline" onClick={() => {setShowSecurityQuestions(true);setError("");setMensaje("")}}>
                 Recuperar con preguntas secretas
               </button>
             </div>

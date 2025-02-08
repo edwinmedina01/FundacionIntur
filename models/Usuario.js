@@ -18,9 +18,15 @@ const Usuario = sequelize.define('tbl_usuario', {
       type: DataTypes.INTEGER,
     },
     Usuario: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(80),
       allowNull: false,
-    },
+      unique: true,
+      validate: {
+          notNull: { msg: "El nombre de usuario es obligatorio." },
+          len: { args: [4, 50], msg: "El nombre de usuario debe tener entre 4 y 50 caracteres." },
+          isAlphanumeric: { msg: "El usuario solo puede contener letras y números." },
+      },
+  },
     Nombre_Usuario: {
       type: DataTypes.STRING(45),
     },

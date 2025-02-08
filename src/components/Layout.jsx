@@ -24,9 +24,39 @@ import {
 } from "@heroicons/react/24/outline"; // Importa íconos necesarios
 
 const Layout = ({ children }) => {
-  //  const { user } = useContext(AuthContext);
+
+
 
   const { user, loading } = useContext(AuthContext);
+  const router = useRouter();
+
+  useEffect(() => {
+      if (!loading && !user) {
+          router.replace("/");
+      }
+      else{
+        console.log(user)
+      }
+  }, [user, loading, router]);
+
+  // if (loading) {
+  //     return <p>Cargando...</p>;
+  // }
+
+  // if (!user) {
+  //     return <p>Error: Usuario no encontrado. Redirigiendo...</p>;
+  // }
+
+  // return (
+  //     <div>
+  //         <header>Mi Aplicación</header>
+  //         <main>{children}</main>
+  //     </div>
+  // );
+
+  //  const { user } = useContext(AuthContext);
+
+  //const { user, loading } = useContext(AuthContext);
   //const [user, setUser] = useState(null); // Inicializa como null
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAcademicoNavBar, setShowAcademicoNavBar] = useState(false);
@@ -37,7 +67,7 @@ const Layout = ({ children }) => {
   const [permisos, setPermisos] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
-  const router = useRouter();
+//  const router = useRouter();
   const [currentTime, setCurrentTime] = useState(""); // Estado para la hora actual
  // Lee el estado de la barra lateral desde localStorage
  useEffect(() => {
@@ -89,6 +119,11 @@ useEffect(() => {
   }, [user]);
 
   console.log("Estado actual del usuario en el contexto:", user);
+
+  if(!user){
+
+    //return res.status(400).json({ error: "Usuario no encontrado." });
+  }
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -152,7 +187,11 @@ useEffect(() => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/logout");
+      localStorage.removeItem("token");
+              // Eliminar la cookie del token correctamente
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+
+      await axios.post("/api/auth/logout");
       
       router.push("/");
     } catch (error) {

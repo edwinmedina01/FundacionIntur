@@ -1,4 +1,4 @@
-export const validatePasswordDetails = (password) => {
+export const validatePasswordDetails = (password, confirmPassword = null) => {
     const checks = [
         { label: "Al menos 8 caracteres", test: /.{8,}/ },
         { label: "Máximo 100 caracteres", test: /^.{1,100}$/ },
@@ -9,8 +9,16 @@ export const validatePasswordDetails = (password) => {
         { label: "No debe contener espacios en blanco", test: /^[^\s]+$/ }
     ];
 
+    // ✅ Agregar validación de confirmación de contraseña solo si `confirmPassword` fue proporcionado
+    if (confirmPassword !== null) {
+        checks.push({
+            label: "Las contraseñas coinciden",
+            test: password === confirmPassword
+        });
+    }
+
     return checks.map(({ label, test }) => ({
         label,
-        passed: test.test(password)
+        passed: typeof test === "boolean" ? test : test.test(password)
     }));
 };

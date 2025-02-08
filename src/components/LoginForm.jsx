@@ -12,10 +12,63 @@ const LoginForm = () => {
     const { login } = useContext(AuthContext);
     const router = useRouter();
 
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const respuesta = await axios.post('/api/login', { email, password });
+            const respuesta = await axios.post('/api/auth/login', { email, password });
+    
+            // ✅ Imprimir toda la respuesta de la API para depuración
+            console.log('✅ Respuesta de la API:', respuesta);
+    
+            // Extraer datos correctamente
+            const { token, userId, role, primerLogin, ...otrosDatos } = respuesta.data;
+    
+            // ✅ Ver otros datos enviados por la API
+            console.log('📌 Otros datos recibidos:', otrosDatos);
+    
+            // Validar que `userId` y `token` existan
+            if (!userId || !token) {
+                throw new Error('userId o token no están presentes en la respuesta');
+            }
+    
+            // Guarda el token y el userId en el contexto
+            login(token, userId, role);
+    
+            setMensaje('✅ Login exitoso');
+            primerLogin ? router.push('/change-password') : router.push('/inicio');
+    
+        } catch (error) {
+            // ✅ Imprimir la respuesta completa en caso de error
+            console.error('🚨 Error en el login:', error);
+    
+            // Si no hay `error.response`, es un error de conexión
+            if (!error.response) {
+                setMensaje('❌ Error de conexión con el servidor');
+                return;
+            }
+    
+            // ✅ Capturar y mostrar respuesta en caso de error `403`
+            console.log('⚠️ Respuesta completa del error:', error);
+            let _error=error.response.data?.error ||error.response.data?.error ;
+            
+            // Establecer mensaje de error con base en la respuesta de la API
+            setMensaje(_error || `❌ Error en el login `);
+        }
+    };
+    
+
+    const handleSubmitold = async (e) => {
+        e.preventDefault();
+        try {
+
+            if (!password || password.length < 8) {
+                setMensaje('La contraseña debe tener al menos 8 caracteres.');
+                return;
+            }
+
+            const respuesta = await axios.post('/api/auth/login', { email, password });
      
             // Imprime toda la respuesta para ver su estructura
             console.log('Respuesta de la API:', respuesta);
@@ -32,8 +85,19 @@ const LoginForm = () => {
             setMensaje('Login exitoso');
             primerLogin ? router.push('/change-password') : router.push('/inicio');
         } catch (error) {
-            setMensaje(error.response?.data?.mensaje || 'Error en el login');
-            console.error('Error:', error.response?.data || error);
+            console.error('Error en el login:', error);
+    
+            // Manejar error de conexión
+            if (!error.response) {
+                setMensaje('Error de conexión con el servidor');
+                return;
+            }
+    
+            // Capturar todas las respuestas de error de la API
+            console.log('Respuesta completa del error:', error.response);
+    
+            // Mostrar el mensaje de error correcto
+            setMensaje(error.response.data?.mensaje || 'Error en el login');
         }
     };
     

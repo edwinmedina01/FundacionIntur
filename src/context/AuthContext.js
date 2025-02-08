@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from 'react';
 import jwt from 'jsonwebtoken';
 import { useRouter } from 'next/router';
+import { NextResponse } from "next/server";
+import { setCookie, destroyCookie, parseCookies } from 'nookies';
 
 const AuthContext = createContext();
 
@@ -13,7 +15,9 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        console.log("token")
         if (token) {
+            
             try {
                 // Decodificar el token sin validarlo (solo para extraer los datos)
                 const decoded = jwt.decode(token);
@@ -29,10 +33,24 @@ export const AuthProvider = ({ children }) => {
                     });
                 }
             } catch (error) {
-                console.error('Error al decodificar el token:', error);
-                localStorage.removeItem('token');
-                setUser(null);
+             
+                console.log(error);
+                if (router.pathname !== '/'&&router.pathname!=="/forgot-password" ) {
+                
+                    router.replace('/');
+                    alert("NO tiene permisos")
+                }
+                
             }
+        }else {
+        //    console.error('Error al decodificar el token:', error);
+          //  return NextResponse.redirect(new URL('/login'));
+          if (router.pathname !== '/'&&router.pathname!=="/forgot-password" ) {
+    
+            router.replace('/');
+            alert("No tiene permisos")
+        }
+        
         }
         setLoading(false); // Finaliza la carga
     }, []);
@@ -45,6 +63,11 @@ export const AuthProvider = ({ children }) => {
         try {
             // Decodificar el token al recibirlo
             const decoded = jwt.decode(token);
+            setCookie(null, 'token', token, {
+                path: '/',
+                maxAge: 3600, // Expira en 1 hora
+                sameSite: 'Lax',
+            });
             if (decoded) {
                 // Guardar los campos necesarios en el estado
                 setUser({
@@ -63,7 +86,11 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         // Eliminar el token y resetear el estado
         localStorage.removeItem('token');
+        destroyCookie(null, 'token', { path: '/' });
         setUser(null);
+        setLoading(true);
+    // Eliminar cookie del token correctamente
+
         router.push('/');
     };
 

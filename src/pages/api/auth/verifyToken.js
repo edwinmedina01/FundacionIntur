@@ -1,4 +1,4 @@
-import client from "../../lib/redis";
+import client from "../../../lib/redis";
 
 export default async function handler(req, res) {
   const { token } = req.query;

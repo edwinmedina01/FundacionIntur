@@ -15,8 +15,20 @@ export default async function handler(req, res) {
       const usuario = await Usuario.findOne({ where: { Usuario: username } });
 
       if (!usuario) {
-        return res.status(404).json({ message: "El usuario no existe." });
+        return res.status(404).json({ mensaje: "El usuario no existe." });
       }
+
+
+      switch(usuario.Id_EstadoUsuario){
+        case 2:
+         return  res.status(404).json({ mensaje: 'Usuario Inactivo.' });
+        break
+        case 3:
+          return  res.status(404).json({ mensaje: 'Usuario Suspendido.' });
+        break
+
+}
+
 
       // Obtener las preguntas de seguridad del usuario
       const preguntasUsuario = await PreguntaUsuario.findAll({
@@ -24,6 +36,8 @@ export default async function handler(req, res) {
         include: [{ model: Pregunta, attributes: ["Id_Pregunta", "Pregunta"] }],
       });
 
+
+ 
       if (preguntasUsuario.length === 0) {
         return res.status(404).json({ message: "No hay preguntas de seguridad registradas para este usuario." });
       }
