@@ -59,7 +59,7 @@ const exportToExcel = async () => {
   // 2️⃣ Definir las columnas y encabezados
   worksheet.columns = [
     { header: "ID", key: "Id_Objeto", width: 10 },
-    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Nombre", key: "Objeto", width: 30 },
     { header: "Descripción", key: "Descripcion", width: 40 },
     { header: "Estado", key: "Estado", width: 15 },
   ];
@@ -68,7 +68,7 @@ const exportToExcel = async () => {
   filteredObjetos.forEach((objeto) => {
     worksheet.addRow({
       Id_Objeto: objeto.Id_Objeto,
-      Nombre: objeto.Nombre,
+      Nombre: objeto.Objeto,
       Descripcion: objeto.Descripcion,
       Estado: objeto.Estado === "1" ? "Activo" : "Inactivo",
     });

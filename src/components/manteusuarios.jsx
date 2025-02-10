@@ -566,7 +566,7 @@ if (emailExists) {
   };
 
   // Función para exportar a Excel
- const exportToExcel = async (users, getRoleNameById, getUserStateNameById) => {
+ const exportToExcel = async () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Usuarios");
   
@@ -597,6 +597,9 @@ if (emailExists) {
       });
   
       // 📌 **Agregar Datos al Excel**
+
+console.log(users)
+
       users.forEach((user) => {
           worksheet.addRow({
               Id_Usuario: user.Id_Usuario,
