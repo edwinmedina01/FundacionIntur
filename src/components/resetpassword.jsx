@@ -98,7 +98,7 @@ if (validationResults.some(rule => !rule.passed)) {
     setNewPassword(newPassword); // Actualiza la contraseña
   
     // Ejecuta validación en tiempo real
-    const validationResults = validatePasswordDetails(newPassword);
+    const validationResults = validatePasswordDetails(newPassword,confirmPassword);
     setPasswordValidation(validationResults); // Guarda los resultados de la validación
   };
 

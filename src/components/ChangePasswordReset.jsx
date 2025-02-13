@@ -70,7 +70,7 @@ const ForgotPassword = () => {
   const handlePasswordChange = (e) => {
     const password = e.target.value;
     setNewPassword(password);
-    setPasswordValidation(validatePasswordDetails(password));
+    setPasswordValidation(validatePasswordDetails(password,confirmPassword));
   };
 
   const handleChangePassword = async (e) => {

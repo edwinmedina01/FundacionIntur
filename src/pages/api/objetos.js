@@ -18,6 +18,24 @@ export default async function handler(req, res) {
     // Crear un nuevo objeto
     const { Objeto, Descripcion, Tipo_Objeto, Estado } = req.body; // Destructurar los valores del cuerpo
     try {
+
+
+      const objetoExistente = await sequelize.query(
+        "SELECT * FROM tbl_objetos WHERE Objeto = ? LIMIT 1",
+        {
+            replacements: [Objeto],
+            type: QueryTypes.SELECT,
+        }
+    );
+
+    if (objetoExistente.length > 0) {
+        return res.status(400).json({
+            success: false,
+            message: "El objeto ya existe en el sistema.",
+        });
+    }
+
+
       await sequelize.query('INSERT INTO tbl_objetos (Objeto, Descripcion, Tipo_Objeto, Estado) VALUES (?, ?, ?, ?)', {
         replacements: [Objeto, Descripcion, Tipo_Objeto, Estado],
         type: QueryTypes.INSERT,

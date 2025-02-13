@@ -21,7 +21,8 @@ export default function ChangePassword() {
     setNewPassword(newPassword); // Actualiza la contraseña
   
     // Ejecuta validación en tiempo real
-    const validationResults = validatePasswordDetails(newPassword);
+    alert("Test")
+    const validationResults = validatePasswordDetails(newPassword,confirmPassword,currentPassword);
     setPasswordValidation(validationResults); // Guarda los resultados de la validación
   };
 
@@ -136,7 +137,10 @@ export default function ChangePassword() {
               type={showPassword2 ? "text" : "password"}
               className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value); // Guarda el valor en el estado
+                handlePasswordChange(e); // Llama a la función de validación
+              }}
               required
             />
             {/* Botón de mostrar/ocultar */}

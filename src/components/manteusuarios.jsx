@@ -2,15 +2,21 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 
 import { useRouter } from "next/router";
-import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+
 import AuthContext from "../context/AuthContext"; // para permisos
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import ExcelJS from "exceljs";
+import { validateNombre, validateUsername, validateEmail } from "../utils/ValidadorCampos";
+import ModalConfirmacion from "../utils/ModalConfirmacion"; 
 import { saveAs } from "file-saver";
-
+import {
+  MagnifyingGlassIcon,
+  ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
+} from "@heroicons/react/24/outline";
+import { isDynamicPostpone } from "next/dist/server/app-render/dynamic-rendering";
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([]);
@@ -28,15 +34,34 @@ const UsersManagement = () => {
   const [error, setError] = useState(null); //mostrar error de permiso
   const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
   const [showModal, setShowModal] = useState(false);
+  const [showModalUsario, setShowModalUsuario] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 // ------------------------------------------------------------//
+const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
 
+
+// Función para abrir el modal de eliminación
+const abrirModalEliminar = (usuario) => {
+  setSelectedUser(usuario);
+  setIsOpenDeleteModal(true);
+};
+
+  // Función para cerrar el modal
+  const cerrarModalEliminar = () => {
+    setIsOpenDeleteModal(false);
+    setSelectedUser(null);
+  };
 
 const openResetModal = (user) => {
   setSelectedUser(user);
   setShowModal(true);
+};
+
+const openUserModal = (user) => {
+  setSelectedUser(user);
+  setShowModalUsuario(true);
 };
 
 const handleReset = (user) => {
@@ -93,6 +118,8 @@ const handleReset = (user) => {
     return password;
   };
 
+
+  
 
 // ✅ Restablecer contraseña y enviarla por correo
 const handleResetPassword = async (item) => {
@@ -186,7 +213,7 @@ const fetchPermisos = async () => {
       const response = await axios.get("/api/usuarios"); // API  usuarios
       // Filtrar solo los usuarios activos
       const activeUsers = response.data.filter(
-        (user) => user.Id_EstadoUsuario === 1
+       (user) => user.Id_EstadoUsuario !== 3
       );
       setUsers(activeUsers);
     } catch (error) {
@@ -228,17 +255,6 @@ const fetchPermisos = async () => {
 
   };
 
-  const validateUsername = (username) => {
-    const regex = /^[a-zA-Z0-9]{3,80}$/; // Permite solo letras y números, sin espacios, entre 3 y 80 caracteres
-    return regex.test(username) && !/\s/.test(username); // Verifica que no tenga espacios
-};
-
-const validateEmail = (email) => {
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // Validación de email
-  return regex.test(email);
-};
-
-
 
 
   const checkUserOrEmailExists = async (usuario, correo) => {
@@ -254,140 +270,14 @@ const validateEmail = (email) => {
 
 
 
-  const handleSubmitold = async (e) => {
-    e.preventDefault();
-    try {
-
-
-
-      const currentDate = new Date().toISOString();
-      formData.Fecha_Ultima_Conexion = currentDate;
-
-      // Verifica si se está editando o si se está creando un nuevo usuario
-      if (isEditing) {
-        // Si se está editando, solo asigna la contraseña si se cambió
-        formData.Primer_Ingreso = 1;
-        if (formData.Contrasena) {
-          // Aquí ya no se hashea la contraseña
-        } else {
-          // Eliminar la contraseña del objeto formData si no se ha cambiado
-          delete formData.Contrasena;
-        }
-        const response = await fetch(`/api/usuarios`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          if (errorData.error) {
-            throw new Error(errorData.error); // Mostrar el mensaje de error específico
-          }
-          throw new Error("Error al actualizar el usuario");
-        }
-
-        toast.success("Usuario actualizado exitosamente",
-          {
-            style: {
-              backgroundColor: '#e6ffed', // Fondo verde suave
-              color: '#2e7d32', // Texto verde oscuro
-              fontWeight: 'bold',
-              border: '1px solid #a5d6a7', // Borde verde claro
-              padding: '16px',
-              borderRadius: '12px',
-            },
-            position: 'top-right', // Posición en la esquina superior derecha
-            autoClose: 5000, // Cierra automáticamente en 5 segundos
-            hideProgressBar: true, // Ocultar barra de progreso
-          }
-        );
-        
-      } else {
-
-        if (!validateEmail(formData.Correo)) {
-          toast.error("El correo electrónico no es válido. Usa un formato correcto (ejemplo: nombre@dominio.com).");
-          return;
-      }
-
-      if (!validatePasswordDetails(formData.Contrasena)) {
-          toast.error("La contraseña debe ser fuerte (mayúsculas, minúsculas, números y caracteres especiales).");
-          return;
-      }
-
-      if (formData.Contrasena !== formData.ConfirmarContrasena) {
-          toast.error("Las contraseñas no coinciden.");
-          return;
-      }
-
-
-        // Lógica para crear un nuevo usuario
-// 1. Verificar si el usuario o el correo ya existen con un GET
-const { userExists, emailExists } = await checkUserOrEmailExists(formData.Usuario, formData.Correo);
-
-if (userExists) {
-    toast.error("El usuario ya existe. Prueba con otro nombre.");
-    return;
-}
-
-if (emailExists) {
-    toast.error("El correo ya está registrado. Usa otro correo.");
-    return;
-}
-
-
-        const response = await fetch("/api/usuarios", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          if (errorData.error) {
-            throw new Error(errorData.error); // Mostrar el mensaje de error específico
-          }
-          throw new Error("Error al crear el usuario");
-        }
-
-        // Ya no se hashea la contraseña aquí
-        toast.success("Usuario agregado exitosamente",
-          {
-            style: {
-              backgroundColor: '#e6ffed', // Fondo verde suave
-              color: '#2e7d32', // Texto verde oscuro
-              fontWeight: 'bold',
-              border: '1px solid #a5d6a7', // Borde verde claro
-              padding: '16px',
-              borderRadius: '12px',
-            },
-            position: 'top-right', // Posición en la esquina superior derecha
-            autoClose: 5000, // Cierra automáticamente en 5 segundos
-            hideProgressBar: true, // Ocultar barra de progreso
-          }
-        );
-        
-      }
-
-      fetchUsers();
-      resetForm();
-    } catch (error) {
-      toast.error("Error al guardar el usuario:", error);
-      toast.error(error.message);
-     
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
         const currentDate = new Date().toISOString();
         formData.Fecha_Ultima_Conexion = currentDate;
+        formData.Creado_Por=user.id;
+     
 
         // 🔍 Validación del nombre de usuario
         if (!validateUsername(formData.Usuario)) {
@@ -395,7 +285,17 @@ if (emailExists) {
             return;
         }
 
-        if (!validatePasswordDetails(formData.Contrasena)) {
+         // 🔍 Validación del nombre de usuario
+         if (!validateNombre(formData.Nombre_Usuario)) {
+          toast.error("El nombre de usuario debe tener entre 3 y 20 caracteres y no contener caracteres especiales.");
+          return;
+      }
+
+
+        formData.Contrasena=generateRandomPassword();
+        formData.ConfirmarContrasena= formData.Contrasena;
+       
+        if (! validatePasswordDetails(formData.Contrasena)) {
             toast.error("La contraseña no cumple con los requisitos.");
             return;
         }
@@ -405,22 +305,13 @@ if (emailExists) {
             return;
         }
 
-        // ✅ Verificar si el usuario o el correo ya existen antes de continuar
-        const { userExists, emailExists } = await checkUserOrEmailExists(formData.Usuario, formData.Correo);
-
-        if (userExists) {
-            toast.error("El usuario ya existe. Prueba con otro nombre.");
-            return;
-        }
-
-        if (emailExists) {
-            toast.error("El correo ya está registrado. Usa otro correo.");
-            return;
-        }
+        
 
         let response;
         if (isEditing) {
             formData.Primer_Ingreso = 1;
+            formData.Modificado_Por=user.id;
+           // formData.Fecha_Modificacion=user.id;
             if (!formData.Contrasena) {
                 delete formData.Contrasena;
                 delete formData.ConfirmarContrasena;
@@ -435,6 +326,21 @@ if (emailExists) {
             });
 
         } else {
+
+// ✅ Verificar si el usuario o el correo ya existen antes de continuar
+const { userExists, emailExists } = await checkUserOrEmailExists(formData.Usuario, formData.Correo);
+
+if (userExists) {
+    toast.error("El usuario ya existe. Prueba con otro nombre.");
+    return;
+}
+
+if (emailExists) {
+    toast.error("El correo ya está registrado. Usa otro correo.");
+    return;
+}
+
+
             response = await fetch("/api/usuarios", {
                 method: "POST",
                 headers: {
@@ -469,6 +375,7 @@ if (emailExists) {
         // 🔄 Limpiar el formulario después de éxito
         fetchUsers();
         resetForm();
+        setShowModalUsuario(false);
 
     } catch (error) {
         toast.error(error.message || "Error al guardar el usuario.");
@@ -482,6 +389,7 @@ if (emailExists) {
       Contrasena: "", // Mantén la contraseña vacía
     });
     setIsEditing(true);
+    setShowModalUsuario(true);
   };
 
 
@@ -502,6 +410,7 @@ if (emailExists) {
 
       fetchUsers();
       resetForm();
+      cerrarModalEliminar(); 
       toast.error("Usuario eliminado exitosamente", {
         style: {
           backgroundColor: '#ffebee', // Fondo suave rojo
@@ -648,272 +557,52 @@ if (!permisos) {
 }
 
   return (
-    <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
-      {/* Columna izquierda: Formulario */}
-      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md items-center">
-        <center>
-          <h2 className="text-2xl font-semibold mb-4">
-            {isEditing ? "Editar Usuario" : "Agregar Usuario"}
-          </h2>
-        </center>
-        <form onSubmit={handleSubmit}>
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Usuario"
-              value={formData.Usuario}
-              onChange={handleInputChange}
-              required
-              className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
-              placeholder=" aaa"
-              style={{ textTransform: "uppercase" }}
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Usuario
-                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
-                  : "text-gray-400"
-              }`}
-            >
-              Usuario
-            </label>
-          </div>
-
-          <div className="relative mb-4">
-            <input
-              type="text"
-              name="Nombre_Usuario"
-              value={formData.Nombre_Usuario}
-              onChange={handleInputChange}
-              required
-               className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
-            
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Nombre_Usuario
-                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
-                  : "text-gray-400"
-              }`}
-            >
-              Nombre Completo
-            </label>
-          </div>
-
-          <div className="relative mb-4">
-            <input
-              type="email"
-              name="Correo"
-              value={formData.Correo}
-              onChange={handleInputChange}
-              required
-               className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
-            
-              placeholder=" "
-            />
-            <label
-              className={`absolute left-1 top-1 transition-all duration-200 transform ${
-                formData.Correo
-                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
-                  : "text-gray-400"
-              }`}
-            >
-              Correo Electrónico
-            </label>
-          </div>
-
-          <div className="relative mb-4">
-      <input
-        type={showPassword ? "text" : "password"}
-        name="Contrasena"
-        value={formData.Contrasena}
-        onChange={handlePasswordChange} // 
-
-        className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
-        placeholder=""
-        required={!isEditing}
-      />
-
-
- {/* Lista de validaciones */}
- <ul className="mt-2 text-sm">
-    {passwordValidation?.map(({ label, passed }, index) => (
-        <li key={index} className={passed ? "text-green-600" : "text-red-600"}>
-            {passed ? "✔️" : "❌"} {label}
-        </li>
-    ))}
-</ul>
-      <label
-                  className={`absolute left-1 top-1 transition-all duration-200 transform ${
-          formData.Contrasena
-                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
-            : "text-gray-400"
-        }`}
-      >
-        Contraseña
-      </label>
-      
-      {/* Botón de mostrar/ocultar */}
-      <button
-        type="button"
-        className="absolute right-3 top-4 text-gray-600 hover:text-gray-900 focus:outline-none"
-        onClick={() => setShowPassword(!showPassword)}
-      >
-        {showPassword ? (
-          <EyeSlashIcon className="w-5 h-5" />
-        ) : (
-          <EyeIcon className="w-5 h-5" />
-        )}
-      </button>
-    </div>
-    <div className="relative mb-4">
-      <input
-        type={showPassword2 ? "text" : "password"}
-        name="ConfirmarContrasena"
-        value={formData.ConfirmarContrasena}
-        onChange={handleInputChange}
-        className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent  text-gray-900"
-        placeholder=""
-        required={!isEditing}
-      />
-      <label
-                  className={`absolute left-1 top-1 transition-all duration-200 transform ${
-          formData.Contrasena
-                  ? "text-gray-500 -translate-y-1 scale-100 text-xs"
-            : "text-gray-400"
-        }`}
-      >
-               Confirmar Contraseña
-      </label>
-      
-      {/* Botón de mostrar/ocultar */}
-      <button
-        type="button"
-        className="absolute right-3 top-4 text-gray-600 hover:text-gray-900 focus:outline-none"
-        onClick={() => setShowPassword2(!showPassword2)}
-      >
-        {showPassword2 ? (
-          <EyeSlashIcon className="w-5 h-5" />
-        ) : (
-          <EyeIcon className="w-5 h-5" />
-        )}
-      </button>
-    </div>
-          <label
-            htmlFor="Id_Rol"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Rol
-          </label>
-          <select
-            name="Id_Rol"
-            value={formData.Id_Rol}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Selecciona Rol</option>
-            {roles
-              .filter((role) => role.Estado === 1) // Filtra para mostrar solo roles activos
-              .map((role) => (
-                <option key={role.Id_Rol} value={role.Id_Rol}>
-                  {role.Rol}
-                </option>
-              ))}
-          </select>
-
-          <label
-            htmlFor="Id_EstadoUsuario"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Estado
-          </label>
-          <select
-            name="Id_EstadoUsuario"
-            value={formData.Id_EstadoUsuario}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Selecciona Estado</option>
-            {userStates.map((state) => (
-              <option
-                key={state.Id_EstadoUsuario}
-                value={state.Id_EstadoUsuario}
-              >
-                {state.Descripcion}
-              </option>
-            ))}
-          </select>
-          <div className="flex justify-end">
-  {isEditing
-    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
-      permisos.Permiso_Actualizar === "1" && (
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          Actualizar
-        </button>
-      )
-    : // Mostrar botón "Registrar" solo si tiene permisos de inserción
-      permisos.Permiso_Insertar === "1" && (
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          Agregar
-        </button>
-      )}
-
-  <button
-    type="button"
-    onClick={resetForm}
-    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-  >
-    Cancelar
-  </button>
-</div>
-
-        </form>
-      </div>
+    <div >
 
       {/* Columna derecha: Tabla de Usuarios */}
-      <div className="w-2/3">
-        <h2 className="text-2xl font-semibold mb-4 text-center">
-          Listado de Usuarios
-        </h2>
-        <div className="mb-4">
-          {/*Barra de busqueda */}
-          <center>
-            {" "}
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-              placeholder="Buscar por nombre o correo"
-            />
-          </center>
-          <br></br>
-          <div className="flex justify-end space-x-4 mb-4">
-            {/* Botón para exportar */}
-            <button
-              onClick={exportToExcel}
-              className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-            >
-              <strong>Exportar a Excel</strong>
-            </button>
-            {/* Botón para ir a asignar permisos */}
-            <button
-              onClick={() => router.push("/permisos")}
-              className="bg-cyan-900 text-white px-3 py-1 rounded hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-            >
-              <strong>Ver Permisos</strong>
-            </button>
-          </div>
-        </div>
+      <div className="w-3/3">
+      <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+  {/* Barra de búsqueda */}
+  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+      placeholder="Buscar por nombre o correo"
+    />
+  </div>
+
+  {/* Título de la sección */}
+  <p className="text-3xl font-bold text-blue-700">📋 Listado de Usuarios</p>
+
+  {/* Botones de acciones */}
+  <div className="flex gap-x-2">
+
+    {/* Botón para abrir el modal de agregar usuario */}
+<button
+  onClick={() => setShowModalUsuario(true)}
+  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+>
+  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Usuario
+</button>
+    
+    <button
+      onClick={exportToExcel}
+      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
+    >
+      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
+    </button>
+
+    <button
+      onClick={() => router.push("/permisos")}
+      className="flex items-center bg-cyan-900 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+    >
+      <PencilSquareIcon className="h-5 w-5 mr-2" /> Ver Permisos
+    </button>
+  </div>
+</div>
 
         <table className="xls_style-excel-table">
           <thead className="bg-slate-200">
@@ -929,8 +618,8 @@ if (!permisos) {
           </thead>
           {permisos?.Permiso_Consultar === "1" && (
           <tbody>
-            {filteredUsers
-              .slice(indexOfFirstUser, indexOfLastUser)
+            {filteredUsers.length>0?(
+              filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
               .map((user) => (
                 <React.Fragment key={user.Id_Usuario}>
                   <tr className="hover:bg-gray-100">
@@ -976,7 +665,7 @@ if (!permisos) {
   {/* Botón de Eliminar: verificar permiso */}
   {permisos.Permiso_Eliminar === "1" && (
     <button
-      onClick={() => handleDelete(user.Id_Usuario)}
+      onClick={() => abrirModalEliminar(user)}
       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
     >
       X
@@ -1038,7 +727,11 @@ if (!permisos) {
                     </tr>
                   )}
                 </React.Fragment>
-              ))}
+              ))):( <tr>
+                <td colSpan="7" className="py-4 text-center text-gray-500">
+                  ❌ No se encontraron usuarios con los criterios de búsqueda
+                </td>
+              </tr>)}
           </tbody>)}
         </table>
         {/* Paginación */}
@@ -1055,6 +748,7 @@ if (!permisos) {
           >
             Anterior
           </button>
+
 
           {/* Páginas */}
           <div className="flex space-x-2">
@@ -1090,6 +784,21 @@ if (!permisos) {
           </button>
         </div>
       </div>
+
+
+
+
+  <ModalConfirmacion
+  isOpen={isOpenDeleteModal}
+  onClose={() => setIsOpenDeleteModal(false)}
+  onConfirm={() => handleDelete(selectedUser?.Id_Usuario)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={selectedUser?.Nombre_Usuario}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
     
  {/* Modal */}
  {isOpen && (
@@ -1122,6 +831,142 @@ if (!permisos) {
           </div>
         </div>
       )}
+
+
+
+
+{/* Modal para agregar usuario */}
+{showModalUsario && (
+  <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+      <h2 className="text-2xl font-semibold mb-4 text-center">
+        {isEditing ? "Editar Usuario" : "Agregar Usuario"}
+      </h2>
+      <form onSubmit={handleSubmit}>
+        {/* Campo de Usuario */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            name="Usuario"
+            value={formData.Usuario}
+            onChange={handleInputChange}
+            required
+            className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
+            placeholder=" "
+          />
+          <label className={`absolute left-1 top-1 transition-all duration-200 transform ${formData.Usuario ? "text-gray-500 -translate-y-1 scale-100 text-xs" : "text-gray-400"}`}>
+            Usuario
+          </label>
+        </div>
+
+        {/* Campo de Nombre Completo */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            name="Nombre_Usuario"
+            value={formData.Nombre_Usuario}
+            onChange={handleInputChange}
+            required
+            className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent uppercase text-gray-900"
+            placeholder=" "
+          />
+          <label className={`absolute left-1 top-1 transition-all duration-200 transform ${formData.Nombre_Usuario ? "text-gray-500 -translate-y-1 scale-100 text-xs" : "text-gray-400"}`}>
+            Nombre Completo
+          </label>
+        </div>
+
+        {/* Campo de Correo */}
+        <div className="relative mb-4">
+          <input
+            type="email"
+            name="Correo"
+            value={formData.Correo}
+            onChange={handleInputChange}
+            required
+            className="peer pt-4 pl-1 pb-1 w-full border-b border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-transparent text-gray-900"
+            placeholder=" "
+          />
+          <label className={`absolute left-1 top-1 transition-all duration-200 transform ${formData.Correo ? "text-gray-500 -translate-y-1 scale-100 text-xs" : "text-gray-400"}`}>
+            Correo Electrónico
+          </label>
+        </div>
+
+        {/* Selección de Rol */}
+        <label htmlFor="Id_Rol" className="block mb-2 text-sm font-medium text-gray-700">
+          Rol
+        </label>
+        <select
+          name="Id_Rol"
+          value={formData.Id_Rol}
+          onChange={handleInputChange}
+          required
+          className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Selecciona Rol</option>
+          {roles.filter((role) => role.Estado === 1).map((role) => (
+            <option key={role.Id_Rol} value={role.Id_Rol}>
+              {role.Rol}
+            </option>
+          ))}
+        </select>
+
+        {/* Selección de Estado */}
+        <label htmlFor="Id_EstadoUsuario" className="block mb-2 text-sm font-medium text-gray-700">
+          Estado
+        </label>
+        <select
+          name="Id_EstadoUsuario"
+          value={formData.Id_EstadoUsuario}
+          onChange={handleInputChange}
+          required
+          className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Selecciona Estado</option>
+          {userStates.map((state) => (
+            <option key={state.Id_EstadoUsuario} value={state.Id_EstadoUsuario}>
+              {state.Descripcion}
+            </option>
+          ))}
+        </select>
+
+        {/* Botones de acción */}
+        <div className="flex justify-end">
+          {isEditing ? (
+            permisos.Permiso_Actualizar === "1" && (
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+              >
+                Actualizar
+              </button>
+            )
+          ) : (
+            permisos.Permiso_Insertar === "1" && (
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+              >
+                Agregar
+              </button>
+            )
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowModalUsuario(false)}
+            className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
+
+
     </div>
   );
 };

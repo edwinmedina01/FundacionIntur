@@ -6,7 +6,8 @@ import { validatePasswordDetails } from "../utils/passwordValidator";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 import PreguntasSeguridad from "../components/otrosMantenimientos/PreguntasSeguridad";
 import Image from "next/image";
-
+import axios from "axios";
+import { useRouter } from "next/router";
 // Asegúrate de tener el CSS de react-toastify en tu archivo principal
 import 'react-toastify/dist/ReactToastify.css';
 const Profile = () => {
@@ -20,6 +21,7 @@ const Profile = () => {
     const [showPassword2, setShowPassword2] = useState(false);
     const [showPasswordcurrent , setcurrentShowPassword] = useState(false);
     const [mostrarPreguntas, setMostrarPreguntas] = useState(false);
+    const router = useRouter();
  //   const [message, setMessage] = useState('');
 
  useEffect(() => {
@@ -46,6 +48,20 @@ const handlePasswordChange = (e) => {
     setPasswordValidation(validationResults); // Guarda los resultados de la validación
   };
 
+  const handleLogout = async () => {
+    try {
+      localStorage.removeItem("token");
+              // Eliminar la cookie del token correctamente
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
+
+      await axios.post("/api/auth/logout");
+      
+      router.push("/");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
+
 const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
@@ -60,7 +76,7 @@ const handleChangePassword = async (e) => {
     }
 
 
-    const response = await fetch('/api/change-password', {
+    const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -73,6 +89,8 @@ const handleChangePassword = async (e) => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        handleLogout();
+
     } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Error al cambiar la contraseña."); // Usar toast.error
@@ -135,10 +153,10 @@ const handleCopyEmail = () => {
                     <p>Nombre:</p>
                     <p className="text-gray-900 font-semibold">{profile.nombre}</p>
                 </div>
-                <div className="flex justify-between items-center text-lg font-medium text-gray-600">
+                {/* <div className="flex justify-between items-center text-lg font-medium text-gray-600">
                     <p>Rol:</p>
                     <p className="text-red-700 font-semibold">{profile.rol}</p>
-                </div>
+                </div> */}
                 <div className="flex justify-between items-center text-lg font-medium text-gray-600">
                 <p>Email:</p>
                                 <p className="text-blue-900">{profile.email}</p>

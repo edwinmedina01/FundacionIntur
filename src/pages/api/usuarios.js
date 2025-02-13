@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Error al obtener los usuarios' });
     }
   } else if (req.method === 'POST') {
-    const { Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo } = req.body;
+    const { Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo ,Creado_Por} = req.body;
 
     try {
       const existingUser = await sequelize.query('SELECT * FROM tbl_usuario WHERE Usuario = ?', {
@@ -45,11 +45,17 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'El nombre de usuario ya existe' });
       }
 
+         // Calcular fecha de creación y fecha de vencimiento (por ejemplo, 90 días después)
+         const fechaCreacion = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+         const fechaVencimiento = new Date();
+         fechaVencimiento.setDate(fechaVencimiento.getDate() + 90); // Sumar 90 días
+         const fechaVencimientoISO = fechaVencimiento.toISOString().split("T")[0];
+
       // Usar cryptPassword para hashear la contraseña
       const hashedPassword = await cryptPassword(Contrasena);
 
-      await sequelize.query('INSERT INTO tbl_usuario (Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, Contrasena, Correo) VALUES (?, ?, ?, ?, ?, ?)', {
-        replacements: [Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, hashedPassword, Correo],
+      await sequelize.query('INSERT INTO tbl_usuario (Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, Contrasena, Correo,Creado_Por, Fecha_Creacion, Fecha_Vencimiento) VALUES (?, ?, ?, ?, ?, ?,?,?,?)', {
+        replacements: [Id_EstadoUsuario, Id_Rol, Usuario, Nombre_Usuario, hashedPassword, Correo, Creado_Por,  fechaCreacion,     fechaVencimientoISO],
         type: QueryTypes.INSERT,
       });
       res.status(201).json({ message: 'Usuario creado con éxito' });
@@ -70,20 +76,12 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'El nombre de usuario ya existe' });
         }
 
-        // Si hay una nueva contraseña, encriptarla con cryptPassword
-        let hashedPassword;
-        if (Contrasena) {
-            hashedPassword = await cryptPassword(Contrasena);
-        } else {
-            const usuarioActual = await sequelize.query('SELECT Contrasena FROM tbl_usuario WHERE Id_Usuario = ?', {
-                replacements: [Id_Usuario],
-                type: QueryTypes.SELECT,
-            });
-            hashedPassword = usuarioActual[0].Contrasena;
-        }
+        const fecha_Modificacion = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      
 
-        await sequelize.query('UPDATE tbl_usuario SET Id_Rol = ?, Id_EstadoUsuario = ?, Id_Persona = ?, Usuario = ?, Nombre_Usuario = ?, Contrasena = ?, Intentos_Fallidos = ?, Fecha_Ultima_Conexion = ?, Preguntas_Contestadas = ?, Primer_Ingreso = ?, Fecha_Vencimiento = ?, Correo = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Usuario = ?', {
-            replacements: [Id_Rol, Id_EstadoUsuario, Id_Persona, Usuario, Nombre_Usuario, hashedPassword, Intentos_Fallidos, Fecha_Ultima_Conexion, Preguntas_Contestadas, Primer_Ingreso, Fecha_Vencimiento, Correo, Modificado_Por, Fecha_Modificacion, Id_Usuario],
+
+        await sequelize.query('UPDATE tbl_usuario SET Id_Rol = ?, Id_EstadoUsuario = ?, Id_Persona = ?,   Correo = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Usuario = ?', {
+            replacements: [Id_Rol, Id_EstadoUsuario, Id_Persona, Correo, Modificado_Por, fecha_Modificacion,Id_Usuario],
             type: QueryTypes.UPDATE,
         });
         res.status(200).json({ message: 'Usuario actualizado con éxito' });
@@ -95,9 +93,9 @@ export default async function handler(req, res) {
     const { Id_Usuario } = req.body;
 
     try {
-      await sequelize.query('DELETE FROM tbl_usuario WHERE Id_Usuario = ?', {
+      await sequelize.query('Update tbl_usuario set Id_EstadoUsuario = 3  WHERE Id_Usuario = ?', {
         replacements: [Id_Usuario],
-        type: QueryTypes.DELETE,
+        type: QueryTypes.UPDATE,
       });
 
       return res.status(200).json({ message: 'Usuario eliminado exitosamente' });
