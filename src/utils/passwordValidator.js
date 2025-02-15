@@ -1,7 +1,7 @@
 export const validatePasswordDetails = (password, confirmPassword = null, current = null) => {
     const checks = [
         { label: "Al menos 8 caracteres", test: /.{8,}/ },
-        { label: "Máximo 100 caracteres", test: /^.{1,100}$/ },
+        { label: "Máximo 70 caracteres", test: /^.{1,70}$/ },
         { label: "Al menos una letra mayúscula", test: /[A-Z]/ },
         { label: "Al menos una letra minúscula", test: /[a-z]/ },
         { label: "Al menos un número", test: /[0-9]/ },

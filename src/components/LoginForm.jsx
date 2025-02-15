@@ -150,8 +150,8 @@ const LoginForm = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            minLength={80}
-                            maxLength={40}
+                            minLength={8}
+                            maxLength={70}
                         />
                         <label
                             htmlFor="password"
