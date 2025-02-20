@@ -3,12 +3,15 @@ import axios from 'axios';
 
 import { useRouter } from 'next/router';
 import AuthContext from '../context/AuthContext';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ModalGenerico from '../utils/ModalGenerico';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import useModal from "../hooks/useModal";
 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 
 
 const RolesManagement = () => {
@@ -19,6 +22,7 @@ const router = useRouter();
   const [permisos, setPermisos] = useState(null); //obtener permiso
   const [error, setError] = useState(null); //mostrar error de permiso
   const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 // ------------------------------------------------------------//
   const [formData, setFormData] = useState({
     Id_Rol: '',
@@ -297,10 +301,17 @@ if (!permisos) {
 }
 
   return (
-    <div className="p-8 mt-4 bg-gray-100 flex space-x-8 items-center">
+    <div>
       {/* Columna izquierda: Formulario */}
-      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md items-center">
-       <center> <h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Rol' : 'Agregar Rol'}</h2></center>
+      <ModalGenerico
+        id="modalAddRol"
+        isOpen={modals["modalAddRol"]}
+        onClose={() => closeModal("modalAddRol")}
+        titulo=  {isEditing ? "Editar Rol" : "Agregar Rol"}
+      >
+         
+      <div className="w-3/3 bg-white p-6 rounded-lg shadow-md items-center">
+
         <form onSubmit={handleSubmit}>
         <label htmlFor="" className="block mb-2 text-sm font-medium text-gray-700">
   Nombre del Rol
@@ -370,43 +381,69 @@ if (!permisos) {
             </button>
           </div>
         </form>
-</div>
+
+        </div>
+        </ModalGenerico>
 
       {/* Columna derecha: Tabla de roles */}
-      <div className="w-2/3">
+      <div>
  {/*Barra de busqueda */}
- 
- <center><input
-  type="text"
-  value={search}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-  placeholder="Buscar..."
-/></center>
-<br></br>
-<div className="flex justify-end space-x-4 mb-4">
-<div className="flex justify-end space-x-4 mb-4">
-  {/* Botón para exportar */}
-  <button
-    onClick={handleExport}
-    className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-  ><strong>
-    Exportar a Excel
-  </strong></button>
-    {/* Botón para ir a asignar permisos */}
+
+
+ <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+  {/* Barra de búsqueda */}
+  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+
+
+
+<input
+      type="text"
+      value={search}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+      placeholder="Buscar por nombre o correo"
+    />
+  </div>
+
+  {/* Título de la sección */}
+  <p className="text-3xl font-bold text-blue-700">📋 Roles</p>
+
+  {/* Botones de acciones */}
+  <div className="flex gap-x-2">
+
+    {/* Botón para abrir el modal de agregar usuario */}
+<button
+  onClick={() => showModal("modalAddRol")}
+  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+>
+  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Rol
+</button>
+    
+    <button
+      onClick={handleExport}
+      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
+    >
+      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
+    </button>
+
     <button
     onClick={() => router.push('/permisos')}
     className="bg-cyan-900 text-white px-3 py-1 rounded hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
     ><strong>
     Asignar Permisos
   </strong></button>
-</div>
-</div>
+  </div>
+  </div>
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-slate-200">
+
+ 
+
+
+<table className="xls_style-excel-table">
+          <thead className="">
             <tr>
-              <th className="py-4 px-6 text-left">Id Rol</th>
+              <th className>Id Rol</th>
               <th className="py-4 px-6 text-left">Rol</th>
               <th className="py-4 px-6 text-left">Descripción</th>
               <th className="py-4 px-6 text-left">Estado</th>

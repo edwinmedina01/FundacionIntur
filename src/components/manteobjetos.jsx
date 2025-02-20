@@ -61,11 +61,13 @@ const exportToExcel = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Objetos");
+  console.log("filteredObjetos")
+  console.log(filteredObjetos)
 
   // 2️⃣ Definir las columnas y encabezados
   worksheet.columns = [
     { header: "ID", key: "Id_Objeto", width: 10 },
-    { header: "Nombre", key: "Objeto", width: 30 },
+    { header: "Nombre", key: "Nombre", width: 30 },
     { header: "Descripción", key: "Descripcion", width: 40 },
     { header: "Estado", key: "Estado", width: 15 },
   ];
@@ -208,7 +210,7 @@ if(isEditing){
       resetForm();
     } catch (error) {
       console.log(error)
-      toast.error('Error al guardar el objeto:', error?.response?.data?.message);
+      toast.error('Error: '+ error.response?.data?.message);
     }
   };
   const handleSearch = (e) => {
