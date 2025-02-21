@@ -14,7 +14,7 @@ import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 
 import { validarFormulario } from "../../utils/validaciones";
-import { reglasValidacionEstudiante, reglasValidacionPersona } from "../../../models/ReglasEstudiantePersona";
+import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasEstudiantePersona";
 const EstudiantesCrud = () => {
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 
@@ -224,6 +224,12 @@ const [benefactorData, setBenefactorData] = useState({
       case 1:
 
       personaData.Id_Tipo_Persona=1;
+
+      if(estudianteData==null){
+        personaDataRelacion.esNuevo=true;
+        personaDataRelacion.Id_Persona=null;
+      }
+    
         
 
       break;
@@ -231,13 +237,17 @@ const [benefactorData, setBenefactorData] = useState({
       case 2:
         
         personaDataRelacion.Id_Tipo_Persona=2;
+        personaDataRelacion.esNuevo=true;
+        personaDataRelacion.Id_Persona=null;
         resizeTo();
 
       break;
            
       case 3:
+        personaDataRelacion.Id_Tipo_Persona=3;
+        personaDataRelacion.esNuevo=true;
+        personaDataRelacion.Id_Persona=null;
 
-      personaDataRelacion.Id_Tipo_Persona=3;
 
       resizeTo();
 
@@ -364,7 +374,7 @@ const handlePersonaSubmit = async (e) => {
 
     personaDataRelacion.Creado_Por=user.id;
     personaDataRelacion.Modificado_Por=user.id;
-   const errores = validarFormulario(formData, reglasValidacionPersona);
+   const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion);
 
       if (errores.length > 0) {
      
@@ -372,13 +382,13 @@ const handlePersonaSubmit = async (e) => {
         return;
       }
 
-      const errores2 = validarFormulario(formData, reglasValidacionEstudiante);
+      // const errores2 = validarFormulario(formData, reglasValidacionEstudiante);
 
-      if (errores2.length > 0) {
+      // if (errores2.length > 0) {
      
-        toast.error(errores2.join("\n"), error);
-        return;
-      }
+      //   toast.error(errores2.join("\n"), error);
+      //   return;
+      // }
 
 
 
@@ -1177,20 +1187,24 @@ if (!permisos) {
 {/* Sección Tutor/Padre */}
 {activeTab === 2 && (
   <div>
-    <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Nombre Completo  Estudiante
-        </label>
-        <input
-  type="text"
-  name="NombreCompleto"
-  value={
-    `${personaData.Primer_Nombre || "Sin Nombre"} ${personaData.Segundo_Nombre || ""} ${personaData.Primer_Apellido || ""} ${personaData.Segundo_Apellido || ""}`.trim()
-  }
-  readOnly
-  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-/>
-      </div>
+<div>
+  <label className="block mb-2 text-sm font-medium text-gray-700">
+    Nombre Completo Estudiante
+  </label>
+  
+  <input
+    type="text"
+    name="NombreCompleto"
+    value={`
+      ${personaData.Primer_Nombre || "Sin Nombre"} 
+      ${personaData.Segundo_Nombre || ""} 
+      ${personaData.Primer_Apellido || ""} 
+      ${personaData.Segundo_Apellido || ""}`.trim()}
+    disabled
+    className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
+  />
+</div>
+
 
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
 
@@ -1406,20 +1420,24 @@ if (!permisos) {
 {/* Sección Benefactor */}
 {activeTab === 3 && (
   <div>
-    <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Nombre Completo  Estudiante
-        </label>
-        <input
-  type="text"
-  name="NombreCompleto"
-  value={
-    `${personaData.Primer_Nombre || "Sin Nombre"} ${personaData.Segundo_Nombre || ""} ${personaData.Primer_Apellido || ""} ${personaData.Segundo_Apellido || ""}`.trim()
-  }
-  readOnly
-  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-/>
-      </div>
+<div>
+  <label className="block mb-2 text-sm font-medium text-gray-700">
+    Nombre Completo Estudiante
+  </label>
+  
+  <input
+    type="text"
+    name="NombreCompleto"
+    value={`
+      ${personaData.Primer_Nombre || "Sin Nombre"} 
+      ${personaData.Segundo_Nombre || ""} 
+      ${personaData.Primer_Apellido || ""} 
+      ${personaData.Segundo_Apellido || ""}`.trim()}
+    disabled
+    className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
+  />
+</div>
+
 
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
 
