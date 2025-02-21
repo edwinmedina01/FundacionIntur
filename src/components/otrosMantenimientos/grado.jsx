@@ -6,8 +6,14 @@ import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const GradoManagement = () => {
+import { validarFormulario } from "../../utils/validaciones";
+import { reglasValidacionGrado } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
+import ModalConfirmacion from '../../utils/ModalConfirmacion';
+import useModal from "../../hooks/useModal";
 
+const GradoManagement = () => {
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+    const [modalidades, setModalidades] = useState([]);
   const [grados, setGrados] = useState([]);
           // ------------------- FUNCIONALIDAD ROLES----------------------//
           const { user } = useContext(AuthContext); // Usuario logueado
@@ -170,8 +176,39 @@ const exportToExcel = async () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
+  const obtenerFechaActual = () => {
+    const fecha = new Date();
+    return fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+};
+
+ 
+
+
   const handleSubmit = async (e) => {
+
+
+
+
     e.preventDefault();
+
+
+    formData.Creado_Por = user.id;
+    formData.Fecha_Creacion = obtenerFechaActual();
+ 
+     formData.Modificado_Por = user.id;
+     formData.Fecha_Modificacion = obtenerFechaActual();
+     formData.Estado = 1;
+    const errores = validarFormulario(formData, reglasValidacionGrado);
+ 
+       if (errores.length > 0) {
+      
+         toast.error(errores.join("\n"), error);
+         return;
+       }
+      
+
+
     try {
       if (isEditing) {
         const response = await fetch(`/api/apis_mantenimientos/grado`, {
@@ -261,6 +298,7 @@ const exportToExcel = async () => {
         throw new Error('Error al eliminar el grado');
       }
 
+      closeModal("modalConfirmacion");
       fetchGrados();
       resetForm();
       toast.error('Grado eliminado exitosamente', {
@@ -425,6 +463,17 @@ if (!permisos) {
 
         </div>
 
+        <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Grado)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={formData?.Descripcion}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
         <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead className="bg-slate-200">
             <tr>
@@ -455,7 +504,11 @@ if (!permisos) {
           </button>)}
           {permisos.Permiso_Eliminar === "1" && (
           <button
-            onClick={() => handleDelete(grado.Id_Grado)}
+         
+            onClick={() => {
+              setFormData(grado)
+              showModal("modalConfirmacion");
+            }}
             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
           >
             X

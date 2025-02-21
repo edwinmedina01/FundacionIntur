@@ -7,9 +7,15 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+import { validarFormulario } from "../utils/validaciones";
+import { reglasValidacionBeneficio } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import useModal from "../hooks/useModal";
 
 
 const LineaBeneficioManagement = () => {
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  const [modalidades, setModalidades] = useState([]);
 
   const [beneficios, setBeneficios] = useState([]);
             // ------------------- FUNCIONALIDAD ROLES----------------------//
@@ -151,12 +157,35 @@ const LineaBeneficioManagement = () => {
     }
   };
 
+
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const obtenerFechaActual = () => {
+    const fecha = new Date();
+    return fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+};
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    
+        formData.Creado_Por = user.id;
+       formData.Fecha_Creacion = obtenerFechaActual();
+    
+        formData.Modificado_Por = user.id;
+        formData.Fecha_Modificacion = obtenerFechaActual();
+        formData.Estado = 1;
+       const errores = validarFormulario(formData, reglasValidacionBeneficio);
+    
+          if (errores.length > 0) {
+         
+            toast.error(errores.join("\n"), error);
+            return;
+          }
+         
     try {
       if (isEditing) {
         const response = await fetch('/api/apis_mantenimientos/lineas_beneficio', {
@@ -243,6 +272,7 @@ const LineaBeneficioManagement = () => {
         throw new Error('Error al eliminar el beneficio');
       }
 
+      closeModal("modalConfirmacion");
       fetchBeneficios();
       resetForm();
       toast.error('Beneficio eliminado exitosamente',
@@ -397,6 +427,19 @@ if (!permisos) {
             className="p-2 mb-4 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        
+<ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Beneficio)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={formData?.Nombre_Beneficio}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
 
         <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead className="bg-slate-200">
@@ -428,7 +471,12 @@ if (!permisos) {
                   </button>)}
                   {permisos.Permiso_Eliminar === "1" && (
                   <button
-                    onClick={() => handleDelete(beneficio.Id_Beneficio)}
+              
+                    onClick={() => {
+                      setFormData(beneficio)
+                      showModal("modalConfirmacion");
+                    }}
+
                     className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                   >
                     X

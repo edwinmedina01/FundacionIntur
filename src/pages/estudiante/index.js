@@ -14,7 +14,7 @@ import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 
 import { validarFormulario } from "../../utils/validaciones";
-import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasEstudiantePersona";
+import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
 const EstudiantesCrud = () => {
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 

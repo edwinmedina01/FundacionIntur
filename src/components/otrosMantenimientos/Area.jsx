@@ -8,8 +8,13 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
-
+import { validarFormulario } from "../../utils/validaciones";
+import { reglasValidacionArea } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
+import ModalConfirmacion from '../../utils/ModalConfirmacion';
+import useModal from "../../hooks/useModal";
 const AreaManagement = () => {
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  const [modalidades, setModalidades] = useState([]);
 
   const [areas, setAreas] = useState([]);
       // ------------------- FUNCIONALIDAD ROLES----------------------//
@@ -165,7 +170,30 @@ const fetchPermisos = async () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const obtenerFechaActual = () => {
+    const fecha = new Date();
+    return fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+};
+
   const handleSubmit = async (e) => {
+
+
+
+    formData.Creado_Por = user.id;
+   formData.Fecha_Creacion = obtenerFechaActual();
+
+    formData.Modificado_Por = user.id;
+    formData.Fecha_Modificacion = obtenerFechaActual();
+    formData.Estado = 1;
+   const errores = validarFormulario(formData, reglasValidacionArea);
+
+      if (errores.length > 0) {
+     
+        toast.error(errores.join("\n"), error);
+        return;
+      }
+     
+
     e.preventDefault();
     try {
       const response = isEditing
@@ -235,6 +263,7 @@ const fetchPermisos = async () => {
       });
       fetchAreas();
       resetForm();
+            closeModal("modalConfirmacion");
     } catch (error) {
       toast.error('Error al eliminar el área');
       console.error(error);
@@ -360,6 +389,19 @@ if (!permisos) {
           />
         </div>
 
+        
+<ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Area)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={formData?.Nombre_Area}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
         <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
           <thead className="bg-slate-200">
             <tr>
@@ -388,7 +430,11 @@ if (!permisos) {
                   </button>)}
                   {permisos.Permiso_Eliminar === "1" && (
                   <button
-                    onClick={() => handleDelete(area.Id_Area)}
+                 
+                    onClick={() => {
+                      setFormData(area)
+                      showModal("modalConfirmacion");
+                    }}
                     className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                   >
                     X

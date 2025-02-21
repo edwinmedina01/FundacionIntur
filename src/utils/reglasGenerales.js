@@ -75,6 +75,17 @@ export const reglasGenerales = {
         max,
     }),
 
+    
+        NombreCompuesto: (min = 3, max = 80) => ({
+            tipo: "string",
+            regex: new RegExp(`^[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?:\\s[A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$`),
+            mensaje: `Debe contener solo letras y espacios opcionales. Longitud permitida: entre ${min} y ${max} caracteres.`,
+            min,
+            max,
+        }),
+
+    
+
 
   
         NombreGeneral: (min = 3, max = 60) => ({
