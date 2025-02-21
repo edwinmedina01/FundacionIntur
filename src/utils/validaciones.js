@@ -3,15 +3,22 @@ export const validarFormulario = (formData, reglasValidacion) => {
 
     Object.keys(reglasValidacion).forEach((campo) => {
         const reglas = reglasValidacion[campo];
+
+        // Verificar si el campo está ausente en formData
+        if (!(campo in formData)) {
+            errores.push(`El campo "${campo}" no está presente en los datos enviados.`);
+            return; // Evita continuar con otras validaciones
+        }
+
         const valor = formData[campo];
 
         // ✅ Validar si es requerido
-        if (reglas.requerido && (!valor || valor.toString().trim() === "")) {
+        if (reglas.requerido && (valor === null || valor === undefined || valor.toString().trim() === "")) {
             errores.push(`El campo "${campo}" es obligatorio.`);
         }
 
         // ✅ Validar longitud mínima y máxima
-        if (reglas.tipo === "string") {
+        if (reglas.tipo === "string" && typeof valor === "string") {
             if (reglas.min && valor.length < reglas.min) {
                 errores.push(`El campo "${campo}" debe tener al menos ${reglas.min} caracteres.`);
             }

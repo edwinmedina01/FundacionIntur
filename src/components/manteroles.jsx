@@ -12,6 +12,8 @@ import useModal from "../hooks/useModal";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
+import { validarFormulario } from "../utils/validaciones";
+import { reglasValidacionRoles } from "../../models/Rol"; // Importamos las reglas del modelo
 
 
 const RolesManagement = () => {
@@ -83,6 +85,17 @@ const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    formData.Creado_Por=user.id;
+    formData.Modificado_Por=user.id;
+   const errores = validarFormulario(formData, reglasValidacionRoles);
+
+      if (errores.length > 0) {
+     
+        toast.error(errores.join("\n"), error);
+        return;
+      }
+
     try {
       if (isEditing) {
         const response = await fetch(`/api/roles`, {
@@ -93,10 +106,15 @@ const router = useRouter();
           body: JSON.stringify(formData),
         });
 
-        if (!response.ok) {
-          throw new Error('Error al actualizar el rol');
-        }
+       // Verificar si la respuesta NO es exitosa (código 400 o 500)
+       if (!response.ok) {
+        // Intentar leer el JSON de la respuesta del servidor
+        const errorData = await response.json(); 
 
+        // Mostrar el mensaje de error si existe en la respuesta
+        toast.error('Error: ' + (errorData.error || 'Ocurrió un error desconocido'));
+        return;
+    }
         toast.success('Rol actualizado exitosamente',
           {
             style: {
@@ -146,14 +164,19 @@ const router = useRouter();
 
       fetchRoles();
       resetForm();
+      closeModal("modalAddRol")
     } catch (error) {
-      toast.error('Error al guardar el rol:', error);
+     // toast.error('Error al guardar el rol:', error);
+     console.log(error)
+        toast.error('Error: '+ error.response?.data?.message);
     }
   };
 
   const handleEdit = (role) => {
     setFormData(role);
     setIsEditing(true);
+    showModal("modalAddRol")
+    
   };
 
   const handleDelete = async (Id_Rol) => {
@@ -185,6 +208,8 @@ const router = useRouter();
         autoClose: 5000,
         hideProgressBar: true,
       });
+
+      closeModal("modalConfirmacion")
     } catch (error) {
       toast.error('Error al eliminar el rol:', error);
     }
@@ -437,7 +462,17 @@ if (!permisos) {
   </div>
 
 
- 
+  <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Rol)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={formData?.Rol}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
 
 
 <table className="xls_style-excel-table">
@@ -473,7 +508,11 @@ if (!permisos) {
                    {/*Agregar la condicional para verificar si tiene permiso*/}
                   {permisos.Permiso_Eliminar === "1" && (
                     <button
-                      onClick={() => handleDelete(role.Id_Rol)}
+                  
+                      onClick={() => {
+                       setFormData(role);
+                        showModal("modalConfirmacion");
+                      }}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     >
                       X

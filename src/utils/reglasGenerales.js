@@ -8,6 +8,16 @@ export const reglasGenerales = {
         max,
     }),
 
+ 
+        NombreRol: (min = 3, max = 60) => ({
+            tipo: "string",
+            regex: new RegExp(`^[A-Z_]{${min},${max}}$`),
+            mensaje: `El nombre del rol debe contener entre ${min} y ${max} caracteres, permitiendo solo letras mayúsculas y guiones bajos (_), sin espacios ni acentos.`,
+            min,
+            max,
+        }),
+
+
     // ✅ Solo letras mayúsculas sin números ni símbolos (con acentos)
     SoloMayusculas: (min = 1, max = Infinity) => ({
         tipo: "string",
@@ -64,6 +74,18 @@ export const reglasGenerales = {
         min,
         max,
     }),
+
+
+  
+        NombreGeneral: (min = 3, max = 60) => ({
+            tipo: "string",
+            regex: new RegExp(`^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 ]{${min},${max}}$`),
+            mensaje: `El nombre debe contener entre ${min} y ${max} caracteres, permitiendo solo letras, números y espacios.`,
+            min,
+            max,
+        }),
+  
+    
 
     TextoLibre: (min = 1, max = Infinity) => ({
         tipo: "string", // Permite cualquier texto
