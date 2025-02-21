@@ -37,7 +37,7 @@ const Persona = sequelize.define('tbl_persona', {
     Sexo: {
       type: DataTypes.INTEGER,
     },
-    Fecha_Nacimiiento: {
+    Fecha_Nacimiento: {
       type: DataTypes.DATE,
     },
     Lugar_Nacimiento: {
@@ -64,10 +64,10 @@ const Persona = sequelize.define('tbl_persona', {
       type: DataTypes.INTEGER,
       defaultValue: 1,
     },
-    telefono : {
+    Telefono : {
       type: DataTypes.STRING,
     }, 
-    direccion  : {
+    Direccion  : {
       type: DataTypes.STRING,
     },   
   }, {

@@ -7,8 +7,16 @@ import { toast } from "react-toastify";
 import GraduandoTable from '../../components/GraduandoTable';
 import GraduandoInner from '../../components/GraduandoInner';
 import { useRouter } from 'next/router';
-const EstudiantesCrud = () => {
 
+
+import ModalGenerico from '../../utils/ModalGenerico';
+import ModalConfirmacion from '../../utils/ModalConfirmacion';
+import useModal from "../../hooks/useModal";
+
+import { validarFormulario } from "../../utils/validaciones";
+import { reglasValidacionEstudiante, reglasValidacionPersona } from "../../../models/ReglasEstudiantePersona";
+const EstudiantesCrud = () => {
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 
 
   const router = useRouter();
@@ -201,8 +209,8 @@ const [benefactorData, setBenefactorData] = useState({
       Primer_Nombre: '',
       Primer_Apellido: '',
       Sexo: '',
-      direccion: '',
-      telefono: '',
+      Direccion: '',
+      Telefono: '',
     }));
 
   }
@@ -354,6 +362,26 @@ const handlePersonaSubmit = async (e) => {
   try {
 
 
+    personaDataRelacion.Creado_Por=user.id;
+    personaDataRelacion.Modificado_Por=user.id;
+   const errores = validarFormulario(formData, reglasValidacionPersona);
+
+      if (errores.length > 0) {
+     
+        toast.error(errores.join("\n"), error);
+        return;
+      }
+
+      const errores2 = validarFormulario(formData, reglasValidacionEstudiante);
+
+      if (errores2.length > 0) {
+     
+        toast.error(errores2.join("\n"), error);
+        return;
+      }
+
+
+
       let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
 
 
@@ -410,6 +438,30 @@ const handlePersonaSubmit = async (e) => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+
+  personaData.Creado_Por=user.id;
+  personaData.Modificado_Por=user.id;
+  estudianteData.Creado_Por=user.id;
+  estudianteData.Modificado_Por=user.id;
+ const errores = validarFormulario(personaData, reglasValidacionPersona);
+
+    if (errores.length > 0) {
+   
+      toast.error(errores.join("\n"), error);
+      return;
+    }
+
+    const errores2 = validarFormulario(estudianteData, reglasValidacionEstudiante);
+
+    if (errores2.length > 0) {
+   
+      toast.error(errores2.join("\n"), error);
+      return;
+    }
+
+
+
+
   try {
     if (editId) {
       // Actualización de registro
@@ -440,16 +492,16 @@ const handleSubmit = async (e) => {
         personaData.Nombre_Completo = tutorData.Nombre_Completo;
         personaData.Primer_Nombre = tutorData.Nombre_Completo.split(" ")[0];
         personaData.Primer_Apellido = tutorData.Nombre_Completo.split(" ")[1];
-        personaData.telefono = tutorData.telefono;
-        personaData.direccion = tutorData.direccion;
+        personaData.Telefono = tutorData.Telefono;
+        personaData.Direccion = tutorData.Direccion;
         personaData.sexo = tutorData.Sexo;
       }
 
       if (benefactorData.Identidad.length > 10) {
         personaData.Identidad = benefactorData.Identidad;
         personaData.Nombre_Completo = benefactorData.Nombre_Completo;
-        personaData.telefono = benefactorData.telefono;
-        personaData.direccion = benefactorData.direccion;
+        personaData.Telefono = benefactorData.Telefono;
+        personaData.Direccion = benefactorData.Direccion;
         personaData.sexo = benefactorData.Sexo;
       }
 
@@ -480,7 +532,7 @@ const handleSubmit = async (e) => {
       Sexo: "",
       Fecha_Nacimiento: "",
       Direccion: "",
-      telefono: "",
+      Telefono: "",
       Lugar_Nacimiento: "",
       Identidad: "",
       Creado_Por: "",
@@ -525,8 +577,8 @@ const handleSubmit = async (e) => {
       Sexo: "",
       Fecha_Nacimiento: "",
       Lugar_Nacimiento: "",
-      direccion: "",
-      telefono: "",
+      Direccion: "",
+      Telefono: "",
       Identidad: "",
       Creado_Por: "", 
       Id_Departamento: "",
@@ -551,6 +603,7 @@ const handleSubmit = async (e) => {
       ...personaDataRelacion,
       Estudiante: estudiante, // Guarda el objeto completo del estudiante
     });
+
     setSelectedStudent(estudiante); 
     setEditId(estudiante.Id_Estudiante);
     setEstudianteTemp(estudiante);
@@ -564,6 +617,7 @@ const handleSubmit = async (e) => {
 
     setEditPersonaId(estudiante.Persona.Id_Persona);
     setPersonaData(estudiante.Persona);
+
     if (estudiante.Persona.Id_Departamento) {
       fetchMunicipios(estudiante.Persona.Id_Departamento);
     }
@@ -622,8 +676,8 @@ setPersonaDataRelacion({
   Primer_Nombre:  tutor.Persona.Primer_Nombre ,
   Primer_Apellido:  tutor.Persona.Primer_Apellido ,
   Sexo:  tutor.Persona.Sexo,
-  direccion: tutor.Persona.direccion,
-  telefono:  tutor.Persona.telefono,
+  Direccion: tutor.Persona.Direccion,
+  Telefono:  tutor.Persona.Telefono,
   Id_Persona:tutor.Persona.Id_Persona,
   Update:true
 
@@ -886,13 +940,13 @@ if (!permisos) {
 
                  {/* Número de Direccion */}
                  <div className="flex flex-col">
-        <label htmlFor="direccion " className="text-gray-700">Dirección</label>
+        <label htmlFor="Direccion " className="text-gray-700">Dirección</label>
         <input
-          id="direccion"
+          id="Direccion"
           type="text"
-          name="direccion"
-          placeholder="direccion"
-          value={personaData.direccion}
+          name="Direccion"
+          placeholder="Direccion"
+          value={personaData.Direccion}
           onChange={handlePersonaInputChange}
           required
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
@@ -989,13 +1043,13 @@ if (!permisos) {
       </div>
             {/* Número de Telefono */}
             <div className="flex flex-col">
-        <label htmlFor="telefono" className="text-gray-700">Número de telefono</label>
+        <label htmlFor="Telefono" className="text-gray-700">Número de Telefono</label>
         <input
-          id="telefono"
+          id="Telefono"
           type="text"
-          name="telefono"
-          placeholder="Número de telefono"
-          value={personaData.telefono}
+          name="Telefono"
+          placeholder="Número de Telefono"
+          value={personaData.Telefono}
           onChange={handlePersonaInputChange}
           required
           className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
@@ -1152,7 +1206,7 @@ if (!permisos) {
     </label>
     <input
       id="Identidad_Tutor"
-      name="Identidad"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Identidad"  
       placeholder="Número de Identidad"
       value={personaDataRelacion.Identidad}
       onChange={handleTutorInputChange}
@@ -1167,7 +1221,7 @@ if (!permisos) {
     <input
       id="Primer_Nombre"
       type="text"
-      name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Primer_Nombre"  
       placeholder="Primer Nombre"
       value={personaDataRelacion.Primer_Nombre}
       onChange={handleTutorInputChange}
@@ -1182,7 +1236,7 @@ if (!permisos) {
     <input
       id="Primer_Apellido"
       type="text"
-      name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Primer_Apellido"  
       placeholder="Primer Apellido"
       value={personaDataRelacion.Primer_Apellido}
       onChange={handleTutorInputChange}
@@ -1196,7 +1250,7 @@ if (!permisos) {
     </label>
     <select
       id="Sexo_Tutor"
-      name="Sexo"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Sexo"  
       value={personaDataRelacion.Sexo}
       onChange={handleTutorInputChange}
       required
@@ -1214,9 +1268,9 @@ if (!permisos) {
     <input
       id="Direccion_Tutor"
       type="text"
-      name="direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Direccion"  
       placeholder="Dirección del Tutor"
-      value={personaDataRelacion.direccion}
+      value={personaDataRelacion.Direccion}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1229,9 +1283,9 @@ if (!permisos) {
     <input
       id="Telefono_Tutor"
       type="text"
-      name="telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Telefono"  
       placeholder="Teléfono del Tutor"
-      value={personaDataRelacion.telefono}
+      value={personaDataRelacion.Telefono}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1272,6 +1326,18 @@ if (!permisos) {
 </div>
 
    {/* Tabla de Relaciones */}
+
+   <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(estudianteData?.Id_Estudiante)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={estudianteData?.Nombre_Completo}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
 
 
 
@@ -1368,7 +1434,7 @@ if (!permisos) {
     </label>
     <input
       id="Identidad_Tutor"
-      name="Identidad"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Identidad"  
       placeholder="Número de Identidad"
       value={personaDataRelacion.Identidad}
       onChange={handleTutorInputChange}
@@ -1383,7 +1449,7 @@ if (!permisos) {
     <input
       id="Primer_Nombre"
       type="text"
-      name="Primer_Nombre"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Primer_Nombre"  
       placeholder="Primer Nombre"
       value={personaDataRelacion.Primer_Nombre}
       onChange={handleTutorInputChange}
@@ -1398,7 +1464,7 @@ if (!permisos) {
     <input
       id="Primer_Apellido"
       type="text"
-      name="Primer_Apellido"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Primer_Apellido"  
       placeholder="Primer Apellido"
       value={personaDataRelacion.Primer_Apellido}
       onChange={handleTutorInputChange}
@@ -1412,7 +1478,7 @@ if (!permisos) {
     </label>
     <select
       id="Sexo_Tutor"
-      name="Sexo"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Sexo"  
       value={personaDataRelacion.Sexo}
       onChange={handleTutorInputChange}
       required
@@ -1430,9 +1496,9 @@ if (!permisos) {
     <input
       id="Direccion_Tutor"
       type="text"
-      name="direccion"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Direccion"  
       placeholder="Dirección del Benefactor"
-      value={personaDataRelacion.direccion}
+      value={personaDataRelacion.Direccion}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1445,9 +1511,9 @@ if (!permisos) {
     <input
       id="Telefono_Tutor"
       type="text"
-      name="telefono"  // Asegúrate de que el name coincida con la propiedad del estado
+      name="Telefono"  
       placeholder="Teléfono del Benefactor"
-      value={personaDataRelacion.telefono}
+      value={personaDataRelacion.Telefono}
       onChange={handleTutorInputChange}
       required
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
@@ -1528,6 +1594,8 @@ if (!permisos) {
   {permisos.Permiso_Eliminar === "1" && (
     <button
       onClick={() => handleDeleteRelacion(relacion.Id)}
+
+      
       className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
     >
       <TrashIcon className="h-6 w-6" />
@@ -1612,7 +1680,13 @@ if (!permisos) {
 
   {permisos.Permiso_Eliminar === "1" && (
     <button
-      onClick={() => handleDelete(estudiante.Id_Estudiante)}
+    
+
+
+      onClick={() => {
+        setEstudianteData(estudiante)
+         showModal("modalConfirmacion");
+       }}
       className="m-1 px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700 padd" 
     >
       <TrashIcon className="h-6 w-6" />
