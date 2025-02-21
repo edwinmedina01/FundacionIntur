@@ -510,7 +510,7 @@ if (!permisos) {
                     <button
                   
                       onClick={() => {
-                       setFormData(role);
+                       setFormData(role)
                         showModal("modalConfirmacion");
                       }}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"

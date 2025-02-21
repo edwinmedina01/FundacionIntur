@@ -1,14 +1,24 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 //import * as XLSX from 'xlsx';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 import AuthContext from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+//import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+
+import ModalGenerico from '../utils/ModalGenerico';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import useModal from "../hooks/useModal";
+import { validarFormulario } from "../utils/validaciones";
+import { reglasValidacionPermisos } from "../../models/Permiso"; // Importamos las reglas del modelo
+import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
+
 
 
 const PermissionsManagement = () => {
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [permissions, setPermissions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [objects, setObjects] = useState([]); // Nuevo estado para los objetos
@@ -22,7 +32,9 @@ const PermissionsManagement = () => {
   const [formData, setFormData] = useState({
     Id_Permiso: '',
     Id_Rol: '',
-    Id_Objeto: '', // Añadir el Id_Objeto en el estado
+    Creado_Por: '', 
+    Modificado_Por:'',
+    // Añadir el Id_Objeto en el estado
     Permiso_Insertar: false,
     Permiso_Actualizar: false,
     Permiso_Eliminar: false,
@@ -118,6 +130,11 @@ const fetchPermisos = async () => {
   };
 
 const handleSubmit = async (e) => {
+  
+   formData.Creado_Por=user.id;
+    formData.Modificado_Por=user.id;
+  const errores = validarFormulario(formData, reglasValidacionPermisos);
+  
   e.preventDefault();
   try {
     const requestData = {
@@ -132,8 +149,13 @@ const handleSubmit = async (e) => {
       body: JSON.stringify(requestData),
     });
 
-    if (!response.ok) {
-      throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el permiso`);
+      if (!response.ok) {
+        // Intentar leer el JSON de la respuesta del servidor
+        const errorData = await response.json(); 
+
+        // Mostrar el mensaje de error si existe en la respuesta
+        toast.error('Error: ' + (errorData.error || 'Ocurrió un error desconocido'));
+        return;
     }
 
     toast.success(`Permiso ${isEditing ? 'actualizado' : 'agregado'} exitosamente`,
@@ -155,6 +177,7 @@ const handleSubmit = async (e) => {
 
     fetchPermissions();
     resetForm();
+    closeModal("modalAddPermiso")
   } catch (error) {
     toast.error('Error al guardar el permiso:', error);
   }
@@ -200,6 +223,7 @@ const handleSubmit = async (e) => {
         autoClose: 5000,
         hideProgressBar: true,
       });
+      closeModal("modalConfirmacion")
     } catch (error) {
       console.error('Error al eliminar el permiso:', error);
     }
@@ -348,14 +372,16 @@ if (!permisos) {
 }
 
   return (
-    <div className="p-8 mt-4 bg-gray-100 flex space-x-8 items-center">
+    <div >
       {/* Columna izquierda: Formulario */}
-      <div className="w-4/6 bg-white p-6 rounded-lg shadow-md">
-        <center>
-          <h2 className="text-2xl font-semibold mb-4">
-            {isEditing ? "Editar Permiso" : "Asignar Permisos"}
-          </h2>
-        </center>
+      <ModalGenerico
+        id="modalAddPermiso"
+        isOpen={modals["modalAddPermiso"]}
+        onClose={() => closeModal("modalAddPermiso")}
+        titulo=  {isEditing ? "Editar Permiso" : "Agregar Permiso"}
+      >
+      <div >
+
         <form onSubmit={handleSubmit}>
           {/* Selector de Rol */}
           <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -449,28 +475,69 @@ if (!permisos) {
 
         </form>
       </div>
-
+</ModalGenerico>
       {/* Columna derecha: Tabla de permisos */}
-      <div className="w-2/1">
+      <div >
         {/* Buscador */}
-        <center>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearch}
-            className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-            placeholder="Buscar..."
-          />
-        </center>
-        <div className="flex justify-end space-x-4 mb-4">
-          <button
-            onClick={exportToExcel}
-            className="bg-lime-600 text-white py-2 px-4 rounded hover:bg-lime-900 transition duration-200"
-          >
-            <strong>Exportar a Excel</strong>
-          </button>
-        </div>
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+
+
+
+ <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+  {/* Barra de búsqueda */}
+  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+
+
+
+<input
+      type="text"
+      value={searchTerm}
+      onChange={handleSearch}
+      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+   placeholder="Buscar..."
+    />
+  </div>
+
+  {/* Título de la sección */}
+  <p className="text-3xl font-bold text-blue-700">📋 Permisos</p>
+
+  {/* Botones de acciones */}
+  <div className="flex gap-x-2">
+
+    {/* Botón para abrir el modal de agregar usuario */}
+<button
+  onClick={() => showModal("modalAddPermiso")}
+  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+>
+  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Permiso
+</button>
+    
+    <button
+      onClick={exportToExcel}
+      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
+    >
+      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
+    </button>
+
+
+  </div>
+  </div>
+
+
+        <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Permiso)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={""}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
+
+        <table className="xls_style-excel-table">
           <thead className="bg-slate-200">
             <tr>
               <th className="py-4 px-6 text-left">Id Permiso</th>
@@ -516,7 +583,7 @@ if (!permisos) {
   {/* Agregar la condicional para verificar si tiene permiso */}
   {permisos.Permiso_Actualizar === "1" && (
     <button
-      onClick={() => handleEdit(permiso)}
+      onClick={() => {handleEdit(permiso); showModal("modalAddPermiso");}}
       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
     >
       Editar
@@ -526,7 +593,10 @@ if (!permisos) {
   {/* Agregar la condicional para verificar si tiene permiso */}
   {permisos.Permiso_Eliminar === "1" && (
     <button
-      onClick={() => handleDelete(permiso.Id_Permiso)}
+    onClick={() => {
+       setFormData(permiso)
+       showModal("modalConfirmacion");
+     }}
       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
     >
       X
