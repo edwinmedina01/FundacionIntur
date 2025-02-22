@@ -24,7 +24,7 @@ export default function ResetPassword() {
   useEffect(() => {
     if (!token) return;
 
-    fetch(`/api/verifyToken?token=${token}`)
+    fetch(`/api/auth/verifyToken?token=${token}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.email) {
@@ -65,7 +65,7 @@ if (validationResults.some(rule => !rule.passed)) {
 
     // Lógica para enviar la solicitud al backend
     try {
-      const response = await fetch('/api/resetpassword', {
+      const response = await fetch('/api/auth/resetpassword', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

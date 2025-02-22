@@ -31,6 +31,18 @@ const Layout = ({ children }) => {
 
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
+  const [menuWidth, setMenuWidth] = useState("w-80"); // Ancho inicial del menú
+const [contentMargin, setContentMargin] = useState("ml-80"); // Margen del contenido
+
+const toggleMenuWidth = () => {
+  if (menuWidth === "w-64") {
+    setMenuWidth("w-80");
+    setContentMargin("ml-80");
+  } else {
+    setMenuWidth("w-64");
+    setContentMargin("ml-64");
+  }
+};
 
   useEffect(() => {
       if (!loading && !user) {
@@ -207,10 +219,12 @@ if (!isLoaded) {
     <div className="flex min-h-screen bg-blue-50">
       {/* Menú Lateral */}
       {sidebarVisible && (
-        <aside
-          className={`w-64 bg-blue-800 text-white p-6 shadow-lg fixed h-full transform transition-all duration-500 ease-in-out ${
-            sidebarVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
-          }`}
+    <aside
+    className={`w-80 bg-blue-800 text-white p-6 shadow-lg fixed h-screen overflow-y-auto transform transition-all duration-500 ease-in-out ${
+      sidebarVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
+    }`}
+  
+  
         >
   <div className="flex items-center justify-center mb-10">
     {/* <img src="/img/intur.png" alt="logo" className="h-16 w-auto" /> */}
@@ -429,11 +443,8 @@ if (!isLoaded) {
 
 )}
       {/* Contenido principal */}
-      <div
-        className={`flex-1 flex flex-col ${
-          sidebarVisible ? "ml-64" : "ml-0"
-        } transition-all duration-300`}
-      >
+      <div className={`flex-1 flex flex-col ${sidebarVisible ? contentMargin : "ml-0"} transition-all duration-300`}>
+
     
         <nav className="flex justify-between items-center bg p-4 shadow-md border-b border-gray-200">
         <div className="flex items-center space-x-4">

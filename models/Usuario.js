@@ -52,6 +52,9 @@ const Usuario = sequelize.define('tbl_usuario', {
     Correo: {
       type: DataTypes.STRING(45),
     },
+    PassKey: {
+      type: DataTypes.STRING(45),
+    },
     Creado_Por: {
       type: DataTypes.STRING(45),
     },

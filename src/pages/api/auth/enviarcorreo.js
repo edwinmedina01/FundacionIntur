@@ -5,6 +5,8 @@ import client from "../../../lib/redis";
 
 import User from '../../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
 import { use } from 'react';
+import fs from 'fs';
+import path from 'path';
 
 // Configuración del transporte de nodemailer
 const transporter = nodemailer.createTransport({
@@ -41,6 +43,18 @@ const deleteToken = (token) => {
     delete tokenStore[token];
 };
 
+
+const convertirImagenABase64 = (nombreArchivo) => {
+    try {
+        const ruta = path.join(process.cwd(), 'public', nombreArchivo); // Ruta de la imagen en /public
+        const imagenBase64 = fs.readFileSync(ruta, { encoding: 'base64' });
+        return `data:image/png;base64,${imagenBase64}`; // Ajusta el tipo de imagen si es JPG
+    } catch (error) {
+        console.error("Error al convertir imagen a Base64:", error);
+        return null;
+    }
+};
+
 export default async function handler(req, res) {
     if (req.method === 'POST') {
         const { email } = req.body;
@@ -50,6 +64,13 @@ export default async function handler(req, res) {
             const user = await User.findOne({ where: { Correo: email } });
             if (!user) {
                 return res.status(404).json({ mensaje: 'Correo no encontrado.' });
+            }
+
+
+            const firmaBase64 = convertirImagenABase64('firma.png'); // Asegúrate de que la imagen está en /public/
+
+            if (!firmaBase64) {
+                return res.status(500).json({ error: 'Error al cargar la imagen de la firma' });
             }
 
             switch(user.Id_EstadoUsuario){
@@ -98,6 +119,7 @@ export default async function handler(req, res) {
                     <p style="font-family: Arial, sans-serif; color: #555;">
                         Atentamente,<br>
                         El equipo de soporte.
+                         <img src="${firmaBase64}" alt="Firma Digital" style="width: 250px; display: block; margin-top: 10px;">
                     </p>
                 `,
             };

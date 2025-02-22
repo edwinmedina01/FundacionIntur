@@ -21,7 +21,7 @@ export default function ChangePassword() {
     setNewPassword(newPassword); // Actualiza la contraseña
   
     // Ejecuta validación en tiempo real
-    alert("Test")
+ 
     const validationResults = validatePasswordDetails(newPassword,confirmPassword,currentPassword);
     setPasswordValidation(validationResults); // Guarda los resultados de la validación
   };

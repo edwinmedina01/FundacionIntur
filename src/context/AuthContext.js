@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
              
                 console.log(error);
-                if (router.pathname !== '/'&&router.pathname!=="/forgot-password" ) {
+                if (router.pathname !== '/'&&router.pathname!=="/forgot-password"&&router.pathname!=="/resetpassword" ) {
                 
                     router.replace('/');
                     alert("NO tiene permisos")
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
         }else {
         //    console.error('Error al decodificar el token:', error);
           //  return NextResponse.redirect(new URL('/login'));
-          if (router.pathname !== '/'&&router.pathname!=="/forgot-password" ) {
+          if (router.pathname !== '/'&&router.pathname!=="/forgot-password"&&router.pathname!=="/resetpassword" ) {
     
             router.replace('/');
             alert("No tiene permisos")

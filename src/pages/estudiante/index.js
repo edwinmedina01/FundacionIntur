@@ -2,22 +2,38 @@ import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
-import { ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { ArrowDownCircleIcon ,ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon,MagnifyingGlassIcon,UserPlusIcon, EyeIcon   } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import GraduandoTable from '../../components/GraduandoTable';
 import GraduandoInner from '../../components/GraduandoInner';
 import { useRouter } from 'next/router';
 
+import dynamic from "next/dynamic";
+import "react-step-progress-bar/styles.css";
 
 import ModalGenerico from '../../utils/ModalGenerico';
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 
+
 import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
 const EstudiantesCrud = () => {
-  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 
+  const [modals, setModals] = useState({
+    modalConfirmacion: false,
+    modalEliminarTutor: false,
+    modalEliminarBenefactor: false,
+  });
+  
+  const openModal = (modalKey) => {
+    setModals(prev => ({ ...prev, [modalKey]: true }));
+  };
+  
+  const closeModal = (modalKey) => {
+    setModals(prev => ({ ...prev, [modalKey]: false }));
+  };
 
   const router = useRouter();
 
@@ -43,6 +59,37 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
     { id: 0, descripcion: "Femenino" },
   ]);
 
+
+
+  // Importar dinámicamente para evitar problemas con SSR
+const ProgressBar = dynamic(() => import("react-step-progress-bar").then(mod => mod.ProgressBar), { ssr: false });
+const Step = dynamic(() => import("react-step-progress-bar").then(mod => mod.Step), { ssr: false });
+
+const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
+
+const nextStep = () => {
+  if (currentStep < 4) setCurrentStep(currentStep + 1);
+};
+
+const prevStep = () => {
+  if (currentStep > 1) setCurrentStep(currentStep - 1);
+};
+
+// Barra de Progreso
+<div className="mb-6">
+  <ProgressBar percent={(currentStep - 1) * 33.33} filledBackground="blue">
+    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>1</div>}</Step>
+    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>2</div>}</Step>
+    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>3</div>}</Step>
+    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>4</div>}</Step>
+  </ProgressBar>
+</div>
+
+// Contenido de cada paso
+{currentStep === 1 && <div>Paso 1: Información Personal</div>}
+{currentStep === 2 && <div>Paso 2: Tutor/Padre</div>}
+{currentStep === 3 && <div>Paso 3: Benefactor</div>}
+{currentStep === 4 && <div>Paso 4: Confirmación</div>}
  
   const [personaData, setPersonaData] = useState({
     Primer_Nombre: "",
@@ -57,6 +104,8 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
     Id_Departamento: 0,
     Id_Municipio: 0,
     Id_Tipo_Persona: 1,
+
+    Estado:1
 
   });
 
@@ -76,6 +125,8 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
       Id_Departamento: 0,
       Id_Municipio: 0,
       esNuevo: true,
+      Id_Tipo_Persona:1,
+      Estado:1
     }));
     setPersonaData({
       Primer_Nombre: "",
@@ -88,7 +139,9 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
       Identidad: "",
       Creado_Por: "", 
       Id_Departamento: "",
-      Id_Municipio: ""
+      Id_Municipio: "",
+      Id_Tipo_Persona:1,
+      Estado:1
     });
     
     setEstudianteData({
@@ -115,7 +168,9 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
     Id_Municipio: 0,
     Id_Tipo_Persona: 1,
     Id_Estudiante: 0,
-    esNuevo:true
+    esNuevo:true,
+    Id_Tipo_Persona:1,
+    Estado:1
 
   });
 
@@ -228,6 +283,7 @@ const [benefactorData, setBenefactorData] = useState({
       if(estudianteData==null){
         personaDataRelacion.esNuevo=true;
         personaDataRelacion.Id_Persona=null;
+        
       }
     
         
@@ -374,6 +430,7 @@ const handlePersonaSubmit = async (e) => {
 
     personaDataRelacion.Creado_Por=user.id;
     personaDataRelacion.Modificado_Por=user.id;
+    personaDataRelacion.Fecha_Nacimiento='2000-01-01';
    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion);
 
       if (errores.length > 0) {
@@ -592,7 +649,9 @@ const handleSubmit = async (e) => {
       Identidad: "",
       Creado_Por: "", 
       Id_Departamento: "",
-      Id_Municipio: ""
+      Id_Municipio: "",
+      Id_Tipo_Persona:1,
+      Estado:1
     });
 
     setEstudianteData({
@@ -631,6 +690,11 @@ const handleSubmit = async (e) => {
     if (estudiante.Persona.Id_Departamento) {
       fetchMunicipios(estudiante.Persona.Id_Departamento);
     }
+     // **Posicionar el scroll al inicio**
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth", // Hace el scroll suave
+  });
   };
 
 
@@ -703,6 +767,7 @@ setPersonaDataRelacion({
       if (selectedStudent?.Id_Estudiante === id) {
         setSelectedStudent(null); // Limpiar la selección si fue eliminado
       }
+      closeModal("")
     } catch (error) {
       console.error("Error al eliminar estudiante", error);
     }
@@ -802,24 +867,43 @@ if (!permisos) {
 
   return (
     <Layout>
-        <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
-          <h1 className="text-3xl font-bold mb-8 text-center text-blue-700">
-            Nuevo Registro
-          </h1>
 
-          <center>
-          {permisos.Permiso_Consultar === "1" && (
-  <button
-    onClick={() => (window.location.href = "/estudiante/reporte")}
-    className="block py-1 px-4 rounded bg-orange-600 text-white hover:bg-orange-700 focus:outline-none"
-  >
-    Ir a Estudiantes
-  </button>
-)}
+<div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+  {/* Barra de búsqueda */}
+  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
 
-          </center>
-          <br></br>
-          
+
+
+<input
+      type="text"
+      value={searchTerm}
+      onChange={handleSearch}
+      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+      placeholder="Buscar por nombre o correo"
+    />
+  </div>
+
+  {/* Título de la sección */}
+  <p className="text-3xl font-bold text-blue-700">📋Nuevo Registro Estudiante</p>
+
+  {/* Botones de acciones */}
+  <div className="flex gap-x-2">
+
+    {/* Botón para abrir el modal de agregar usuario */}
+<button
+  onClick={() => (window.location.href = "/estudiante/reporte")}
+  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+>
+  <EyeIcon className="h-5 w-5 mr-2" /> Estudiantes
+</button>
+    
+
+
+
+  </div>
+  </div>
+
          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg mb-10">
   {/* Pestañas */}
   <div className="flex border-b-2">
@@ -1343,7 +1427,7 @@ if (!permisos) {
 
    <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
-       onClose={() => closeModal("modalConfirmacion")}
+  onClose={() => closeModal("modalConfirmacion")}
   onConfirm={() => handleDelete(estudianteData?.Id_Estudiante)}
   titulo="❌ Confirmar Eliminación"
   mensaje="¿Estás seguro de que deseas eliminar a"
@@ -1354,9 +1438,20 @@ if (!permisos) {
 
 
 
-
    <div>
         <center><h2 className="text-2xl font-semibold text-gray-700"><strong>Tutores</strong></h2></center>
+       
+       
+        <ModalConfirmacion
+  isOpen={modals["modalEliminarTutor"]}
+  onClose={() => closeModal("modalEliminarTutor")}
+  onConfirm={() => handleDeleteTutor(tutorData?.Id)}
+  titulo="❌ Eliminar Tutor"
+  mensaje="¿Estás seguro de eliminar al tutor?"
+  entidad={tutorData?.Nombre_Completo}
+  confirmText="Eliminar Tutor"
+  confirmColor="bg-orange-600 hover:bg-orange-700"
+/>
         <table className="min-w-full mt-4 border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
@@ -1660,6 +1755,21 @@ if (!permisos) {
               onChange={handleSearch}
               className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 w-full mb-4"
             />
+
+            
+ 
+  <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(estudianteData?.Id_Estudiante)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={estudianteData?.Persona?.Primer_Nombre}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
             <table className="xls_style-excel-table">
               <thead>
                 <tr classname ="bg-gray-100">
@@ -1717,7 +1827,7 @@ if (!permisos) {
               </tbody>)}
             </table>
           </div>
-        </div>
+       
 
     </Layout>
   );

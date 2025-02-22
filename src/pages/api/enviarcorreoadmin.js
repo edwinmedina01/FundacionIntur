@@ -4,6 +4,8 @@ import crypto from 'crypto';
 import User from '../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
 import { cryptPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
 // Configuración del transporte de nodemailer
+import fs from 'fs';
+import path from 'path';
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -17,6 +19,16 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+const convertirImagenABase64 = (nombreArchivo) => {
+    try {
+        const ruta = path.join(process.cwd(), 'public', nombreArchivo); // Ruta de la imagen en /public
+        const imagenBase64 = fs.readFileSync(ruta, { encoding: 'base64' });
+        return `data:image/png;base64,${imagenBase64}`; // Ajusta el tipo de imagen si es JPG
+    } catch (error) {
+        console.error("Error al convertir imagen a Base64:", error);
+        return null;
+    }
+};
 // Objeto en memoria para almacenar tokens
 const tokenStore = {};
 
@@ -65,6 +77,14 @@ export default async function handler(req, res) {
             // Obtener el nombre del usuario (campo "Usuario")
             const nombreUsuario = user.Usuario;
 
+
+            
+            const firmaBase64 = convertirImagenABase64('firma.png'); // Asegúrate de que la imagen está en /public/
+
+            if (!firmaBase64) {
+                return res.status(500).json({ error: 'Error al cargar la imagen de la firma' });
+            }
+        //    console.log(firmaBase64); // Muestra la imagen en la consola
             // Generar un token único
             const token = crypto.randomBytes(20).toString('hex');
 
@@ -107,8 +127,15 @@ export default async function handler(req, res) {
                     <p style="font-family: Arial, sans-serif; color: #555;">
                         Atentamente,<br>
                         El equipo de soporte.
+                        
+                          <img src="${baseUrl}/firma.png" alt="Firma Digital" style="width: 250px; display: block; margin-top: 10px;">
                     </p>
                 `,
+                // attachments: [{
+                //     filename: 'firma.png',
+                //     path: path.join(process.cwd(), 'public', 'firma.png'),
+                //     cid: 'firma' // Este CID se usa en el HTML
+                // }]
             };
 
             // Enviar el correo

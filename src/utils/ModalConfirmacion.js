@@ -1,7 +1,7 @@
 import React from "react";
 
 const ModalConfirmacion = ({ 
-  id,
+  id = "default-modal", // ID dinámico con un valor por defecto
   isOpen, 
   onClose, 
   onConfirm, 
@@ -15,7 +15,10 @@ const ModalConfirmacion = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+    <div 
+      id={id} // ID dinámico
+      className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50"
+    >
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-xl font-semibold text-gray-800">{titulo}</h2>
         <p className="text-gray-600 mt-2">
