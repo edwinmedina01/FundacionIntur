@@ -160,7 +160,7 @@ const fetchGraduandosMemo = useCallback(() => {
       setGraduandos(response.data);
 
       const graduandoRelacionado = graduandos.find(
-        (graduando) => graduando.Id_Estudiante === estudiante.Id_Estudiante
+        (graduando) => graduando.Id_Estudiante === estudiante?.Id_Estudiante
       );
 
       let data =graduandoRelacionado;

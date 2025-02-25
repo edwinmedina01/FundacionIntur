@@ -119,7 +119,7 @@ export default async function handler(req, res) {
                     <p style="font-family: Arial, sans-serif; color: #555;">
                         Atentamente,<br>
                         El equipo de soporte.
-                         <img src="${firmaBase64}" alt="Firma Digital" style="width: 250px; display: block; margin-top: 10px;">
+                         <img src="https://fundacion-intur.vercel.app/firma.png" alt="Firma Digital" style="width: 500px; display: block; margin-top: 10px;">
                     </p>
                 `,
             };
