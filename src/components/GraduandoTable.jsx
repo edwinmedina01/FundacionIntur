@@ -157,14 +157,14 @@ const GraduandoForm = () => {
 
 
   const options = estudiantes.map((estudiante) => ({
-    value: estudiante.Id_Estudiante,
-    label: `${estudiante.Persona.Identidad} - ${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`,
+    value: estudiante?.Id_Estudiante,
+    label: `${estudiante?.Persona.Identidad} - ${estudiante?.Persona.Primer_Nombre} ${estudiante?.Persona.Primer_Apellido}`,
     estudiante,
   }));
 
 
   const handleSelectChange = (selectedOption) => {
-    setFormData({ ...formData, Estudiante: selectedOption.Estudiante,Id_Estudiante:selectedOption.estudiante.Id_Estudiante });
+    setFormData({ ...formData, Estudiante: selectedOption.Estudiante,Id_Estudiante:selectedOption.estudiante?.Id_Estudiante });
   };
   const fetchEstudiantes = async () => {
     try {
