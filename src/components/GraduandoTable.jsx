@@ -12,11 +12,18 @@ import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
 
 import Select from "react-select";
 
+import ModalGenerico from '../utils/ModalGenerico';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import useModal from "../hooks/useModal"; 
+import { validarFormulario } from "../utils/validaciones";
+import { reglasValidacion } from "../../models/ObjetoDto"; // Importamos las reglas del modelo
+
+
 
 const GraduandoForm = () => {
   const [graduandos, setGraduandos] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null); // ✅ Inicializar con null
-
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [formData, setFormData] = useState({
     Anio: '',
     Fecha_Inicio: '',
@@ -214,7 +221,7 @@ const GraduandoForm = () => {
       if (!response.ok) {
         throw new Error('Error al eliminar la graduando');
       }
-
+      closeModal("modalConfirmacion")
       fetchGraduandos();
       resetForm();
       toast.error('graduando eliminado exitosamente', {
@@ -276,6 +283,7 @@ const GraduandoForm = () => {
 
 
   const handleEdit = (graduando) => {
+    
     router.push({
       pathname: '/estudiante', // Ruta de la página destino
       query: {
@@ -285,6 +293,10 @@ const GraduandoForm = () => {
     });
   };
 
+  const handlePredelete = (graduando) => {
+    
+   
+  };
 
   if (sinPermisos) {
     return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
@@ -370,6 +382,18 @@ const GraduandoForm = () => {
           </div>
         </div>
 
+        <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Graduando)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={formData?.Estudiante?.Persona.Identidad}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
       
           <table className="xls_style-excel-table">
             <thead>
@@ -413,7 +437,11 @@ const GraduandoForm = () => {
 
   {permisos.Permiso_Eliminar === "1" && (
     <button
-      onClick={() => handleDelete(graduando.Id_Graduando)}
+     
+      onClick={() => {
+        setFormData(graduando);
+        showModal("modalConfirmacion")
+      }}
       className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
     >
       <TrashIcon className="h-6 w-6" />

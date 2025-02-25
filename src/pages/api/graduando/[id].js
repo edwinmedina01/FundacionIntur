@@ -3,14 +3,15 @@ import jwt from 'jsonwebtoken';
 const Graduando = require('../../../../models/Graduando');
 export default async function handler(req, res) {
   const { method } = req;
-  const { id } = req.query;
+  const { id ,Id_Estudiante } = req.query;
 
 
 
   switch (method) {
     case 'GET':
       try {
-        const graduando = await Graduando.findByPk(id);
+        const whereClause = id ? { id } : { Id_Estudiante };
+        const graduando = await Graduando.findOne({ where: whereClause });
         if (!graduando) {
           return res.status(404).json({ error: 'Graduando no encontrado' });
         }

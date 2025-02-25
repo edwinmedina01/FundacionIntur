@@ -4,8 +4,8 @@ import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
 import { ArrowDownCircleIcon ,ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon,MagnifyingGlassIcon,UserPlusIcon, EyeIcon   } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
-import GraduandoTable from '../../components/GraduandoTable';
-import GraduandoInner from '../../components/GraduandoInner';
+//import GraduandoTable from '../../components/GraduandoTable';
+//import GraduandoInner from '../../components/GraduandoInner';
 import { useRouter } from 'next/router';
 
 import dynamic from "next/dynamic";
@@ -26,13 +26,27 @@ const EstudiantesCrud = () => {
     modalEliminarTutor: false,
     modalEliminarBenefactor: false,
   });
-  
+  const [isEditing, setIsEditing] = useState(false);
   const openModal = (modalKey) => {
     setModals(prev => ({ ...prev, [modalKey]: true }));
   };
   
   const closeModal = (modalKey) => {
     setModals(prev => ({ ...prev, [modalKey]: false }));
+  };
+
+  const resetForm = () => {
+    setGraduacion({ 
+
+      Anio: '',
+      Fecha_Inicio: '',
+      Fecha_Final: '',
+      Creado_Por: '',
+      Estudiante: null,
+      Id_Estudiante:null
+
+    });
+    setIsEditing(false);
   };
 
   const router = useRouter();
@@ -42,6 +56,7 @@ const EstudiantesCrud = () => {
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
+  const [graduacion, setGraduacion] = useState([]);
   const [estudianteTemp, setEstudianteTemp] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null); // Mantener el estudiante seleccionado
 // ------------------- FUNCIONALIDAD PERMISOS----------------------//
@@ -142,6 +157,15 @@ const prevStep = () => {
       Id_Municipio: "",
       Id_Tipo_Persona:1,
       Estado:1
+    });
+
+    setGraduacion({
+      Anio: '',
+      Fecha_Inicio: '',
+      Fecha_Final: '',
+      Creado_Por: '',
+      Estudiante: null,
+      Id_Estudiante:null
     });
     
     setEstudianteData({
@@ -330,6 +354,7 @@ const [benefactorData, setBenefactorData] = useState({
         }
         
 
+   
 
         setSelectedStudent(estudianteTemp);
         personaDataRelacion.esNuevo=false;
@@ -352,6 +377,68 @@ const [benefactorData, setBenefactorData] = useState({
       setInstitutos(response.data);
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
+    }
+  };
+
+    
+  const fetchGraduacionold = async () => {
+    try {
+      const response = await axios.get('/api/graduandos?Id_Estudiante=123');
+      setGraduacion(response.data);
+    } catch (error) {
+
+      console.error("Error al obtener estudiantes", error);
+    }
+  };
+
+
+
+    // Verificación de permisos
+    const fetchGraduacion = async (id_Estudiante) => {
+      try {
+   
+        
+          const response = await axios.post('/api/api_graduacion', {
+            Id_Estudiante : id_Estudiante,
+           
+          });
+  
+          const permisosData = response.data;
+  
+          setGraduacion(permisosData);
+          setIsEditing(true);
+    
+      
+      } catch (err) {
+        //setError(err.response?.data?.error || 'Error al obtener permisos');
+        resetForm();
+        setIsEditing(false);
+        graduacion.Estudiante=estudianteTemp;
+      }
+    };
+
+  const fetchGraduacionold2 = async ({ id, Id_Estudiante }) => {
+    try {
+      // Construye la URL con los parámetros de consulta
+      const url = new URL('/api/graduandos', window.location.origin);
+      if (id) url.searchParams.append('id', 0);
+      if (Id_Estudiante) url.searchParams.append('Id_Estudiante',  Id_Estudiante);
+  
+      // Hace la solicitud GET
+      const response = await fetch(url.toString());
+      setGraduacion(response.data);
+      // Si la respuesta no es exitosa, lanza un error
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al obtener el graduando');
+      }
+  
+      // Devuelve los datos del graduando
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error:', error.message);
+      throw error; // Propaga el error para manejarlo en el componente
     }
   };
 
@@ -560,6 +647,9 @@ const handleSubmit = async (e) => {
     }
 
 
+      // Enviar datos del formulario para crear un nuevo graduando
+
+
 
 
   try {
@@ -668,6 +758,81 @@ const handleSubmit = async (e) => {
 };
 
 
+  // Manejar los cambios en los campos del formulario
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setGraduacion({
+      ...graduacion,
+      [name]: value,
+    });
+  };
+
+const handleSubmitGraduacion = async (e) => {
+  e.preventDefault();
+
+
+  try {
+
+    graduacion.Creado_Por=user.id;
+    graduacion.Modificado_Por=user.id;
+    graduacion.Estudiante=selectedStudent;  
+    graduacion.Id_Estudiante=selectedStudent.Id_Estudiante;
+
+    if (!isEditing){
+
+      
+      await axios.post('/api/graduando', graduacion);
+      
+      toast.success('graduando agregado exitosamente',
+        {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        }
+      );
+      
+
+    }else{
+      await axios.put(`/api/graduando/${graduacion.Id_Graduando}`, graduacion);
+
+      
+      toast.success('graduando actualizado exitosamente',
+        {
+          style: {
+            backgroundColor: '#e6ffed', // Fondo verde suave
+            color: '#2e7d32', // Texto verde oscuro
+            fontWeight: 'bold',
+            border: '1px solid #a5d6a7', // Borde verde claro
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'top-right', // Posición en la esquina superior derecha
+          autoClose: 5000, // Cierra automáticamente en 5 segundos
+          hideProgressBar: true, // Ocultar barra de progreso
+        }
+      );
+      
+    }
+
+ //   resetForm();
+    // Recargar los graduandos después de agregar uno nuevo
+    const response = await axios.get('/api/graduando');
+
+   // setGraduandos(response.data);
+  } catch (error) {
+    toast.error('Error al crear un graduando:', error);
+  }
+};
+
+
   const handleCancel = () => {
     setPersonaData({
       Primer_Nombre: "",
@@ -722,6 +887,9 @@ const handleSubmit = async (e) => {
 
     setEditPersonaId(estudiante.Persona.Id_Persona);
     setPersonaData(estudiante.Persona);
+
+    graduacion.Id_Estudiante=estudiante.Id_Estudiante;
+    fetchGraduacion(estudiante.Id_Estudiante)
 
     if (estudiante.Persona.Id_Departamento) {
       fetchMunicipios(estudiante.Persona.Id_Departamento);
@@ -1773,7 +1941,108 @@ if (!permisos) {
 {/* Sección Graduandos */}
 {activeTab === 4 && (
   <div>
-  <GraduandoInner estudiante={selectedStudent}  />
+
+
+  <div>
+
+
+
+<form onSubmit={handleSubmitGraduacion}>
+
+
+
+<div>
+  <label className="block mb-2 text-sm font-medium text-gray-700">
+    Nombre Completo Estudiante
+  </label>
+  
+  <input
+    type="text"
+    name="NombreCompleto"
+    value={`
+      ${personaData.Primer_Nombre || "Sin Nombre"} 
+      ${personaData.Segundo_Nombre || ""} 
+      ${personaData.Primer_Apellido || ""} 
+      ${personaData.Segundo_Apellido || ""}`.trim()}
+    disabled
+    className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
+  />
+
+</div>
+<div>
+  <label htmlFor="Anio" className="block mb-2 text-sm font-medium text-gray-700">
+    Año:
+  </label>
+  <input
+    type="number"
+    name="Anio"
+    value={graduacion.Anio}
+    onChange={handleChange}
+    required
+    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Ingrese el año"
+  />
+</div>
+
+<div>
+  <label htmlFor="Fecha_Inicio" className="block mb-2 text-sm font-medium text-gray-700">
+    Fecha de Inicio:
+  </label>
+  <input
+    type="date"
+    name="Fecha_Inicio"
+    value={graduacion.Fecha_Inicio}
+    onChange={handleChange}
+    required
+    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+</div>
+
+<div>
+  <label htmlFor="Fecha_Final" className="block mb-2 text-sm font-medium text-gray-700">
+    Fecha de Finalización:
+  </label>
+  <input
+    type="date"
+    name="Fecha_Final"
+    value={graduacion.Fecha_Final}
+    onChange={handleChange}
+    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+</div>
+<br></br>
+
+<div className="flex justify-end">
+{isEditing
+? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+permisos.Permiso_Actualizar === "1" && (
+  <button
+  onClick={handleSubmitGraduacion}
+    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  >
+    Actualizar
+  </button>
+)
+: // Mostrar botón "Agregar" solo si tiene permisos de inserción
+permisos.Permiso_Insertar === "1" && (
+  <button
+  onClick={handleSubmitGraduacion}
+    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  >
+    Agregar
+  </button>
+)}
+
+<button
+type="button"
+onClick={resetForm}
+className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+>
+Cancelar
+</button>
+</div>
+  </form>
+</div>
 </div>
 
 
