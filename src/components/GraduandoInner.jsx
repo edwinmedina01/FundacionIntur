@@ -159,9 +159,13 @@ const fetchGraduandosMemo = useCallback(() => {
       const graduandos = response.data; // Usa los datos directamente
       setGraduandos(response.data);
 
-      const graduandoRelacionado = graduandos.find(
-        (graduando) => graduando.Id_Estudiante === estudiante?.Id_Estudiante
-      );
+      if  (estudiante) {
+        const graduandoRelacionado = graduandos.find(
+          (graduando) => graduando.Id_Estudiante === estudiante?.Id_Estudiante
+        );
+     
+
+     
 
       let data =graduandoRelacionado;
       if (graduandoRelacionado) {
@@ -175,7 +179,8 @@ const fetchGraduandosMemo = useCallback(() => {
           Id_Estudiante:estudiante.Id_Estudiante// Objeto esperado por el Select
         });
         setIsEditing(true)
-      }
+      } 
+    }
 
       
     } catch (error) {

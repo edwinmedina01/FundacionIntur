@@ -272,7 +272,14 @@ const [benefactorData, setBenefactorData] = useState({
 
 
   const handleTabChange = (tabIndex) => {
-    setActiveTab(tabIndex);
+    
+    
+    if (selectedStudent==null) {
+      toast.error("Seleccione un estudiante", error);
+      return;
+    }
+    
+ 
 
     switch(tabIndex){
       
@@ -291,6 +298,10 @@ const [benefactorData, setBenefactorData] = useState({
       break;
    
       case 2:
+        if (selectedStudent==null) {
+          toast.error("Seleccione un estudiante", error);
+          return;
+        }
         
         personaDataRelacion.Id_Tipo_Persona=2;
         personaDataRelacion.esNuevo=true;
@@ -300,8 +311,28 @@ const [benefactorData, setBenefactorData] = useState({
       break;
            
       case 3:
+        if (selectedStudent==null) {
+          toast.error("Seleccione un estudiante", error);
+          return;
+        }
+        
         personaDataRelacion.Id_Tipo_Persona=3;
         personaDataRelacion.esNuevo=true;
+        personaDataRelacion.Id_Persona=null;
+
+
+      resizeTo();
+
+      case 4:
+        if (selectedStudent==null) {
+          toast.error("Seleccione un estudiante", error);
+          return;
+        }
+        
+
+
+        setSelectedStudent(estudianteTemp);
+        personaDataRelacion.esNuevo=false;
         personaDataRelacion.Id_Persona=null;
 
 
@@ -311,6 +342,8 @@ const [benefactorData, setBenefactorData] = useState({
 
 
     }
+
+    setActiveTab(tabIndex);
   };
   
   const fetchInstitutos = async () => {
@@ -662,7 +695,10 @@ const handleSubmit = async (e) => {
       Relaciones: [], 
 
     });
-    
+
+    setEstudianteTemp(null);
+
+    setSelectedStudent(null)
     setEditId(null); //correccion para el estado del boton "registrar estudiante, y no se quede en actualizar cuando se cancele"
   };
 
