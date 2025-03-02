@@ -1,7 +1,7 @@
 // models/User.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
-
+const Rol = require('./Rol'); // Importa el modelo de Rol
 const Usuario = sequelize.define('tbl_usuario', {
     Id_Usuario: {
       type: DataTypes.INTEGER,
@@ -75,5 +75,8 @@ const Usuario = sequelize.define('tbl_usuario', {
     timestamps: false, // Desactiva los campos automáticos de createdAt y updatedAt
   });
   
+Usuario.belongsTo(Rol, { foreignKey: 'Id_Rol', as: 'Rol' });
+Rol.hasMany(Usuario, { foreignKey: 'Id_Rol' });
+
 
 module.exports = Usuario;

@@ -25,7 +25,7 @@ const LoginForm = () => {
             console.log('✅ Respuesta de la API:', respuesta);
     
             // Extraer datos correctamente
-            const { token, userId, role, primerLogin, ...otrosDatos } = respuesta.data;
+            const { token, userId, role, primerLogin,nombrerol, ...otrosDatos } = respuesta.data;
     
             // ✅ Ver otros datos enviados por la API
             console.log('📌 Otros datos recibidos:', otrosDatos);
@@ -36,7 +36,7 @@ const LoginForm = () => {
             }
     
             // Guarda el token y el userId en el contexto
-            login(token, userId, role);
+            login(token, userId, role,nombrerol);
     
             setMensaje('✅ Login exitoso');
             primerLogin ? router.push('/change-password') : router.push('/inicio');
@@ -75,7 +75,7 @@ const LoginForm = () => {
             // Imprime toda la respuesta para ver su estructura
             console.log('Respuesta de la API:', respuesta);
     
-            const { token, userId, role, primerLogin } = respuesta.data;
+            const { token, userId, role, primerLogin,nombrerol } = respuesta.data;
      
             if (!userId || !token) {
                 throw new Error('userId o token no están presentes en la respuesta');

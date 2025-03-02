@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { serialize } from 'cookie';
 import Usuario from "../../../../models/Usuario";
+import Rol from "../../../../models/Rol";
 import DiccionarioEstados from "../../../../models/DiccionarioEstados"; // Modelo actualizado
 import { enviarCorreo } from "../../../utils/emailSender";
 import LogIpFallidas from "../../../../models/LogIpFallidas";  
@@ -24,18 +25,22 @@ export default async function handler(req, res) {
     // Buscar usuario y obtener su estado
     const usuario = await Usuario.findOne({
         where: { Usuario: email },
-        // include: [{
-        //     model: DiccionarioEstados,
-        //     as: "EstadoUsuario",
-        //     where: { Tabla_Referencia: "tbl_usuario" },
-        //     attributes: ["Codigo_Estado", "Nombre_Estado"]
-        // }]
+        include: [{
+            model: Rol,
+            as: "Rol",
+            attributes: ["Rol"]
+        }]
     });
 
+    console.log("Usuario encontrado:", usuario);
     if (!usuario) {
         return res.status(400).json({ error: "Usuario no encontrado." });
     }
 
+
+const nombreRol = usuario.Rol ? usuario.Rol.dataValues.Rol : null;
+
+console.log("Rol del usuario:", nombreRol);
     // Verificar si el usuario está suspendido o inactivo
     if (usuario.Id_EstadoUsuario === ESTADOS.SUSPENDIDO) {
         return res.status(403).json({
@@ -122,7 +127,8 @@ export default async function handler(req, res) {
             role: usuario.Id_Rol,
             email: usuario.Correo,
             estado: usuario.Id_EstadoUsuario,
-            nombre: usuario.Usuario
+            nombre: usuario.Usuario,
+            nombrerol: usuario.Rol.Rol,
         }, 
         SECRET_KEY, 
         { expiresIn: '1h' }
@@ -137,5 +143,5 @@ export default async function handler(req, res) {
     });
 
     res.setHeader('Set-Cookie', serialized);
-    res.status(200).json({ token, role: usuario.Id_Rol, primerLogin: usuario.Primer_Login, userId: usuario.Id_Usuario });
+    res.status(200).json({ token, role: usuario.Id_Rol, primerLogin: usuario.Primer_Login, userId: usuario.Id_Usuario, nombrerol: usuario.Rol.Rol });
 }

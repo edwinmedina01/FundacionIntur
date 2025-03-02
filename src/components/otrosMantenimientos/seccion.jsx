@@ -235,7 +235,7 @@ const exportToExcel = async () => {
     
           if (errores.length > 0) {
          
-            toast.error(errores.join("\n"), error);
+          //toast.error(errores.join("\n"), error);
             return;
           }
     try {

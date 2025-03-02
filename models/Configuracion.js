@@ -1,19 +1,25 @@
+// models/Configuracion.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../database/database'); // Ajusta la ruta según tu estructura
+const sequelize = require('../database/database'); // Asegúrate de tener la ruta correcta
 
-const Rol = sequelize.define('tbl_roles', {
-    Id_Rol: {
+const Configuracion = sequelize.define('tbl_configuracion', {
+    Id_Configuracion: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
     },
-    Rol: {
-        type: DataTypes.STRING(60),
+    Clave: {
+        type: DataTypes.STRING(80),
+        allowNull: false,
+        unique: true,
+    },
+    Valor: {
+        type: DataTypes.STRING(255),
         allowNull: false,
     },
     Descripcion: {
-        type: DataTypes.STRING(45),
+        type: DataTypes.STRING(255),
         allowNull: true,
     },
     Creado_Por: {
@@ -33,14 +39,9 @@ const Rol = sequelize.define('tbl_roles', {
         type: DataTypes.DATEONLY,
         allowNull: true,
     },
-    Estado: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 1, // 1 = Activo, 0 = Inactivo
-    }
 }, {
-    tableName: 'tbl_roles',
-    timestamps: false, // No incluir createdAt y updatedAt automáticamente
+    tableName: 'tbl_configuracion',
+    timestamps: false, // No usamos 'createdAt' y 'updatedAt'
 });
 
-module.exports = Rol;
+module.exports = Configuracion;

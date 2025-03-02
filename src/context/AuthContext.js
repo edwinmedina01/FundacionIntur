@@ -29,7 +29,8 @@ export const AuthProvider = ({ children }) => {
                         rol: decoded.role, // Asegúrate de que este campo existe en el token
                         email: decoded.email,
                         estado: decoded.estado,
-                        usuario: decoded.nombre // Asegúrate de que este campo también esté presente en el token
+                        usuario: decoded.nombre ,
+                        nombrerol:decoded.nombrerol// Asegúrate de que este campo también esté presente en el token
                     });
                 }
             } catch (error) {
@@ -75,7 +76,8 @@ export const AuthProvider = ({ children }) => {
                     rol: decoded.role, 
                     email: decoded.email,
                     estado: decoded.estado,
-                    usuario: decoded.nombre
+                    usuario: decoded.nombre,
+                    nombrerol:decoded.nombrerol
                 });
             }
         } catch (error) {
