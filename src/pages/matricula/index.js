@@ -339,6 +339,11 @@ const handleBenefactorInputChange = (event) => {
 
 
 
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {

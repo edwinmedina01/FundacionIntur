@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const { email, password } = req.body;
     const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress; // Obtener IP del cliente
     const ahora = new Date().toISOString().slice(0, 19).replace("T", " "); // Formato YYYY-MM-DD HH:MM:SS
-    const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
+    const SECRET_KEY = process.env.SECRET_KEY ;
     // Buscar usuario y obtener su estado
     const usuario = await Usuario.findOne({
         where: { Usuario: email },
@@ -134,14 +134,15 @@ console.log("Rol del usuario:", nombreRol);
         { expiresIn: '1h' }
     );
 
-    const serialized = serialize('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 3600, 
-        path: '/',
-    });
+    // const serialized = serialize('token', token, {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === 'production',
+    //     sameSite: 'strict',
+    //     maxAge: 3600, 
+    //     path: '/',
+    // });
 
-    res.setHeader('Set-Cookie', serialized);
+    // res.setHeader('Set-Cookie', serialized);
+    console.log(token)
     res.status(200).json({ token, role: usuario.Id_Rol, primerLogin: usuario.Primer_Login, userId: usuario.Id_Usuario, nombrerol: usuario.Rol.Rol });
 }

@@ -89,11 +89,11 @@ export const reglasValidacionEstudiante = {
 export const reglasValidacionModalidad = {
   //Id_Modalidad: { tipo: "int", requerido: true },
 
-  Nombre: { ...reglasGenerales.NombreCompuesto(5, 75), requerido: true },
-  Descripcion: { ...reglasGenerales.TextoLibre(10 ,80), requerido: true },
+  Nombre: { ...reglasGenerales.NombreGeneral(5, 75), requerido: true },
+  Descripcion: { ...reglasGenerales.Descripciones(10 ,80), requerido: true },
 
-  Duracion: { ...reglasGenerales.TextoLibre(1, 45), requerido: true },
-  Horario: { ...reglasGenerales.TextoLibre(1, 45), requerido: true },
+  Duracion: { ...reglasGenerales.DuracionMeses(1, 45), requerido: true },
+  Horario: { ...reglasGenerales.Horario(1, 45), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
@@ -101,7 +101,7 @@ export const reglasValidacionModalidad = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
+ // Estado: { tipo: "int", requerido: true, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionMunicipio = {
@@ -194,20 +194,21 @@ export const reglasValidacionArea = {
 };
 
 export const reglasValidacionGrado = {
-  Nombre: { ...reglasGenerales.NombrePropio(5, 50), requerido: true },
-  Descripcion: { ...reglasGenerales.TextoLibre(5, 80), requerido: true },
+  Nombre: { ...reglasGenerales.NombreGrado(2, 10), requerido: true }, 
+  Descripcion: { ...reglasGenerales.Descripciones(5, 80), requerido: true },
   Nivel_Academico: { ...reglasGenerales.TextoLibre(3, 60), requerido: true },
-  Duracion: { ...reglasGenerales.TextoLibre(1, 60), requerido: true },
-  
-  Cantidad_Materias: { tipo: "int", requerido: true, min: 1, max: 50 },
+  Duracion: { ...reglasGenerales.DuracionMeses(1, 60), requerido: true },
+  Cantidad_Materias: { ...reglasGenerales.SoloNumeros(1, 50), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
-  Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
+ // Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
 
-  Modificado_Por: { tipo: "int", requerido: false },
-  Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
+ /// Modificado_Por: { tipo: "int", requerido: false },
+  //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] }};
+  //Estado: { ...reglasGenerales.EstadoGeneral(), requerido: true }
+};
+
 
   export const reglasValidacionBeneficio = {
     Nombre_Beneficio: { ...reglasGenerales.NombreCompuesto(3, 80), requerido: true },
@@ -222,4 +223,30 @@ export const reglasValidacionGrado = {
     Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
     Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+};
+export const reglasValidacionConfiguracion = {
+  //Id_Configuracion: { tipo: "int", requerido: true }, // Clave primaria, debe ser un número entero
+  
+  Clave: { ...reglasGenerales.AppKeyMayusculas(3, 80), requerido: true }, // Clave alfanumérica con mínimo 3 y máximo 80 caracteres
+  Valor: { ...reglasGenerales.VariableEntorno(1, 255), requerido: true }, // Valor con hasta 255 caracteres
+  Descripcion: { ...reglasGenerales.Descripciones(10, 255), requerido: false }, // Descripción opcional de hasta 255 caracteres
+
+  Creado_Por: { ...reglasGenerales.TextoLibre(1, 45), requerido: true }, // Usuario creador, limitado a 45 caracteres
+ // Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true }, // Fecha en formato YYYY-MM-DD
+
+  Modificado_Por: { ...reglasGenerales.TextoLibre(1, 45), requerido: false }, // Usuario modificador opcional
+ // Fecha_Modific
+
+};
+export const reglasValidacionRoles = {
+  Rol: { ...reglasGenerales.NombreRol(3, 60), requerido: true }, // ✅ Solo mayúsculas y guion bajo
+  Descripcion: { ...reglasGenerales.Descripciones(3, 45), requerido: true }, // ✅ Texto libre con límite
+
+  Creado_Por: { tipo: "int", requerido: true }, // ✅ ID del usuario que crea el rol
+  Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true }, // ✅ Fecha en formato YYYY-MM-DD
+
+  //Modificado_Por: { tipo: "int", requerido: false }, // ✅ Puede ser nulo si no se ha modificado
+  //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false }, // ✅ Puede ser nulo si no se ha modificado
+
+  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };

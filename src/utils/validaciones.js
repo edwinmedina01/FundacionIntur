@@ -81,5 +81,5 @@ export const validarFormulario = (formData, reglasValidacion) => {
 
     // Verifica si aún hay errores visibles en el DOM
     const erroresEnDOM = document.querySelectorAll("[id^=error-]");
-    return erroresEnDOM ; // Devuelve `true` si el formulario es válido
+    return erroresEnDOM ; // Devuelve listado si el formulario es válido
 };

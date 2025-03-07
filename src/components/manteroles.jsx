@@ -13,7 +13,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 import { validarFormulario } from "../utils/validaciones";
-import { reglasValidacionRoles } from "../../models/Rol"; // Importamos las reglas del modelo
+import { reglasValidacionRoles } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 
 
 const RolesManagement = () => {
@@ -72,19 +72,49 @@ const router = useRouter();
   
   const fetchRoles = async () => {
     try {
-      const response = await axios.get('/api/roles');
-      setRoles(response.data);
+      const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+      if (!token) {
+        console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+        return;
+      }
+  
+      const response = await axios.get('/api/roles', {
+        headers: {
+          Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
+        },
+      });
+  
+      setRoles(response.data); // 📌 Guardar los roles en el estado
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      console.error('❌ Error al obtener los roles:', error);
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.error("🚨 No autorizado: Token inválido o expirado.");
+        // Opcional: Redirigir al login o mostrar alerta
+      }
     }
   };
-
+  
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
+const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+    if (!token) {
+      console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+      return;
+    }
+
     
     formData.Creado_Por=user.id;
     formData.Modificado_Por=user.id;
@@ -98,10 +128,15 @@ const router = useRouter();
 
     try {
       if (isEditing) {
+
+        
+ 
         const response = await fetch(`/api/roles`, {
+   
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
           },
           body: JSON.stringify(formData),
         });
@@ -136,6 +171,7 @@ const router = useRouter();
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
           },
           body: JSON.stringify(formData),
         });
@@ -181,10 +217,18 @@ const router = useRouter();
 
   const handleDelete = async (Id_Rol) => {
     try {
+      const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+      if (!token) {
+        console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+        return;
+      }
+  
       const response = await fetch('api/roles', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
         },
         body: JSON.stringify({ Id_Rol }),
       });

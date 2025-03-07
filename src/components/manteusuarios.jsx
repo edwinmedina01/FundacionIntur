@@ -208,9 +208,24 @@ const fetchPermisos = async () => {
     setError(err.response?.data?.error || 'Error al obtener permisos');
   }
 };
-  const fetchUsers = async () => {
+  const fetchUsers2 = async () => {
     try {
-      const response = await axios.get("/api/usuarios"); // API  usuarios
+      
+      const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+
+      if (!token) {
+          console.error("🚨 No hay token disponible. Redirigiendo a login...");
+          // 🔹 Opcional: Redirigir a login si no hay token
+          router.push("/login");
+          return;
+      }
+    //  const response = await axios.get("/api/usuarios"); // API  usuarios
+
+      const response = await axios.get("/api/usuarios", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
       // Filtrar solo los usuarios activos
       const activeUsers = response.data.filter(
        (user) => user.Id_EstadoUsuario !== 3
@@ -220,15 +235,78 @@ const fetchPermisos = async () => {
       console.error("Error fetching users:", error);
     }
   };
-
-  const fetchRoles = async () => {
+  const fetchUsers = async () => {
     try {
-      const response = await axios.get("/api/roles");
-      setRoles(response.data);
+        // 🔹 Intentar obtener el token desde `sessionStorage` primero, luego `localStorage`
+        const token = sessionStorage.getItem("token") || localStorage.getItem("token");
+
+        if (!token) {
+            console.error("🚨 No hay token disponible. Redirigiendo a login...");
+            // 🔹 Opcional: Redirigir a login si no hay token
+            router.push("/login");
+            return;
+        }
+
+        // 🔹 Hacer la petición con el token en la cabecera
+        const response = await axios.get("/api/usuarios", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // 🔹 Verificar que la respuesta contenga datos
+        if (!response.data || response.data.length === 0) {
+            console.warn("⚠️ No se encontraron usuarios.");
+            setUsers([]); // Vaciar la lista si no hay usuarios
+            return;
+        }
+
+        // 🔹 Filtrar solo los usuarios activos
+        const activeUsers = response.data.filter(user => user.Id_EstadoUsuario !== 3);
+        setUsers(activeUsers);
+    
     } catch (error) {
-      console.error("Error fetching roles:", error);
+        console.error("🚨 Error al obtener usuarios:", error);
+
+        // 🔹 Si el error es 401 o 403 (token inválido), redirigir a login
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn("⚠️ Token inválido o expirado. Cerrando sesión...");
+            sessionStorage.removeItem("token");
+            localStorage.removeItem("token");
+            router.push("/login");
+        }
     }
-  };
+};
+
+
+  
+const fetchRoles = async () => {
+  try {
+    const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+
+    if (!token) {
+      console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+      return;
+    }
+
+    const response = await axios.get('/api/roles', {
+      headers: {
+        Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
+      },
+    });
+
+    setRoles(response.data); // 📌 Guardar los roles en el estado
+  } catch (error) {
+    console.error('❌ Error al obtener los roles:', error);
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.error("🚨 No autorizado: Token inválido o expirado.");
+      // Opcional: Redirigir al login o mostrar alerta
+    }
+  }
+};
+
+  
 
   const fetchUserStates = async () => {
     try {
@@ -258,9 +336,26 @@ const fetchPermisos = async () => {
 
 
   const checkUserOrEmailExists = async (usuario, correo) => {
+
+    const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+    if (!token) {
+      console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+      return;
+    }
     try {
-        const response = await fetch(`/api/usuarios?usuario=${usuario}&correo=${correo}`);
-        const data = await response.json();
+
+      const response = await axios.get(`/api/usuarios?usuario=${usuario}&correo=${correo}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
+      
+    
+        const data = await response;
         return data; // Devuelve { userExists: true/false, emailExists: true/false }
     } catch (error) {
         console.error("Error al verificar existencia:", error);
@@ -270,7 +365,9 @@ const fetchPermisos = async () => {
 
 
 
-  const handleSubmit = async (e) => {
+
+
+const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
@@ -278,6 +375,13 @@ const fetchPermisos = async () => {
         formData.Fecha_Ultima_Conexion = currentDate;
         formData.Creado_Por=user.id;
      
+        const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+        if (!token) {
+          console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+          return;
+        }
+    
 
         // 🔍 Validación del nombre de usuario
         if (!validateUsername(formData.Usuario)) {
@@ -321,6 +425,7 @@ const fetchPermisos = async () => {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
                 },
                 body: JSON.stringify(formData),
             });
@@ -345,6 +450,7 @@ if (emailExists) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
                 },
                 body: JSON.stringify(formData),
             });
@@ -429,10 +535,7 @@ if (emailExists) {
     }
   };
 
-  const checkUserExists = async (usuario) => {
-    const response = await axios.get(`/api/usuarios?usuario=${usuario}`);
-    return response.data.exists;
-}
+
 
   const resetForm = () => {
     setFormData({
@@ -536,6 +639,12 @@ if (!user) {
   return <p>Cargando usuario...</p>;
 }
 
+// 📌 Limpiar búsqueda
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+};
+
 if (error) {
   return <p>{error}</p>;
 }
@@ -572,6 +681,17 @@ if (!permisos) {
       className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
       placeholder="Buscar por nombre o correo"
     />
+      {/* Botón para limpiar búsqueda */}
+  {searchQuery && (
+    <button
+      onClick={handleClearSearch}
+      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
+    >
+      ❌ 
+    </button>
+    
+  )
+  }
   </div>
 
   {/* Título de la sección */}

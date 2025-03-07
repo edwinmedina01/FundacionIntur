@@ -12,7 +12,7 @@ import ModalGenerico from '../utils/ModalGenerico';
 import ModalConfirmacion from '../utils/ModalConfirmacion';
 import useModal from "../hooks/useModal";
 import { validarFormulario } from "../utils/validaciones";
-import { reglasValidacionPermisos } from "../../models/Permiso"; // Importamos las reglas del modelo
+import { reglasValidacionConfiguracion } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 
 
@@ -30,18 +30,17 @@ const ConfiguracionManagement = () => {
   // ------------------------------------------------------------//
     const [configuraciones, setConfiguraciones] = useState([]);
   
-  const [formData, setFormData] = useState({
-    Id_Permiso: '',
-    Id_Rol: '',
-    Creado_Por: '', 
-    Modificado_Por:'',
-    // Añadir el Id_Objeto en el estado
-    Permiso_Insertar: false,
-    Permiso_Actualizar: false,
-    Permiso_Eliminar: false,
-    Permiso_Consultar: false,
+    const [formData, setFormData] = useState({
+      Id_Configuracion: '', // ID de la configuración (puede estar vacío si es un nuevo registro)
+      Clave: '', // Clave de configuración
+      Valor: '', // Valor de la configuración
+      Descripcion: '', // Descripción opcional de la configuración
+      Creado_Por: '', // Usuario que creó la configuración
+      Fecha_Creacion: '', // Fecha de creación en formato YYYY-MM-DD
+      Modificado_Por: '', // Usuario que modificó la configuración (opcional)
+      Fecha_Modificacion: '', // Fecha de modificación en formato YYYY-MM-DD (opcional)
   });
-
+  
   
   const [isEditing, setIsEditing] = useState(false);
 
@@ -55,8 +54,9 @@ const ConfiguracionManagement = () => {
     fetchPermissions();
    // fetchRoles();
    // fetchObjects(); // Llama a la función para obtener objetos
-    fetchConfiguraciones();
+
     fetchPermisos();
+    fetchConfiguraciones();
   }, [user]);
 // -------- PERMISOS -fetchConfiguraciones------- //
 const fetchPermisos = async () => {
@@ -98,8 +98,8 @@ const fetchPermisos = async () => {
 
   const fetchPermissions = async () => {
     try {
-      const response = await axios.get('/api/permisos');
-      setPermissions(response.data);
+      const response = await axios.get('/api/configuracion');
+      setConfiguraciones(response.data);
     } catch (error) {
       console.error('Error fetching permissions:', error);
     }
@@ -143,19 +143,31 @@ const fetchPermisos = async () => {
     setFormData({ ...formData, [name]: checked });
   };
 
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
 const handleSubmit = async (e) => {
   
-   formData.Creado_Por=user.id;
-    formData.Modificado_Por=user.id;
-  const errores = validarFormulario(formData, reglasValidacionPermisos);
-  
+
   e.preventDefault();
   try {
     const requestData = {
       ...formData,
     };
 
-    const response = await fetch('/api/permisos', {
+    formData.Creado_Por=user.id;
+    formData.Modificado_Por=user.id;
+   
+    const errores = validarFormulario(formData, reglasValidacionConfiguracion);
+ 
+  if (errores.length > 0) {
+    return ;
+  }
+  
+
+    const response = await fetch('/api/configuracion', {
       method: isEditing ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -189,42 +201,39 @@ const handleSubmit = async (e) => {
     );
     
 
-    fetchPermissions();
+  
+    fetchConfiguraciones();
     resetForm();
-    closeModal("modalAddPermiso")
+    closeModal("modalAddConfiguracion")
   } catch (error) {
     toast.error('Error al guardar el permiso:', error);
   }
 };
 
-  const handleEdit = (permission) => {
-    setFormData({
-      ...permission,
-      Permiso_Insertar: permission.Permiso_Insertar === '1',
-      Permiso_Actualizar: permission.Permiso_Actualizar === '1',
-      Permiso_Eliminar: permission.Permiso_Eliminar === '1',
-      Permiso_Consultar: permission.Permiso_Consultar === '1'
-    });
+  const handleEdit = (config) => {
+    setFormData(config);
     setIsEditing(true);
+
+    showModal("modalAddConfiguracion")
   };
 
-  const handleDelete = async (Id_Permiso) => {
+  const handleDelete = async (Id_Configuracion) => {
     try {
-      const response = await fetch('/api/permisos', {
+      const response = await fetch('/api/configuracion', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ Id_Permiso }),
+        body: JSON.stringify({ Id_Configuracion }),
       });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el permiso');
+        throw new Error('Error al eliminar el Configuracion');
       }
 
       fetchPermissions();
       resetForm();
-      toast.error('Permiso eliminado exitosamente', {
+      toast.error('Configuracion  eliminado exitosamente', {
         style: {
           backgroundColor: '#ffebee', // Fondo suave rojo
           color: '#d32f2f', // Texto rojo oscuro
@@ -245,13 +254,15 @@ const handleSubmit = async (e) => {
 
   const resetForm = () => {
     setFormData({
-      Id_Permiso: '',
-      Id_Rol: '',
-      Id_Objeto: '', // Resetear también el Id_Objeto
-      Permiso_Insertar: false,
-      Permiso_Actualizar: false,
-      Permiso_Eliminar: false,
-      Permiso_Consultar: false,
+      Id_Configuracion: '', // ID de la configuración (puede estar vacío si es un nuevo registro)
+      Clave: '', // Clave de configuración
+      Valor: '', // Valor de la configuración
+      Descripcion: '', // Descripción opcional de la configuración
+      Creado_Por: '', // Usuario que creó la configuración
+      Fecha_Creacion: '', // Fecha de creación en formato YYYY-MM-DD
+      Modificado_Por: '', // Usuario que modificó la configuración (opcional)
+      Fecha_Modificacion: '', // Fecha de modificación en formato YYYY-MM-DD (opcional)
+
     });
     setIsEditing(false);
   };
@@ -389,22 +400,47 @@ if (!permisos) {
     <div >
       {/* Columna izquierda: Formulario */}
       <ModalGenerico
-        id="modalAddPermiso"
-        isOpen={modals["modalAddPermiso"]}
-        onClose={() => closeModal("modalAddPermiso")}
+        id="modalAddConfiguracion"
+        isOpen={modals["modalAddConfiguracion"]}
+        onClose={() => closeModal("modalAddConfiguracion")}
         titulo=  {isEditing ? "Editar Configuración" : "Agregar Configuración"}
       >
       <div >
 
-      <form onSubmit={handleSubmit}>
-        <label>Clave:</label>
-        <input type="text" name="Clave" value={formData.Clave} onChange={handleInputChange} required />
-        <label>Valor:</label>
-        <input type="text" name="Valor" value={formData.Valor} onChange={handleInputChange} required />
-        <label>Descripción:</label>
-        <input type="text" name="Descripcion" value={formData.Descripcion} onChange={handleInputChange} />
-        <button type="submit">Agregar Configuración</button>
-      </form>
+      <div className="w-3/3 bg-white p-6 rounded-lg shadow-md">
+  
+        <form onSubmit={handleSubmit}>
+          <label className="block mb-2">Clave</label>
+          <input type="text" name="Clave" value={formData.Clave} onChange={handleInputChange} required className="mb-4 p-3 w-full border border-gray-300 rounded-lg" />
+
+          <label className="block mb-2">Valor</label>
+          <input type="text" name="Valor" value={formData.Valor} onChange={handleInputChange} required className="mb-4 p-3 w-full border border-gray-300 rounded-lg" />
+
+          <label className="block mb-2">Descripción</label>
+          <input type="text" name="Descripcion" value={formData.Descripcion} onChange={handleInputChange} className="mb-4 p-3 w-full border border-gray-300 rounded-lg" />
+
+          <div className="flex justify-end">
+            {isEditing && permisos?.Permiso_Actualizar === "1" && (
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Actualizar
+              </button>
+            )}
+            {!isEditing && permisos?.Permiso_Insertar === "1" && (
+              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Agregar
+              </button>
+            )}
+            <button type="button"
+              onClick={() => {
+                resetForm(); // Resetea el formulario
+                closeModal("modalAddConfiguracion")
+              }}
+            className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
       </div>
 </ModalGenerico>
       {/* Columna derecha: Tabla de permisos */}
@@ -437,10 +473,10 @@ if (!permisos) {
 
     {/* Botón para abrir el modal de agregar usuario */}
 <button
-  onClick={() => showModal("modalAddPermiso")}
+  onClick={() => showModal("modalAddConfiguracion")}
   className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
 >
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Permiso
+  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Configuracion
 </button>
     
     <button
@@ -458,7 +494,7 @@ if (!permisos) {
         <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
        onClose={() => closeModal("modalConfirmacion")}
-  onConfirm={() => handleDelete(formData?.Id_Permiso)}
+  onConfirm={() => handleDelete(formData?.Id_Configuracion)}
   titulo="❌ Confirmar Eliminación"
   mensaje="¿Estás seguro de que deseas eliminar a"
   entidad={""}
@@ -473,6 +509,7 @@ if (!permisos) {
             <tr>
             <th>Clave</th>
             <th>Valor</th>
+            <th>Descripción</th>
             <th>Modificar</th>
             </tr>
           </thead>
@@ -482,18 +519,34 @@ if (!permisos) {
          <tr key={config.Id_Configuracion}>
            <td>{config.Clave}</td>
            <td>
-             <input
-               type="text"
-               value={config.Valor}
-               onChange={(e) => handleUpdate(config.Clave, e.target.value)}
-               disabled={user?.role !== "SuperAdministrador"}
-             />
+           {config.Valor}
            </td>
            <td>
-             <button onClick={() => handleUpdate(config.Clave, config.Valor)} disabled={user?.role !== "SuperAdministrador"}>
-               Guardar
-             </button>
+           {config.Descripcion}
+     
            </td>
+           <td className="py-4 px-6 flex justify-center space-x-2">
+                {permisos.Permiso_Actualizar === "1" && ( 
+                  <button 
+                    onClick={() => handleEdit(config)} 
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+                  >
+                    Editar
+                  </button>)}
+                  {permisos.Permiso_Eliminar === "1" && (
+                  <button 
+                   
+
+                    onClick={() => {
+                       setFormData(config)
+                       showModal("modalConfirmacion");
+                     }}
+
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+                  >
+                    X
+                  </button>)}
+                </td>
          </tr>
        ))}
      </tbody>)}

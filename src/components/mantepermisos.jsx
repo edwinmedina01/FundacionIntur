@@ -103,13 +103,29 @@ const fetchPermisos = async () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await axios.get('/api/roles');
-      setRoles(response.data);
+      const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
+      if (!token) {
+        console.error("🚨 No hay token disponible. No se puede obtener la lista de roles.");
+        return;
+      }
+  
+      const response = await axios.get('/api/roles', {
+        headers: {
+          Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
+        },
+      });
+  
+      setRoles(response.data); // 📌 Guardar los roles en el estado
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      console.error('❌ Error al obtener los roles:', error);
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.error("🚨 No autorizado: Token inválido o expirado.");
+        // Opcional: Redirigir al login o mostrar alerta
+      }
     }
-  };
-
+  }
   // Nueva función para obtener objetos
   const fetchObjects = async () => {
     try {
@@ -128,6 +144,11 @@ const fetchPermisos = async () => {
     const { name, checked } = e.target;
     setFormData({ ...formData, [name]: checked });
   };
+
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
 
 const handleSubmit = async (e) => {
   

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -10,8 +10,10 @@ import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionGrado } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
+import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 const GradoManagement = () => {
+    const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
     const [modalidades, setModalidades] = useState([]);
   const [grados, setGrados] = useState([]);
@@ -130,10 +132,18 @@ const exportToExcel = async () => {
 
   // Fetch de grados desde el backend
   useEffect(() => {
+    cargarEstados();
     fetchGrados();
     fetchPermisos();
   }, [user]);
 
+
+    const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
    // -------- PERMISOS -------- //
    const fetchPermisos = async () => {
     try {
@@ -185,7 +195,12 @@ const exportToExcel = async () => {
  
 
 
-  const handleSubmit = async (e) => {
+  const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
+const handleSubmit = async (e) => {
 
 
 
@@ -198,7 +213,7 @@ const exportToExcel = async () => {
  
      formData.Modificado_Por = user.id;
      formData.Fecha_Modificacion = obtenerFechaActual();
-     formData.Estado = 1;
+   //  formData.Estado = 1;
     const errores = validarFormulario(formData, reglasValidacionGrado);
  
        if (errores.length > 0) {
@@ -410,6 +425,16 @@ if (!permisos) {
             required
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+                           {/* Campo de estado genérico */}
+                           <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
 
 <div className="flex justify-end">
   {isEditing
@@ -474,50 +499,60 @@ if (!permisos) {
   confirmColor="bg-red-600 hover:bg-red-700"
 />
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-slate-200">
-            <tr>
-            <th className="py-4 px-6 text-left">Nombre</th>
-              <th className="py-4 px-6 text-left">Descripción</th>
-              <th className="py-4 px-6 text-left">Nivel Académico</th>
-              <th className="py-4 px-6 text-left">Duración</th>
-              <th className="py-4 px-6 text-left">Cantidad de Materias</th>
-              <th className="py-4 px-6 text-center">Acciones</th>
-            </tr>
-          </thead>
-          {permisos?.Permiso_Consultar === "1" && (
-          <tbody>
-          {currentGrados.map((grado) => (
-      <tr key={grado.Id_Grado} className="border-b">
-        <td className="p-3">{grado.Nombre}</td>
-        <td className="p-3">{grado.Descripcion}</td>
-        <td className="p-3">{grado.Nivel_Academico}</td>
-        <td className="p-3">{grado.Duracion}</td>
-        <td className="p-3">{grado.Cantidad_Materias}</td>
-        <td className="py-4 px-6 flex justify-center space-x-2"> {/* Alineación al centro */}
-        {permisos.Permiso_Actualizar === "1" && (
-          <button
-            onClick={() => handleEdit(grado)}
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-          >
-            Editar
-          </button>)}
-          {permisos.Permiso_Eliminar === "1" && (
-          <button
-         
-            onClick={() => {
-              setFormData(grado)
-              showModal("modalConfirmacion");
-            }}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-          >
-            X
-          </button>)}
-                  </td>
-                </tr>
-              ))}
-          </tbody>)}
-        </table>
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th className="py-4 px-6 text-left">Nombre</th>
+      <th className="py-4 px-6 text-left">Descripción</th>
+      <th className="py-4 px-6 text-left">Nivel Académico</th>
+      <th className="py-4 px-6 text-left">Duración</th>
+      <th className="py-4 px-6 text-left">Cantidad de Materias</th>
+      <th className="py-4 px-16 text-left">Estado</th> {/* Nueva columna con descripción del estado */}
+      <th className="py-4 px-6 text-center">Acciones</th>
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+  <tbody>
+    {currentGrados.map((grado) => {
+      // Obtener la descripción del estado correspondiente
+      const estadoDescripcion = estados.find((estado) => estado.Codigo_Estado === grado.Estado)?.Nombre_Estado || "Desconocido";
+
+      return (
+        <tr key={grado.Id_Grado} className="border-b hover:bg-gray-100 transition duration-300">
+          <td className="p-3">{grado.Nombre}</td>
+          <td className="p-3">{grado.Descripcion}</td>
+          <td className="p-3">{grado.Nivel_Academico}</td>
+          <td className="p-3">{grado.Duracion}</td>
+          <td className="p-3">{grado.Cantidad_Materias}</td>
+          <td className="p-3">{estadoDescripcion}</td> {/* Se muestra la descripción del estado */}
+          <td className="py-4 px-6 flex justify-center space-x-2"> {/* Alineación al centro */}
+            {permisos.Permiso_Actualizar === "1" && (
+              <button
+                onClick={() => handleEdit(grado)}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+              >
+                Editar
+              </button>
+            )}
+            {permisos.Permiso_Eliminar === "1" && (
+              <button
+                onClick={() => {
+                  setFormData(grado);
+                  showModal("modalConfirmacion");
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+              >
+                X
+              </button>
+            )}
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+  )}
+</table>
+
 {/* Paginación */}
 <div className="flex justify-between mt-4">
   <button

@@ -8,8 +8,44 @@ export const reglasGenerales = {
         ]
     }),
 
+    Horario: (min = 10, max = 20) => ({
+        tipo: "string",
+        validaciones: [
+            {
+                label: "El horario debe estar en el formato correcto (Ejemplo: 8:00-4:00 PM)",
+                test: (valor) => /^(0?[1-9]|1[0-2]):[0-5][0-9]-(0?[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/i.test(valor)
+            },
+            {
+                label: `Debe tener entre ${min} y ${max} caracteres.`,
+                test: (valor) => valor.length >= min && valor.length <= max
+            }
+        ]
+    }),
+    NombreGrado: (min = 2, max = 10) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "Solo se permiten números y sufijos 'mo', 'vo', o la palabra 'Diurna'.", test: (valor) => /^[0-9]*(mo|vo)?$|^Diurna$/i.test(valor) }
+        ]
+    }),
+
+    // ✅ Nivel Académico (Ejemplo: "TERCER CICLO", "SEGUNDO DE CARRERA")
+    NivelAcademico: (min = 3, max = 60) => ({ ...reglasGenerales.TextoLibre(min, max) }),
+
+    // ✅ Duración en Meses (Ejemplo: "12 Meses")
+    DuracionMeses: (min = 1, max = 60) => ({
+        tipo: "string",
+        validaciones: [
+            { label: "Debe estar en el formato correcto (Ejemplo: '12 Meses').", test: (valor) => /^([1-9]|[1-5][0-9]|60) Meses$/.test(valor) },
+            { label: `Debe estar entre ${min} y ${max} meses.`, test: (valor) => {
+                const match = valor.match(/^(\d+) Meses$/);
+                return match ? parseInt(match[1]) >= min && parseInt(match[1]) <= max : false;
+            }}
+        ]
+    }),
+
     // ✅ Nombre de Rol (solo mayúsculas y guion bajo)
-    NombreRol: (min = 3, max = 60) => ({
+    NombreRolMayusculas: (min = 3, max = 60) => ({
         tipo: "string",
         validaciones: [
             { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
@@ -28,6 +64,45 @@ export const reglasGenerales = {
             { label: "Debe ser una oración con sentido (mínimo 3 palabras).", test: (valor) => valor.split(" ").length >= 1 }
         ]
     }),
+
+DuracionMeses: (min = 1, max = 60) => ({
+    tipo: "string",
+    validaciones: [
+        {
+            label: "Debe estar en el formato correcto (Ejemplo: '12 Meses').",
+            test: (valor) => new RegExp(`^([1-9]|[1-5][0-9]|60) Meses$`).test(valor), 
+        },
+        {
+            label: `El número de meses debe estar entre ${min} y ${max}.`,
+            test: (valor) => {
+                const match = valor.match(/^(\d+) Meses$/);
+                return match ? parseInt(match[1]) >= min && parseInt(match[1]) <= max : false;
+            }
+        }
+    ]
+}),
+
+Duracion: (min = 1, max = 60) => ({
+    tipo: "string",
+    validaciones: [
+        {
+            label: "Debe estar en el formato correcto (Ejemplo: '12 Meses').",
+            test: (valor) => new RegExp(`^([1-9]|[1-5][0-9]|60) w$`).test(valor), 
+        },
+        {
+            label: `El número de meses debe estar entre ${min} y ${max}.`,
+            test: (valor) => {
+                const match = valor.match(/^(\d+) Meses$/);
+                return match ? parseInt(match[1]) >= min && parseInt(match[1]) <= max : false;
+            }
+        }
+    ]
+}),
+
+
+    
+    
+
     NombreCompuesto: (min = 10, max = 300) => ({
         tipo: "string",
         validaciones: [
@@ -51,14 +126,33 @@ export const reglasGenerales = {
             { label: "No puede ser una única letra repetida muchas veces.", test: (valor) => !/^([A-Za-z])\1+$/.test(valor) },
             { label: "Debe ser una oración con sentido (mínimo 3 palabras).", test: (valor) => valor.split(" ").length >= 3 }
         ]
+    }),VariableEntorno: (min = 3, max = 255) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "No debe contener espacios en blanco.", test: (valor) => !/\s/.test(valor) },
+            { label: "Solo se permiten letras, números, guiones, guiones bajos, puntos y @.", test: (valor) => /^[A-Za-z0-9._@-]+$/.test(valor) },
+        ]
     }),
 
     Descripciones: (min = 10, max = 300) => ({
         tipo: "string",
         validaciones: [
-            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
-            { label: "Solo se permiten letras, números en contexto y espacios.", test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor) },
-            { label: "Debe contener al menos una vocal.", test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor) },
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, 
+            test: (valor) => valor.length >= min && valor.length <= max },
+  
+          { label: "Solo se permiten letras, números y espacios.", 
+            test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor) },
+  
+          { label: "No puede tener más de un espacio consecutivo.", 
+            test: (valor) => !/\s{2,}/.test(valor) },
+  
+          { label: "Cada palabra debe contener al menos una vocal.", 
+            test: (valor) => {
+                const palabras = valor.trim().split(/\s+/);
+                return palabras.every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra));
+            }
+          } ,  
             { label: "No puede tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
             { label: "Cada palabra debe tener al menos una vocal o ser una sigla reconocida.", test: (valor) => valor.split(" ").every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)) },
             { label: "No puede ser una única letra repetida muchas veces.", test: (valor) => !/^([A-Za-z])\1+$/.test(valor) },
@@ -71,6 +165,15 @@ export const reglasGenerales = {
         validaciones: [
             { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
             { label: "Solo se permiten letras mayúsculas y espacios.", test: (valor) => /^[A-ZÁÉÍÓÚÑ\s]+$/.test(valor) }
+        ]
+    }),
+    AppKeyGeneral: (min = 3, max = 80) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "Solo se permiten letras (mayúsculas o minúsculas), números y guion bajo (_).", test: (valor) => /^[A-Za-z0-9_]+$/.test(valor) },
+            { label: "Debe contener al menos 3 letras.", test: (valor) => /[A-Za-z].*[A-Za-z].*[A-Za-z]/.test(valor) },
+            { label: "No debe contener espacios en blanco.", test: (valor) => !/\s/.test(valor) }
         ]
     }),
 
@@ -110,6 +213,27 @@ export const reglasGenerales = {
             { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
             { label: "Debe comenzar con mayúscula.", test: (valor) => /^[A-ZÁÉÍÓÚÑ]/.test(valor) },
             { label: "No debe contener signos de puntuación.", test: (valor) => !/[.,;:!?]/.test(valor) }
+        ]
+    }),
+    NombreRol: (min = 3, max = 60) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "Debe comenzar con una letra mayúscula.", test: (valor) => /^[A-ZÁÉÍÓÚÑ]/.test(valor) },
+            { label: "Solo puede contener letras y espacios.", test: (valor) => /^[A-ZÁÉÍÓÚÑa-záéíóúñ\s]+$/.test(valor) },
+            { label: "No puede contener números ni caracteres especiales.", test: (valor) => !/[0-9@#$%^&*()_+={}[\]:;'"<>?/\\|-]/.test(valor) },
+            { label: "Debe contener al menos una vocal para asegurar que es una palabra válida.", test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor) },
+            { label: "No puede tener más de 3 consonantes seguidas sin una vocal.", test: (valor) => !/[^AEIOUÁÉÍÓÚaeiouáéíóú]{4,}/.test(valor) },
+            { label: "No puede tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) }
+        ]
+    }),
+    
+    AppKeyMayusculas: (min = 16, max = 128) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "Solo se permiten caracteres en mayúsculas.", test: (valor) => valor === valor.toUpperCase() },
+            { label: "No debe contener espacios en blanco al inicio o al final.", test: (valor) => valor.trim() === valor },
         ]
     }),
 

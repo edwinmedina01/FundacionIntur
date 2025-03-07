@@ -175,7 +175,12 @@ const fetchPermisos = async () => {
     return fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
 };
 
-  const handleSubmit = async (e) => {
+  const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
+const handleSubmit = async (e) => {
 
 
 

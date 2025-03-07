@@ -246,7 +246,12 @@ const GraduandoForm = () => {
 
 
   // Enviar datos del formulario para crear un nuevo graduando
-  const handleSubmit = async (e) => {
+  const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
+const handleSubmit = async (e) => {
     e.preventDefault();
 
 

@@ -35,9 +35,9 @@ const Modalidad = sequelize.define('Modalidad', {
     allowNull: true,
   },
   Estado: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: true, // Activo por defecto
+    defaultValue: 1, // Activo por defecto
   },
 }, {
   tableName: 'tbl_modalidad', // Nombre exacto de la tabla

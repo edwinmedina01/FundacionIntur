@@ -16,7 +16,7 @@ const LoginForm = () => {
 
 
 
-    const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const respuesta = await axios.post('/api/auth/login', { email, password });
@@ -29,6 +29,7 @@ const LoginForm = () => {
     
             // ✅ Ver otros datos enviados por la API
             console.log('📌 Otros datos recibidos:', otrosDatos);
+   
     
             // Validar que `userId` y `token` existan
             if (!userId || !token) {
@@ -37,9 +38,27 @@ const LoginForm = () => {
     
             // Guarda el token y el userId en el contexto
             login(token, userId, role,nombrerol);
+            if (!token) {
+                console.error("🚨 No se recibió token en la respuesta.");
+                return;
+            }
+            console.log('Token:', token);
+            
+            // ✅ Guardar el token en `localStorage`
+            localStorage.setItem("token", token);
+            setMensaje('✅ Login exitoso');
+            
     
             setMensaje('✅ Login exitoso');
-            primerLogin ? router.push('/change-password') : router.push('/inicio');
+              // ✅ Si es `primerLogin`, limpiar el token antes de redirigir
+        if (primerLogin) {
+            sessionStorage.removeItem("token");
+            localStorage.removeItem("token");
+            router.push('/change-password');
+        } else {
+            router.push('/inicio');
+        }
+           // primerLogin ? router.push('/change-password') : router.push('/inicio');
     
         } catch (error) {
             // ✅ Imprimir la respuesta completa en caso de error
@@ -61,7 +80,12 @@ const LoginForm = () => {
     };
     
 
-    const handleSubmitold = async (e) => {
+    const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
+const handleSubmitold = async (e) => {
         e.preventDefault();
         try {
 

@@ -623,6 +623,11 @@ const handlePersonaSubmit = async (e) => {
 };
 
 
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
+
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -766,6 +771,11 @@ const handleSubmit = async (e) => {
       [name]: value,
     });
   };
+
+const handleClearSearch = () => {
+  setSearchQuery("");
+  setCurrentPage(1); // Reiniciar a la primera página
+}; 
 
 const handleSubmitGraduacion = async (e) => {
   e.preventDefault();
