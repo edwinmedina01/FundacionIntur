@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback  } from 'react';
 import axios from 'axios';
 import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -34,38 +34,38 @@ const BenefactoresManagement = () => {
 }, []);
 
 
+const fetchPermisos = useCallback(async () => {
+  try {
+    if (user) {
+      const idObjeto = 16; // ID relacionado con Benefactores
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
+
+      const permisosData = response.data;
+
+      if (
+        permisosData.Permiso_Insertar !== '1' &&
+        permisosData.Permiso_Actualizar !== '1' &&
+        permisosData.Permiso_Eliminar !== '1' &&
+        permisosData.Permiso_Consultar !== '1'
+      ) {
+        setSinPermisos(true);
+      } else {
+        setPermisos(permisosData);
+      }
+    }
+  } catch (err) {
+    setError(err.response?.data?.error || 'Error al obtener permisos');
+  }
+}, [user]); // ✅ Solo se vuelve a crear cuando `user` cambia
+
+
   useEffect(() => {
     fetchBenefactores();
     fetchPermisos();
   }, [user,fetchPermisos]);
-
-  // Verificación de permisos
-  const fetchPermisos = async () => {
-    try {
-      if (user) {
-        const idObjeto = 16; // ID relacionado con Benefactores (suponiendo que esto corresponde a los Benefactores)
-        const response = await axios.post('/api/api_permiso', {
-          idRol: user.rol,
-          idObjeto,
-        });
-
-        const permisosData = response.data;
-
-        if (
-          permisosData.Permiso_Insertar !== '1' &&
-          permisosData.Permiso_Actualizar !== '1' &&
-          permisosData.Permiso_Eliminar !== '1' &&
-          permisosData.Permiso_Consultar !== '1'
-        ) {
-          setSinPermisos(true);
-        } else {
-          setPermisos(permisosData);
-        }
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al obtener permisos');
-    }
-  };
 
   const fetchBenefactores = async () => {
     try {
@@ -100,202 +100,6 @@ const BenefactoresManagement = () => {
   setSearchQuery("");
   setCurrentPage(1); // Reiniciar a la primera página
 }; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
 const handleSubmit = async (e) => {
     e.preventDefault();
     try {

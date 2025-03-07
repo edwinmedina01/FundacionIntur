@@ -22,7 +22,7 @@ export default async function handler(req, res) {
             p.Primer_Apellido AS Persona_Apellido,
             p.Segundo_Apellido AS Persona_Segundo_Apellido,
             p.Sexo,
-            p.Fecha_Nacimiiento,
+            p.Fecha_Nacimiento,
             p.Lugar_Nacimiento,
             p.Identidad,
             p.telefono AS Persona_Telefono,
