@@ -281,6 +281,28 @@ Duracion: (min = 1, max = 60) => ({
         ]
     }),
 
+    DescripcionGrado: (min = 5, max = 80) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+            { label: "Solo se permiten letras, números, espacios y signos de puntuación básicos (, . - #).", test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,.\-#]+$/.test(valor) },
+           // { label: "Cada palabra debe contener al menos una vocal.", test: (valor) => valor.split(/\s+/).every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra)) },
+            { label: "Debe ser una oración con sentido (mínimo 1 palabras).", test: (valor) => valor.trim().split(/\s+/).length >= 1 },
+            { label: "No puede tener más de dos signos de puntuación consecutivos.", test: (valor) => !/([.,-]){3,}/.test(valor) },
+            { label: "No puede iniciar ni terminar con un signo de puntuación.", test: (valor) => !/^[.,-]|[.,-]$/.test(valor) }
+        ]
+    }),
+    DuracionAnios: (min = 1, max = 10) => ({
+        tipo: "string",
+        validaciones: [
+            { label: "Debe estar en el formato correcto (Ejemplo: '4 Años').", test: (valor) => /^([1-9]|10) Años?$/.test(valor) },
+            { label: `El número de años debe estar entre ${min} y ${max}.`, test: (valor) => {
+                const match = valor.match(/^(\d+) Años?$/);
+                return match ? parseInt(match[1]) >= min && parseInt(match[1]) <= max : false;
+            }}
+        ]
+    }),
+
     Direccion: (min = 5, max = 200) => ({
         tipo: "string",
         validaciones: [

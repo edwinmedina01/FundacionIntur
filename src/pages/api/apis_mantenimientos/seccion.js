@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva sección
-    const { Nombre_Seccion, Id_Grado } = req.body;
+    const { Nombre_Seccion, Id_Grado , Estado} = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado) VALUES (?, ?)', 
+        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado, Estado) VALUES (?, ?)', 
         {
-          replacements: [Nombre_Seccion, Id_Grado],
+          replacements: [Nombre_Seccion, Id_Grado,Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -31,13 +31,13 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar una sección
-    const { Id_Seccion, Nombre_Seccion, Id_Grado } = req.body;
+    const { Id_Seccion, Nombre_Seccion, Id_Grado,Estado } = req.body;
     try {
       // Actualizar la sección utilizando los parámetros recibidos
       await sequelize.query(
-        'UPDATE tbl_seccion SET Nombre_Seccion = ?, Id_Grado = ? WHERE Id_Seccion = ?', 
+        'UPDATE tbl_seccion SET Nombre_Seccion = ?, Id_Grado = ?,  Estado = ? WHERE Id_Seccion = ?', 
         {
-          replacements: [Nombre_Seccion, Id_Grado, Id_Seccion],
+          replacements: [Nombre_Seccion, Id_Grado, Estado ,Id_Seccion],
           type: QueryTypes.UPDATE,
         }
       );

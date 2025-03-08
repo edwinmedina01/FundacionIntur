@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 //import * as XLSX from 'xlsx';
 import { useRouter } from 'next/router';
@@ -14,9 +14,11 @@ import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionSeccion } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
+import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 
 const SeccionManagement = () => {
+    const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [modalidades, setModalidades] = useState([]);
   const router = useRouter(); // Inicializar router dentro del useEffect
@@ -128,6 +130,13 @@ const exportToExcel = async () => {
     { header: "Nombre Sección", key: "Nombre_Seccion", width: 30 },
     { header: "ID Grado", key: "Id_Grado", width: 15 },
   ];
+  const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
+  
 
   // 3️⃣ Transformar los datos antes de agregarlos
   const exportData = currentSecciones.map((seccion) => ({
@@ -156,9 +165,17 @@ const exportToExcel = async () => {
   saveAs(fileBlob, "Secciones.xlsx");
 };
 
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
+
 
   // Fetch de secciones desde el backend
   useEffect(() => {
+    cargarEstados();
     fetchSecciones();
     fetchGrados();  // Fetch para obtener los grados
     fetchPermisos();
@@ -235,7 +252,8 @@ const handleSubmit = async (e) => {
     
         formData.Modificado_Por = user.id;
         formData.Fecha_Modificacion = obtenerFechaActual();
-        formData.Estado = 1;
+        formData.Estado = Number( formData.Estado )//|| "ACT"; // Estado por defecto
+   
        const errores = validarFormulario(formData, reglasValidacionSeccion);
     
           if (errores.length > 0) {
@@ -413,6 +431,17 @@ if (!permisos) {
             ))}
           </select>
 
+                          {/* Campo de estado genérico */}
+                          <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+
           <div className="flex justify-end">
   {isEditing
     ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
@@ -474,44 +503,54 @@ if (!permisos) {
   confirmColor="bg-red-600 hover:bg-red-700"
 />
 
+<table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
+  <thead className="bg-slate-200">
+    <tr>
+      <th className="py-4 px-6 text-left">Nombre Sección</th>
+      <th className="py-4 px-6 text-left">ID Grado</th>
+      <th className="py-4 px-6 text-left">Estado</th> {/* Nueva columna */}
+      <th className="py-4 px-6 text-left">Acciones</th>
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentSecciones.map((seccion) => (
+        <tr key={seccion.Id_Seccion}>
+          <td className="py-4 px-6">{seccion.Nombre_Seccion}</td>
+          <td className="py-4 px-6">{seccion.Id_Grado}</td>
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-slate-200">
-            <tr>
-              <th className="py-4 px-6 text-left">Nombre Sección</th>
-              <th className="py-4 px-6 text-left">ID Grado</th>
-              <th className="py-4 px-6 text-left">Acciones</th>
-            </tr>
-          </thead>
-          {permisos?.Permiso_Consultar === "1" && (
-          <tbody>
-            {currentSecciones.map((seccion) => (
-              <tr key={seccion.Id_Seccion}>
-                <td className="py-4 px-6">{seccion.Nombre_Seccion}</td>
-                <td className="py-4 px-6">{seccion.Id_Grado}</td>
-                <td className="py-4 px-6 space-x-2">
-                {permisos.Permiso_Actualizar === "1" && (
-                  <button onClick={() => handleEdit(seccion)} 
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-            >
-              Editar
-                  </button>)}
-                  {permisos.Permiso_Eliminar === "1" && (
-                  <button 
-                  onClick={() => {
-                    setFormData(seccion)
-                    showModal("modalConfirmacion");
-                  }}
+          {/* 📌 Mostrar el estado con su descripción */}
+          <td className="py-4 px-6">
+            {estados.find((estado) => estado.Codigo_Estado === seccion.Estado)?.Nombre_Estado || "Desconocido"}
+          </td>
 
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-            >
-              X
-                  </button>)}
-                </td>
-              </tr>
-            ))}
-          </tbody>)}
-        </table>
+          <td className="py-4 px-6 space-x-2">
+            {permisos.Permiso_Actualizar === "1" && (
+              <button
+                onClick={() => handleEdit(seccion)}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+              >
+                Editar
+              </button>
+            )}
+            {permisos.Permiso_Eliminar === "1" && (
+              <button
+                onClick={() => {
+                  setFormData(seccion);
+                  showModal("modalConfirmacion");
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+              >
+                X
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  )}
+</table>
+
 
  {/* Paginación */}
 <div className="flex justify-between mt-4">

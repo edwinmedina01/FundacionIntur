@@ -167,7 +167,7 @@ export const reglasValidacionDepartamento = {
 };
 
 export const reglasValidacionSeccion = {
-  Nombre_Seccion: { ...reglasGenerales.TextoLibre(3, 75), requerido: true },
+  Nombre_Seccion: { ...reglasGenerales.DescripcionGrado(3, 75), requerido: true },
   Id_Grado: { tipo: "int", requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
@@ -176,7 +176,7 @@ export const reglasValidacionSeccion = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionArea = {
@@ -195,9 +195,9 @@ export const reglasValidacionArea = {
 
 export const reglasValidacionGrado = {
   Nombre: { ...reglasGenerales.NombreGrado(2, 10), requerido: true }, 
-  Descripcion: { ...reglasGenerales.Descripciones(5, 80), requerido: true },
+  Descripcion: { ...reglasGenerales.DescripcionGrado(5, 80), requerido: true },
   Nivel_Academico: { ...reglasGenerales.TextoLibre(3, 60), requerido: true },
-  Duracion: { ...reglasGenerales.DuracionMeses(1, 60), requerido: true },
+  Duracion: { ...reglasGenerales.DuracionAnios(1, 60), requerido: true },
   Cantidad_Materias: { ...reglasGenerales.SoloNumeros(1, 50), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
