@@ -30,9 +30,14 @@ export const validarFormulario = (formData, reglasValidacion) => {
                 errores.push(`El campo "${campo}" solo puede tener los valores: ${reglas.opciones.join(", ")}.`);
             }
 
-            // ✅ Verificar si el campo debe ser un número entero
-            if (reglas.tipo === "int" && (isNaN(parseInt(valor)) || !Number.isInteger(Number(valor)))) {
-                errores.push(`El campo "${campo}" debe ser un número entero válido.`);
+              // ✅ Verificar si el campo debe ser un número entero y convertirlo
+              if (reglas.tipo === "int") {
+                const numero = Number(valor); // Convierte el valor
+                if (isNaN(numero) || !Number.isInteger(numero)) {
+                    errores.push(`El campo "${campo}" debe ser un número entero válido.`);
+                } else {
+                    formData[campo] = numero; // Guarda el valor convertido
+                }
             }
 
             // ✅ Aplicar validaciones generales

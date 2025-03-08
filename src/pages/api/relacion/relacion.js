@@ -96,7 +96,7 @@ export default async function handler(req, res) {
             Id_tipo_relacion: personaRelacion.Id_Tipo_Persona,
             Usuarioid: decodedUser.id,
             Observaciones: personaRelacion.Observaciones || 'Sin observaciones',
-            Estado: 'activo',
+            Estado: personaRelacion.Estado,
           });
   
           return res.status(201).json(nuevaRelacion);

@@ -66,7 +66,7 @@ const Matricula = sequelize.define('Matricula', {
     allowNull: true,
   },
   Estado: {
-    type: DataTypes.BOOLEAN,
+    type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: true, // Activo por defecto
   },

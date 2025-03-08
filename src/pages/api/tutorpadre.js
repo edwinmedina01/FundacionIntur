@@ -11,6 +11,7 @@ export default async function handler(req, res) {
         const [personas] = await sequelize.query(
           `SELECT 
             r.Id as Id_Relacion,
+            r.Estado,
             p.Id_Persona,
             p.Id_Municipio,
             p.Id_Tipo_Persona,
@@ -20,7 +21,7 @@ export default async function handler(req, res) {
             p.Primer_Apellido AS Persona_Apellido,
             p.Segundo_Apellido AS Persona_Segundo_Apellido,
             p.Sexo,
-            p.Fecha_Nacimiiento,
+            p.Fecha_Nacimiento,
             p.Lugar_Nacimiento,
             p.Identidad,
             p.telefono AS Persona_Telefono,

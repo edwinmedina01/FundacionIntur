@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext,useCallback } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
@@ -14,13 +14,13 @@ import "react-step-progress-bar/styles.css";
 import ModalGenerico from '../../utils/ModalGenerico';
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
-
+import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
 const EstudiantesCrud = () => {
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
-
+  const [estados, setEstados] = useState([]);
   const [modals, setModals] = useState({
     modalConfirmacion: false,
     modalEliminarTutor: false,
@@ -74,6 +74,12 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
     { id: 0, descripcion: "Femenino" },
   ]);
 
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
 
 
   // Importar dinámicamente para evitar problemas con SSR
@@ -224,6 +230,7 @@ const [benefactorData, setBenefactorData] = useState({
   const [editPersonaId, setEditPersonaId] = useState(null);
 
   useEffect(() => {
+    cargarEstados();
     if (personaData.Id_Departamento) {
       fetchMunicipios(personaData.Id_Departamento);
     } else {
@@ -247,33 +254,34 @@ const [benefactorData, setBenefactorData] = useState({
 
  
 
-       // Si hay un estudiante seleccionado, actualizarlo
-    if (selectedStudent||idEstudiante) {
-      const updatedStudent = response.data.find(
-        (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
-      );
-      setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+    //    // Si hay un estudiante seleccionado, actualizarlo
+    // if (selectedStudent||idEstudiante) {
+
+    //   const updatedStudent = response.data.find(
+    //     (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
+    //   );
+    //   setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
   
-      handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
-      setActiveTab(Number(tab))
-      switch (Number(tab))
+    //   handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+    //   setActiveTab(Number(tab))
+    //   switch (Number(tab))
       
-      {
-          case 3:
-          case 2:
-            const relacion = updatedStudent.Relaciones.find(
-              (e) =>  e.Id === Number( relacionId)
-            );
-            if (relacion){
-              handleEditTutor(relacion)
+    //   {
+    //       case 3:
+    //       case 2:
+    //         const relacion = updatedStudent.Relaciones.find(
+    //           (e) =>  e.Id === Number( relacionId)
+    //         );
+    //         if (relacion){
+    //           handleEditTutor(relacion)
             
-            }
+    //         }
         
-          break;
+    //       break;
 
 
-      }
-    }
+    //   }
+    // }
       console.log(response.data)
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
@@ -551,7 +559,8 @@ const handlePersonaSubmit = async (e) => {
     personaDataRelacion.Creado_Por=user.id;
     personaDataRelacion.Modificado_Por=user.id;
     personaDataRelacion.Fecha_Nacimiento='2000-01-01';
-   const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion);
+    personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
+    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion);
 
       if (errores.length > 0) {
      
@@ -607,6 +616,9 @@ const handlePersonaSubmit = async (e) => {
       Segundo_Nombre: "",
       Primer_Apellido: "",
       Segundo_Apellido: "",
+      Direccion: "",
+      Telefono: "",
+      Estado: null,
       Sexo: "",
       Fecha_Nacimiento: "",
       Lugar_Nacimiento: "",
@@ -632,10 +644,13 @@ const handleSubmit = async (e) => {
   personaData.Modificado_Por=user.id;
   estudianteData.Creado_Por=user.id;
   estudianteData.Modificado_Por=user.id;
+  personaData.Sexo=Number(personaData.Sexo);
+  estudianteData.Estado=Number(personaData.Estado);
  const errores = validarFormulario(personaData, reglasValidacionPersona);
 
     if (errores.length > 0) {
    
+      console.log(errores);
     //toast.error(errores.join("\n"), error);
       return;
     }
@@ -661,6 +676,8 @@ const handleSubmit = async (e) => {
         estudianteData,
         personaData,
       });
+      setSelectedStudent(estudianteData);
+       // Limpiar el estudiante seleccionado
       if (res != null) {
         toast.success('Registro actualizado exitosamente', {
           style: {
@@ -964,6 +981,7 @@ setPersonaDataRelacion({
   Direccion: tutor.Persona.Direccion,
   Telefono:  tutor.Persona.Telefono,
   Id_Persona:tutor.Persona.Id_Persona,
+  Estado:tutor.Persona.Estado,
   Update:true
 
 })
@@ -1295,6 +1313,17 @@ if (!permisos) {
     placeholder="Ingresa el lugar de nacimiento"
     required
   />
+                 {/* Campo de estado genérico
+                 <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={personaData.Estado || ""} onChange={handleEstudianteInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+   */}
 </div>
 
       
@@ -1586,6 +1615,20 @@ if (!permisos) {
     />
   </div>
   <div className="flex flex-col">
+
+                    {/* Campo de estado genérico */}
+                    <label>Estado:</label>
+            <select className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={personaDataRelacion.Estado} onChange={handleTutorInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+
+  </div>
+  <div className="flex flex-col">
     <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
       Teléfono
     </label>
@@ -1663,61 +1706,62 @@ if (!permisos) {
   confirmText="Eliminar Tutor"
   confirmColor="bg-orange-600 hover:bg-orange-700"
 />
-        <table className="min-w-full mt-4 border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-            <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
-              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold textcenter">Persona Relacionada</th>
-              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th>
-              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Observaciones</th>
-              <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
-
-            </tr>
-          </thead>
-          
-          <tbody>
-  {estudianteData.Relaciones?.length > 0 ? (
-    estudianteData.Relaciones
-    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
-    .map((relacion) => (
-      <tr key={relacion.Id} className="hover:bg-gray-50">
-         <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
-        <td className="border px-4 py-2">
-          {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
-        </td>
-        <td className="border px-4 py-2">{relacion.Estado}</td>
-        <td className="border px-4 py-2">{relacion.Observaciones}</td>
-        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => handleEditTutor(relacion)}
-      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-      onClick={() => handleDeleteRelacion(relacion.Id)}
-      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan="4" className="text-center border px-4 py-2">
-        No hay relaciones disponibles.
-      </td>
+<table className="min-w-full mt-4 border border-gray-300">
+  <thead>
+    <tr className="bg-gray-100">
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Persona Relacionada</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Observaciones</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
     </tr>
-  )}
-</tbody>
+  </thead>
 
-        </table>
+  <tbody>
+    {estudianteData.Relaciones?.length > 0 ? (
+      estudianteData.Relaciones
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+        .map((relacion) => {
+          // Buscar el estado correspondiente en el diccionario de estados
+          const estado = estados.find(e => e.Codigo_Estado === relacion.Estado );
+
+          return (
+            <tr key={relacion.Id} className="hover:bg-gray-50">
+              <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
+              <td className="border px-4 py-2">{relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}</td>
+              <td className="border px-4 py-2">{estado ? estado.Nombre_Estado : "Desconocido"}</td> {/* Estado con nombre correcto */}
+              <td className="border px-4 py-2">{relacion.Observaciones}</td>
+              <td className="border px-4 py-2 flex justify-center items-center space-x-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEditTutor(relacion)}
+                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                  >
+                    <PencilSquareIcon className="h-6 w-6" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => handleDeleteRelacion(relacion.Id)}
+                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+                  >
+                    <TrashIcon className="h-6 w-6" />
+                  </button>
+                )}
+              </td>
+            </tr>
+          );
+        })
+    ) : (
+      <tr>
+        <td colSpan="5" className="text-center border px-4 py-2">
+          No hay relaciones disponibles.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
       </div>
 </div>
 
@@ -1829,6 +1873,21 @@ if (!permisos) {
     />
   </div>
   <div className="flex flex-col">
+
+                    {/* Campo de estado genérico */}
+                    <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={personaDataRelacion.Estado || ""} onChange={handleTutorInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+  </div>
+
+
+  <div className="flex flex-col">
     <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
       Teléfono
     </label>
@@ -1843,6 +1902,8 @@ if (!permisos) {
       className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
     />
   </div>
+
+        
 </div>
 <br></br>
 <div className="flex justify-between">
@@ -2081,63 +2142,60 @@ Cancelar
   confirmColor="bg-red-600 hover:bg-red-700"
 />
 
+<table className="xls_style-excel-table">
+  <thead>
+    <tr className="bg-gray-100">
+      <th>#</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th> {/* Nueva columna para estado */}
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {filteredEstudiantes.map((estudiante, index) => {
+        // Buscar el estado correspondiente en el diccionario de estados
+        const estado = estados.find(e => e.Codigo_Estado === estudiante.Estado );
 
-            <table className="xls_style-excel-table">
-              <thead>
-                <tr classname ="bg-gray-100">
-                <th >#</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
+        return (
+          <tr key={estudiante.Id_Estudiante}>
+            <td>{index + 1}</td>
+            <td>{estudiante.Persona.Identidad}</td>
+            <td>{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
+            <td>{estudiante.Instituto.Nombre_Instituto}</td>
+            <td>{estado ? estado.Nombre_Estado : "Desconocido"}</td> {/* Mostrar el estado por nombre */}
 
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
-                <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
-                </tr>
-              </thead>
-              {permisos?.Permiso_Consultar === "1" && (
-              <tbody>
-                {filteredEstudiantes.map((estudiante,index) => (
-                  
-                  <tr key={estudiante.Id_Estudiante}>
-                        <td >
-                      {index + 1}
-                    </td>
-                         <td >
-                      {estudiante.Persona.Identidad}
-                    </td>
-                    <td >{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
-                    <td >
-                      {estudiante.Instituto.Nombre_Instituto}
-                    </td>
-                    <td className="xls_center">
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => handleEdit(estudiante)}
-      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
+            <td className="xls_center">
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => handleEdit(estudiante)}
+                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  <PencilSquareIcon className="h-6 w-6" />
+                </button>
+              )}
+
+              {permisos.Permiso_Eliminar === "1" && (
+                <button
+                  onClick={() => {
+                    setEstudianteData(estudiante);
+                    showModal("modalConfirmacion");
+                  }}
+                  className="m-1 px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700 padd"
+                >
+                  <TrashIcon className="h-6 w-6" />
+                </button>
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
   )}
+</table>
 
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-    
-
-
-      onClick={() => {
-        setEstudianteData(estudiante)
-         showModal("modalConfirmacion");
-       }}
-      className="m-1 px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700 padd" 
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-
-                  </tr>
-                ))}
-              </tbody>)}
-            </table>
           </div>
        
 

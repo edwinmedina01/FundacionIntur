@@ -33,6 +33,10 @@ const Graduando = sequelize.define('Graduando', {
     type: DataTypes.STRING,
     allowNull: true, // Puede ser nulo si aún no ha sido modificado
   },
+  Estado: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // Puede ser nulo si aún no ha sido modificado
+  },
   Fecha_Modificacion: {
     type: DataTypes.DATE,
     allowNull: true, // Puede ser nulo si aún no ha sido modificado

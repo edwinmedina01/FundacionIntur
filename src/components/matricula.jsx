@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext ,useCallback} from 'react';
 import axios from 'axios';
 import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -7,17 +7,26 @@ import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { obtenerEstados } from "../../src/utils/api"; // Importar la función
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 
 const MatriculaManagement = () => {
+  const [estados, setEstados] = useState([]);
   const router = useRouter();
   const { user } = useContext(AuthContext); // Usuario logueado
   const [matriculas, setMatriculas] = useState([]);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
+
+    const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
+  
 
   const [formData, setFormData] = useState({
     Id_Matricula: '',
@@ -36,6 +45,7 @@ const MatriculaManagement = () => {
   const [matriculasPerPage] = useState(5);
 
   useEffect(() => {
+    cargarEstados()
     fetchMatriculas();
     fetchPermisos();
   }, [user]);
@@ -335,51 +345,64 @@ const handleExport = async () => {
       </div>
 
 
-      {/* Tabla de matrículas */}     
-      <table className="min-w-full border-collapse">
+{/* Tabla de matrículas */}     
+<table className="xls_style-excel-table">
   <thead>
     <tr>
-    <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Modalidad</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Grado</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sección</th>
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Fecha Matrícula</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
       <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
     </tr>
   </thead>
-        <tbody>
-          {currentMatriculas.map((matricula) => (
-            <tr key={matricula.Id_Matricula}>
-               <td className="py-2 px-4">{matricula.Identidad}</td>
-<td className="py-2 px-4">
-  {matricula.Estudiante} {matricula.Segundo_Nombre}{matricula.Primer_Apellido}{matricula.Segundo_Apellido}
-</td>
 
-              <td className="py-2 px-4">{matricula.Modalidad}</td>
-              <td className="py-2 px-4">{matricula.Grado}</td>
-              <td className="py-2 px-4">{matricula.Seccion}</td>
-              <td className="py-4 px-6 border-b">
-  {matricula.Fecha_Matricula
-    ? new Date(matricula.Fecha_Matricula).toISOString().split('T')[0] // Convierte a UTC y formatea
-    : "No disponible"}
-</td>
-              {(permisos.Permiso_Actualizar === '1' || permisos.Permiso_Eliminar === '1') && (
-                <td className="py-2 px-4">
-                  {permisos.Permiso_Eliminar === '1' && (
-                    <center><button
-                      onClick={() => handleDelete(matricula.Id_Matricula)}
-                      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                      >
-                        <TrashIcon className="h-6 w-6" />
-                      </button></center>
-                  )}
-                </td>
+  <tbody>
+    {currentMatriculas.map((matricula) => {
+      // Buscar el estado correspondiente en el diccionario de estados
+      const estado = estados.find(e => e.Codigo_Estado === matricula.Estado );
+
+      return (
+        <tr key={matricula.Id_Matricula}>
+          <td className="py-2 px-4">{matricula.Identidad}</td>
+          <td className="py-2 px-4">
+            {matricula.Estudiante} {matricula.Segundo_Nombre} {matricula.Primer_Apellido} {matricula.Segundo_Apellido}
+          </td>
+          <td className="py-2 px-4">{matricula.Modalidad}</td>
+          <td className="py-2 px-4">{matricula.Grado}</td>
+          <td className="py-2 px-4">{matricula.Seccion}</td>
+          <td className="py-4 px-6 border-b">
+            {matricula.Fecha_Matricula
+              ? new Date(matricula.Fecha_Matricula).toISOString().split('T')[0] // Convierte a UTC y formatea
+              : "No disponible"}
+          </td>
+
+          {/* Mostrar el Estado con su Nombre correspondiente */}
+          <td className="py-2 px-4">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
+
+          {(permisos.Permiso_Actualizar === '1' || permisos.Permiso_Eliminar === '1') && (
+            <td className="py-2 px-4">
+              {permisos.Permiso_Eliminar === '1' && (
+                <center>
+                  <button
+                    onClick={() => handleDelete(matricula.Id_Matricula)}
+                    className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                  >
+                    <TrashIcon className="h-6 w-6" />
+                  </button>
+                </center>
               )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </td>
+          )}
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
+
 
  {/* Paginación */}
 <div className="flex justify-between items-center mt-4">

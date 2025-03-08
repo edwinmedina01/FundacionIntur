@@ -9,6 +9,7 @@ export default async function handler(req, res) {
         `
         SELECT 
           m.Id_Matricula,
+          m.Estado,
           CONCAT(p.Primer_Nombre, ' ', pp.Segundo_Nombre, ' ', pp.Primer_Apellido, ' ', pp.Segundo_Apellido) AS Estudiante,
           mo.Nombre AS Modalidad,
           g.Nombre AS Grado,

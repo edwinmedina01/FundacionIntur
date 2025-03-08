@@ -281,6 +281,28 @@ Duracion: (min = 1, max = 60) => ({
         ]
     }),
 
+    Direccion: (min = 5, max = 200) => ({
+        tipo: "string",
+        validaciones: [
+            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+    
+            { label: "Debe comenzar con una letra o número.", test: (valor) => /^[A-Za-z0-9]/.test(valor) },
+    
+            { label: "No debe tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
+    
+            { label: "Puede contener letras, números, comas, puntos, guiones y #.", test: (valor) => /^[A-Za-z0-9\s.,#-]+$/.test(valor) },
+    
+            { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
+    
+            { label: "Debe contener al menos una palabra con sentido (ejemplo: nombre de calle, avenida, barrio).", test: (valor) => /[A-Za-z]+/.test(valor) },
+    
+            { label: "No puede contener caracteres especiales como @, $, %, &, *.", test: (valor) => !/[@$%&*]/.test(valor) },
+    
+            { label: "Formato válido: Calle 5 #23-45, Av. Central 123, Barrio Los Pinos, etc.", test: (valor) => true }
+        ]
+    }),
+    
+
     // ✅ Código de estudiante (Ejemplo: EST-123456)
     CodigoEstudiante: () => ({
         tipo: "string",

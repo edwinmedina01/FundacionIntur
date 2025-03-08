@@ -4,8 +4,10 @@ import Layout from "../../components/Layout";
 import { useRouter } from "next/router";
 import AuthContext from "../../context/AuthContext";
 import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 const EditarEstudiante = () => {
+    const [estados, setEstados] = useState([]);
   const [estudiante, setEstudiante] = useState(null);
   const [institutos, setInstitutos] = useState([]);
     const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
@@ -32,6 +34,15 @@ const EditarEstudiante = () => {
     Id_Departamento: 0,
     Id_Municipio: 0,
   });
+
+
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
+
 
   const [estudianteData, setEstudianteData] = useState({
     Id_Beneficio: "",
@@ -60,6 +71,7 @@ const EditarEstudiante = () => {
     if (id) {
       fetchEstudiante(id);
     }
+    cargarEstados();
     fetchInstitutos();
     fetchAreas();
     fetchBeneficios();

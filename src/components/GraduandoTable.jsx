@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 import { MagnifyingGlassIcon,ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon,TrashIcon  } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -17,10 +17,11 @@ import ModalConfirmacion from '../utils/ModalConfirmacion';
 import useModal from "../hooks/useModal"; 
 import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacion } from "../../models/ObjetoDto"; // Importamos las reglas del modelo
-
+import { obtenerEstados } from "../../src/utils/api"; // Importar la función
 
 
 const GraduandoForm = () => {
+    const [estados, setEstados] = useState([]);
   const [graduandos, setGraduandos] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null); // ✅ Inicializar con null
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
@@ -33,6 +34,14 @@ const GraduandoForm = () => {
     Id_Estudiante:null
   });
     
+
+    const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
+  
   useEffect(() => {
     document.title = "Graduandos";
 }, []);
@@ -64,7 +73,7 @@ const GraduandoForm = () => {
         const router = useRouter();
 
   useEffect(() => {
- 
+    cargarEstados();
     fetchPermisos();
     fetchGraduandos();
    fetchEstudiantes();
@@ -400,69 +409,75 @@ const handleSubmit = async (e) => {
 
 
       
-          <table className="xls_style-excel-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Identidad</th>
-                <th>Nombre Completo</th>
-                <th>Año</th>
-                <th>Fecha de Inicio</th>
-                <th>Fecha de Finalización</th>
-       
-                <th>Fecha de Creación</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGraduandos.length > 0 ? (
-            filteredGraduandos.            
-              map((graduando) => (
-                <tr key={graduando.Id_Graduando}>
-                  <td>{graduando.Id_Graduando}</td>
-                  <td>{graduando.Estudiante.Persona.Identidad}</td>
-                  <td>{graduando.Estudiante.Persona.Primer_Nombre + " "+ graduando.Estudiante.Persona.Primer_Apellido}</td>
-                  <td>{graduando.Anio}</td>
-                  <td>{graduando.Fecha_Inicio}</td>
-                  <td>{graduando.Fecha_Final}</td>
-          
-                  <td>{graduando.Fecha_Creacion}</td>
-                  <td className="p-3 border-b flex justify-center items-center space-x-2">
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => handleEdit(graduando)}
+<table className="xls_style-excel-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Identidad</th>
+      <th>Nombre Completo</th>
+      <th>Año</th>
+      <th>Fecha de Inicio</th>
+      <th>Fecha de Finalización</th>
+      <th>Estado</th> {/* Nueva columna de Estado */}
+      <th>Fecha de Creación</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
 
+  <tbody>
+    {filteredGraduandos.length > 0 ? (
+      filteredGraduandos.map((graduando) => {
+        // Buscar el estado correspondiente en el diccionario de estados
+        const estado = estados.find(e => e.Codigo_Estado === graduando.Estado);
 
-      
-      className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
+        return (
+          <tr key={graduando.Id_Graduando}>
+            <td>{graduando.Id_Graduando}</td>
+            <td>{graduando.Estudiante.Persona.Identidad}</td>
+            <td>{graduando.Estudiante.Persona.Primer_Nombre + " " + graduando.Estudiante.Persona.Primer_Apellido}</td>
+            <td>{graduando.Anio}</td>
+            <td>{graduando.Fecha_Inicio}</td>
+            <td>{graduando.Fecha_Final}</td>
 
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-     
-      onClick={() => {
-        setFormData(graduando);
-        showModal("modalConfirmacion")
-      }}
-      className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-                </tr>
-              ))):(
-                <tr>
-                  <td colSpan="7" className="text-center border px-4 py-2">
-                    No se encontraron graduandos.
-                  </td>
-                </tr>
+            {/* Mostrar el Estado con su Nombre correspondiente */}
+            <td>{estado ? estado.Nombre_Estado : "Desconocido"}</td>
+
+            <td>{graduando.Fecha_Creacion}</td>
+            <td className="p-3 border-b flex justify-center items-center space-x-2">
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => handleEdit(graduando)}
+                  className="px-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  <PencilSquareIcon className="h-6 w-6" />
+                </button>
               )}
-            </tbody>
-          </table>
+
+              {permisos.Permiso_Eliminar === "1" && (
+                <button
+                  onClick={() => {
+                    setFormData(graduando);
+                    showModal("modalConfirmacion");
+                  }}
+                  className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                >
+                  <TrashIcon className="h-6 w-6" />
+                </button>
+              )}
+            </td>
+          </tr>
+        );
+      })
+    ) : (
+      <tr>
+        <td colSpan="9" className="text-center border px-4 py-2">
+          No se encontraron graduandos.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
         </>
       )}
     </div>

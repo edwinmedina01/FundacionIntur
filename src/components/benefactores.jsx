@@ -5,10 +5,13 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
 import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { obtenerEstados } from "../../src/utils/api"; // Importar la función
 
 const BenefactoresManagement = () => {
   const router = useRouter();
+
   const { user } = useContext(AuthContext); // Usuario logueado
+  const [estados, setEstados] = useState([]);
   const [Benefactores, setBenefactores] = useState([]);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
@@ -32,6 +35,13 @@ const BenefactoresManagement = () => {
   useEffect(() => {
     document.title = "Benefactores";
 }, []);
+
+const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
 
 
 const fetchPermisos = useCallback(async () => {
@@ -63,6 +73,7 @@ const fetchPermisos = useCallback(async () => {
 
 
   useEffect(() => {
+    cargarEstados();
     fetchBenefactores();
     fetchPermisos();
   }, [user,fetchPermisos]);
@@ -349,61 +360,67 @@ const handleExport = async () => {
 
 {/* Tabla de Benefactores */}
 <div >
-<table className="min-w-full border-collapse">
-<thead>
-<tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Telefono</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Direccion</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad E.</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
-        <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {Benefactores && Benefactores.length > 0 ? (
-        currentBenefactores.map(Benefactor => (
+<table className="xls_style-excel-table">
+  <thead>
+    <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Telefono</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Direccion</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad E.</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
+      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {Benefactores && Benefactores.length > 0 ? (
+      currentBenefactores.map((Benefactor) => {
+        // Buscar el estado correspondiente en el diccionario de estados
+        const estado = estados.find(e => e.Codigo_Estado === Benefactor.Estado );
+
+        return (
           <tr key={Benefactor.Id_Persona}>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
-           <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
-           <td className="border px-4 py-2">
-  {Benefactor.Sexo === 1
-    ? 'Masculino'
-    : Benefactor.Sexo === 0
-    ? 'Femenino'
-    : 'Desconocido'}
-</td>
-<td className="border px-4 py-2">{Benefactor.Persona_Telefono}</td>
-<td className="border px-4 py-2">{Benefactor.Persona_Direccion}</td>
-<td className="border px-4 py-2">{Benefactor.Estudiante_Identidad}</td>
-<td className="2 ">{Benefactor.Estudiante_Nombre}{""} {Benefactor.Estudiante_Apellido}</td>
-<td className='xls_center'>
+            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
+            <td className="border px-4 py-2">
+              {Benefactor.Sexo === 1
+                ? 'Masculino'
+                : Benefactor.Sexo === 0
+                ? 'Femenino'
+                : 'Desconocido'}
+            </td>
+            <td className="border px-4 py-2">{Benefactor.Persona_Telefono}</td>
+            <td className="border px-4 py-2">{Benefactor.Persona_Direccion}</td>
+            <td className="border px-4 py-2">{Benefactor.Estudiante_Identidad}</td>
+            <td className="border px-4 py-2">{Benefactor.Estudiante_Nombre} {Benefactor.Estudiante_Apellido}</td>
+            
+            {/* Mostrar el Estado con su Nombre correspondiente */}
+            <td className="border px-4 py-2">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
 
-{permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => handleEdit(Benefactor)}
-
-
-      
-      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-              
-
+            <td className='xls_center'>
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => handleEdit(Benefactor)}
+                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  <PencilSquareIcon className="h-6 w-6" />
+                </button>
+              )}
+            </td>
           </tr>
-        ))
-      ) : (
-        <tr>
-          <td colSpan="8">No hay Benefactores disponibles</td>
-        </tr>
-      )}
-    </tbody>
-  </table>
+        );
+      })
+    ) : (
+      <tr>
+        <td colSpan="9">No hay Benefactores disponibles</td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
 </div>
 
       {/* Paginación */}
