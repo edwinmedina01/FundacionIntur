@@ -1,11 +1,14 @@
-import { useState, useEffect, useContext, use } from "react";
+import { useState, useEffect, useContext, useCallback,use } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import AuthContext from "../../context/AuthContext";
 import { ShieldExclamationIcon,HomeIcon, PencilSquareIcon, TrashIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import { obtenerEstados } from "../../utils/api"; // Importar la función
+
 const MatriculaCrud = () => {
+    const [estados, setEstados] = useState([]);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
@@ -131,7 +134,16 @@ const [benefactorData, setBenefactorData] = useState({
   const [editId, setEditId] = useState(null);
   const [editPersonaId, setEditPersonaId] = useState(null);
 
+    const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
+  
+
   useEffect(() => {
+    cargarEstados();
     if (personaData.Id_Departamento) {
       fetchMunicipios(personaData.Id_Departamento);
     } else {
@@ -500,7 +512,8 @@ const handleSubmit = async (e) => {
       Id_Matricula:  estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Matricula:null,
       Id_Grado:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Grado:null,
       Id_Seccion:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Seccion:null,
-      Id_Modalidad:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Modalidad:null
+      Id_Modalidad:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Id_Modalidad:null,
+      Estado:estudiante.Matriculas.length>0?estudiante.Matriculas[0].Estado:null,
     });
 
     setEditPersonaId(estudiante.Persona.Id_Persona);
@@ -852,7 +865,19 @@ if (!permisos) {
 
 
 
-
+    {/* Estado */}
+    <div className="flex flex-col">
+        {/* Campo de estado genérico */}
+        <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={estudianteData.Estado || ""} onChange={handleEstudianteInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+      </div>
     </div>
 
     <div className="space-y-4">
@@ -909,6 +934,7 @@ if (!permisos) {
           ))}
         </select>
       </div>
+  
 
     </div>
   </div>
