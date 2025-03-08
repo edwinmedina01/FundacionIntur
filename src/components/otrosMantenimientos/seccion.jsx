@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext,useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 //import * as XLSX from 'xlsx';
 import { useRouter } from 'next/router';
@@ -66,6 +66,8 @@ const isAuthorized = (roles) => {
   return userProfile && roles.includes(userProfile.rol);
 };
 
+
+
 // Controlar el acceso de usuarios no autorizados
 useEffect(() => {
 
@@ -130,13 +132,7 @@ const exportToExcel = async () => {
     { header: "Nombre Sección", key: "Nombre_Seccion", width: 30 },
     { header: "ID Grado", key: "Id_Grado", width: 15 },
   ];
-  const cargarEstados = useCallback(async () => {
-    //  setLoading(true);
-      const data = await obtenerEstados("GENÉRICO");
-      setEstados(data);
-    //  setLoading(false);
-  }, []); // 🔥 Se ejecu
-  
+
 
   // 3️⃣ Transformar los datos antes de agregarlos
   const exportData = currentSecciones.map((seccion) => ({

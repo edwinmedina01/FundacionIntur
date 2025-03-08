@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext,useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback  } from 'react';
 import axios from 'axios';
 import { MagnifyingGlassIcon,ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon,TrashIcon  } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/router';
@@ -35,16 +35,8 @@ const GraduandoForm = () => {
   });
     
 
-    const cargarEstados = useCallback(async () => {
-    //  setLoading(true);
-      const data = await obtenerEstados("GENÉRICO");
-      setEstados(data);
-    //  setLoading(false);
-  }, []); // 🔥 Se ejecu
-  
-  useEffect(() => {
-    document.title = "Graduandos";
-}, []);
+
+
 
           // ------------------- FUNCIONALIDAD ROLES----------------------//
           const { user } = useContext(AuthContext); // Usuario logueado
@@ -72,13 +64,17 @@ const GraduandoForm = () => {
         
         const router = useRouter();
 
-  useEffect(() => {
-    cargarEstados();
-    fetchPermisos();
-    fetchGraduandos();
-   fetchEstudiantes();
 
-  }, [user]);
+
+        const cargarEstados = useCallback(async () => {
+          //  setLoading(true);
+            const data = await obtenerEstados("GENÉRICO");
+            setEstados(data);
+          //  setLoading(false);
+        }, []);
+             
+
+
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -207,6 +203,16 @@ const GraduandoForm = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+
+  useEffect(() => {
+    document.title = "Graduandos";
+    cargarEstados();
+    fetchPermisos();
+    fetchGraduandos();
+    fetchEstudiantes();
+
+  }, [user]);
 
   // Manejar los cambios en los campos del formulario
   const handleChange = (e) => {

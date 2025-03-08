@@ -11,7 +11,7 @@ const BenefactoresManagement = () => {
   const router = useRouter();
 
   const { user } = useContext(AuthContext); // Usuario logueado
-  const [estados, setEstados] = useState([]);
+ const [estados, setEstados] = useState([]);
   const [Benefactores, setBenefactores] = useState([]);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
@@ -32,16 +32,18 @@ const BenefactoresManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [BenefactoresPerPage] = useState(10);
   
+  const cargarEstados = useCallback(async () => {
+    //  setLoading(true);
+      const data = await obtenerEstados("GENÉRICO");
+      setEstados(data);
+    //  setLoading(false);
+  }, []); // 🔥 Se ejecu
+  
+
   useEffect(() => {
     document.title = "Benefactores";
 }, []);
 
-const cargarEstados = useCallback(async () => {
-  //  setLoading(true);
-    const data = await obtenerEstados("GENÉRICO");
-    setEstados(data);
-  //  setLoading(false);
-}, []); // 🔥 Se ejecu
 
 
 const fetchPermisos = useCallback(async () => {
@@ -72,11 +74,14 @@ const fetchPermisos = useCallback(async () => {
 }, [user]); // ✅ Solo se vuelve a crear cuando `user` cambia
 
 
+
+
+
   useEffect(() => {
     cargarEstados();
     fetchBenefactores();
     fetchPermisos();
-  }, [user,fetchPermisos]);
+  }, [user,fetchPermisos,cargarEstados]);
 
   const fetchBenefactores = async () => {
     try {

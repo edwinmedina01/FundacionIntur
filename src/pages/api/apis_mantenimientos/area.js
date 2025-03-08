@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva área
-    const { Nombre_Area, Tipo_Area, Responsable_Area } = req.body;
+    const { Nombre_Area, Tipo_Area, Responsable_Area, Estado } = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_area (Nombre_Area, Tipo_Area, Responsable_Area) VALUES (?, ?, ?)', 
+        'INSERT INTO tbl_area (Nombre_Area, Tipo_Area, Responsable_Area, Estado) VALUES (?, ?, ?,?)', 
         {
-          replacements: [Nombre_Area, Tipo_Area, Responsable_Area],
+          replacements: [Nombre_Area, Tipo_Area, Responsable_Area, Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -31,12 +31,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar un área
-    const { Id_Area, Nombre_Area, Tipo_Area, Responsable_Area } = req.body;
+    const { Id_Area, Nombre_Area, Tipo_Area, Responsable_Area ,Estado} = req.body;
     try {
       await sequelize.query(
-        'UPDATE tbl_area SET Nombre_Area = ?, Tipo_Area = ?, Responsable_Area = ? WHERE Id_Area = ?', 
+        'UPDATE tbl_area SET Nombre_Area = ?, Tipo_Area = ?, Responsable_Area = ?, Estado =? WHERE Id_Area = ?', 
         {
-          replacements: [Nombre_Area, Tipo_Area, Responsable_Area, Id_Area],
+          replacements: [Nombre_Area, Tipo_Area, Responsable_Area, Estado,Id_Area],
           type: QueryTypes.UPDATE,
         }
       );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -12,7 +12,10 @@ import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionArea } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
+import { obtenerEstados } from "../../utils/api"; // Importar la función
+
 const AreaManagement = () => {
+    const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [modalidades, setModalidades] = useState([]);
 
@@ -123,8 +126,17 @@ const exportToExcel = async () => {
 };
 
 
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
+
+
   // Fetch de áreas desde el backend
   useEffect(() => {
+    cargarEstados()
     fetchAreas();
     fetchPermisos();
   }, [user]);
@@ -189,7 +201,7 @@ const handleSubmit = async (e) => {
 
     formData.Modificado_Por = user.id;
     formData.Fecha_Modificacion = obtenerFechaActual();
-    formData.Estado = 1;
+    formData.Estado = Number(formData.Estado);
    const errores = validarFormulario(formData, reglasValidacionArea);
 
       if (errores.length > 0) {
@@ -343,6 +355,18 @@ if (!permisos) {
             required
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+           
+              {/* Campo de estado genérico */}
+              <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+
 
 <div className="flex justify-end">
   {isEditing
@@ -407,48 +431,55 @@ if (!permisos) {
 />
 
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-slate-200">
-            <tr>
-              <th className="p-3 border-b">ID</th>
-              <th className="p-3 border-b">Nombre del Área</th>
-              <th className="p-3 border-b">Tipo de Área</th>
-              <th className="p-3 border-b">Responsable del Área</th>
-              <th className="p-3 border-b">Acciones</th>
-            </tr>
-          </thead>
-          {permisos?.Permiso_Consultar === "1" && (
-          <tbody>
-            {currentAreas.map((area) => (
-              <tr key={area.Id_Area} className="hover:bg-slate-100 transition-colors">
-                <td className="p-3 border-b">{area.Id_Area}</td>
-                <td className="p-3 border-b">{area.Nombre_Area}</td>
-                <td className="p-3 border-b">{area.Tipo_Area}</td>
-                <td className="p-3 border-b">{area.Responsable_Area}</td>
-                <td className="p-3 border-b flex space-x-2">
-                 {permisos.Permiso_Actualizar === "1" && (
-                  <button
-                    onClick={() => handleEdit(area)}
-                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                  >
-                    Editar
-                  </button>)}
-                  {permisos.Permiso_Eliminar === "1" && (
-                  <button
-                 
-                    onClick={() => {
-                      setFormData(area)
-                      showModal("modalConfirmacion");
-                    }}
-                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-                  >
-                    X
-                  </button>)}
-                </td>
-              </tr>
-            ))}
-          </tbody>)}
-        </table>
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th className="p-3 border-b">ID</th>
+      <th className="p-3 border-b">Nombre del Área</th>
+      <th className="p-3 border-b">Tipo de Área</th>
+      <th className="p-3 border-b">Responsable del Área</th>
+      <th className="p-3 border-b">Estado</th> {/* Nueva columna para Estado */}
+      <th className="p-3 border-b">Acciones</th>
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentAreas.map((area) => (
+        <tr key={area.Id_Area} className="hover:bg-slate-100 transition-colors">
+          <td className="p-3 border-b">{area.Id_Area}</td>
+          <td className="p-3 border-b">{area.Nombre_Area}</td>
+          <td className="p-3 border-b">{area.Tipo_Area}</td>
+          <td className="p-3 border-b">{area.Responsable_Area}</td>
+          <td className="p-3 border-b">
+            {estados.find((estado) => estado.Codigo_Estado === area.Estado)?.Nombre_Estado || "Desconocido"}
+          </td> {/* Muestra el estado utilizando el diccionario de estados */}
+          <td className="p-3 border-b flex space-x-2">
+            {permisos.Permiso_Actualizar === "1" && (
+              <button
+                onClick={() => handleEdit(area)}
+                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+              >
+                Editar
+              </button>
+            )}
+            {permisos.Permiso_Eliminar === "1" && (
+              <button
+                onClick={() => {
+                  setFormData(area);
+                  showModal("modalConfirmacion");
+                }}
+                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
+              >
+                X
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  )}
+</table>
+
 {/* Paginación */}
 <div className="flex justify-between mt-4">
   <button
