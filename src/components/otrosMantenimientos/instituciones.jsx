@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
@@ -13,8 +13,10 @@ import { reglasValidacionInstituto } from "../../../models/ReglasValidacionModel
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 
+import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 const InstitucionManagement = () => {
+    const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [modalidades, setModalidades] = useState([]);
   const [instituciones, setInstituciones] = useState([]);
@@ -37,6 +39,12 @@ const InstitucionManagement = () => {
   const institucionesPerPage = 8;  // cantidad de instituciones por página
   const [searchQuery, setSearchQuery] = useState('');
 
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
 
 
   // Filtros del buscador por nombre
@@ -132,6 +140,7 @@ const InstitucionManagement = () => {
 
   // Fetch de instituciones desde el backend
   useEffect(() => {
+    cargarEstados()
     fetchInstituciones();
     fetchPermisos();
   }, [user]);
@@ -199,7 +208,7 @@ const handleSubmit = async (e) => {
     
         formData.Modificado_Por = user.id;
         formData.Fecha_Modificacion = obtenerFechaActual();
-        formData.Estado = 1;
+        formData.Estado = Number( formData.Estado);
        const errores = validarFormulario(formData, reglasValidacionInstituto);
 
       if (errores.length > 0) {
@@ -384,6 +393,17 @@ if (!permisos) {
             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
+                           {/* Campo de estado genérico */}
+                           <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
+
 <div className="flex justify-end">
   {isEditing
     ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
@@ -450,53 +470,62 @@ if (!permisos) {
   confirmColor="bg-red-600 hover:bg-red-700"
 />
 
-        <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
-          <thead className="bg-slate-200">
-            <tr>
-              <th className="p-3 border-b">ID</th>
-              <th className="p-3 border-b">Nombre</th>
-              <th className="p-3 border-b">Dirección</th>
-              <th className="p-3 border-b">Teléfono</th>
-              <th className="p-3 border-b">Correo</th>
-              <th className="p-3 border-b">Director</th>
-              <th className="p-3 border-b text-center">Acciones</th>
-            </tr>
-          </thead>
-          {permisos?.Permiso_Consultar === "1" && ( 
-          <tbody>
-            {currentInstituciones.map((instituto) => (
-              <tr key={instituto.Id_Instituto}>
-                <td className="p-3 border-b">{instituto.Id_Instituto}</td>
-                <td className="p-3 border-b">{instituto.Nombre_Instituto}</td>
-                <td className="p-3 border-b">{instituto.Direccion}</td>
-                <td className="p-3 border-b">{instituto.Telefono}</td>
-                <td className="p-3 border-b">{instituto.Correo}</td>
-                <td className="p-3 border-b">{instituto.Director}</td>
-                <td className="py-4 px-6 flex justify-center space-x-2">
-                {permisos.Permiso_Actualizar === "1" && ( 
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th className="p-3 border-b">ID</th>
+      <th className="p-3 border-b">Nombre</th>
+      <th className="p-3 border-b">Dirección</th>
+      <th className="p-3 border-b">Teléfono</th>
+      <th className="p-3 border-b">Correo</th>
+      <th className="p-3 border-b">Director</th>
+      <th className="p-3 border-b">Estado</th> {/* Nueva columna para estado */}
+      <th className="p-3 border-b text-center">Acciones</th>
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentInstituciones.map((instituto) => (
+        <tr key={instituto.Id_Instituto}>
+          <td className="p-3 border-b">{instituto.Id_Instituto}</td>
+          <td className="p-3 border-b">{instituto.Nombre_Instituto}</td>
+          <td className="p-3 border-b">{instituto.Direccion}</td>
+          <td className="p-3 border-b">{instituto.Telefono}</td>
+          <td className="p-3 border-b">{instituto.Correo}</td>
+          <td className="p-3 border-b">{instituto.Director}</td>
 
-                <button
-            onClick={() => handleEdit(instituto)}
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-          >
-            Editar
-          </button>)}
-          {permisos.Permiso_Eliminar === "1" && (
-          <button
-         
-            onClick={() => {
-              setFormData(instituto)
-              showModal("modalConfirmacion");
-            }}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-          >
-            X
-          </button>)}
-                </td>
-              </tr>
-            ))}
-          </tbody>)}
-        </table>
+          {/* 📌 Nueva celda para mostrar el estado correctamente */}
+          <td className="p-3 border-b">
+            {estados.find((estado) => estado.Codigo_Estado === instituto.Estado)?.Nombre_Estado || "Desconocido"}
+          </td>
+
+          <td className="py-4 px-6 flex justify-center space-x-2">
+            {permisos.Permiso_Actualizar === "1" && (
+              <button
+                onClick={() => handleEdit(instituto)}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+              >
+                Editar
+              </button>
+            )}
+            {permisos.Permiso_Eliminar === "1" && (
+              <button
+                onClick={() => {
+                  setFormData(instituto);
+                  showModal("modalConfirmacion");
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+              >
+                X
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  )}
+</table>
+
 
 {/* Paginación */}
 <div className="flex justify-between mt-4">

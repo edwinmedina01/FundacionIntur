@@ -134,31 +134,38 @@ Duracion: (min = 1, max = 60) => ({
             { label: "Solo se permiten letras, números, guiones, guiones bajos, puntos y @.", test: (valor) => /^[A-Za-z0-9._@-]+$/.test(valor) },
         ]
     }),
-
     Descripciones: (min = 10, max = 300) => ({
         tipo: "string",
         validaciones: [
-            { label: `Debe contener entre ${min} y ${max} caracteres.`, 
-            test: (valor) => valor.length >= min && valor.length <= max },
-  
-          { label: "Solo se permiten letras, números y espacios.", 
-            test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor) },
-  
-          { label: "No puede tener más de un espacio consecutivo.", 
-            test: (valor) => !/\s{2,}/.test(valor) },
-  
-          { label: "Cada palabra debe contener al menos una vocal.", 
-            test: (valor) => {
-                const palabras = valor.trim().split(/\s+/);
-                return palabras.every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra));
+            { 
+                label: `Debe contener entre ${min} y ${max} caracteres.`, 
+                test: (valor) => valor.length >= min && valor.length <= max 
+            },
+            { 
+                label: "Solo se permiten letras, números, espacios y puntos en siglas.", 
+                test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.]+$/.test(valor) 
+            },
+            { 
+                label: "No puede tener más de un espacio consecutivo.", 
+                test: (valor) => !/\s{2,}/.test(valor) 
+            },
+            { 
+                label: "Cada palabra debe contener al menos una vocal o ser una sigla reconocida.", 
+                test: (valor) => valor.split(/\s+/).every(
+                    palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}\.?$/.test(palabra)
+                ) 
+            },
+            { 
+                label: "No puede ser una única letra repetida muchas veces.", 
+                test: (valor) => !/^([A-Za-z])\1+$/.test(valor) 
+            },
+            { 
+                label: "Debe ser una oración con sentido (mínimo 3 palabras).", 
+                test: (valor) => valor.split(/\s+/).length >= 3 
             }
-          } ,  
-            { label: "No puede tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
-            { label: "Cada palabra debe tener al menos una vocal o ser una sigla reconocida.", test: (valor) => valor.split(" ").every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)) },
-            { label: "No puede ser una única letra repetida muchas veces.", test: (valor) => !/^([A-Za-z])\1+$/.test(valor) },
-            { label: "Debe ser una oración con sentido (mínimo 3 palabras).", test: (valor) => valor.split(" ").length >= 3 }
         ]
     }),
+    
     // ✅ Solo mayúsculas sin números ni símbolos
     TextoLibre: (min = 1, max = Infinity) => ({
         tipo: "string",

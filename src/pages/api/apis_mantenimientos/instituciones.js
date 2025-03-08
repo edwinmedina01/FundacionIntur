@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva institución
-    const { Nombre_Instituto, Direccion, Telefono, Correo, Director } = req.body;
+    const { Nombre_Instituto, Direccion, Telefono, Correo, Director, Estado } = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_instituto (Nombre_Instituto, Direccion, Telefono, Correo, Director) VALUES (?, ?, ?, ?, ?)', 
+        'INSERT INTO tbl_instituto (Nombre_Instituto, Direccion, Telefono, Correo, Director,Estado) VALUES (?, ?, ?, ?, ?, ?)', 
         {
-          replacements: [Nombre_Instituto, Direccion, Telefono, Correo, Director],
+          replacements: [Nombre_Instituto, Direccion, Telefono, Correo, Director,Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -31,13 +31,13 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar una institución
-    const { Id_Instituto, Nombre_Instituto, Direccion, Telefono, Correo, Director } = req.body;
+    const { Id_Instituto, Nombre_Instituto, Direccion, Telefono, Correo, Director,Estado } = req.body;
     try {
       // Actualizar la institución utilizando los parámetros recibidos
       await sequelize.query(
-        'UPDATE tbl_instituto SET Nombre_Instituto = ?, Direccion = ?, Telefono = ?, Correo = ?, Director = ? WHERE Id_Instituto = ?', 
+        'UPDATE tbl_instituto SET Nombre_Instituto = ?, Direccion = ?, Telefono = ?, Correo = ?, Director = ?,Estado = ? WHERE Id_Instituto = ?', 
         {
-          replacements: [Nombre_Instituto, Direccion, Telefono, Correo, Director, Id_Instituto],
+          replacements: [Nombre_Instituto, Direccion, Telefono, Correo, Director,Estado, Id_Instituto],
           type: QueryTypes.UPDATE,
         }
       );

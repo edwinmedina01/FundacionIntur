@@ -83,7 +83,7 @@ export const reglasValidacionEstudiante = {
   Modificado_Por: { tipo: "int", requerido: false },
  // Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  //Estado: { tipo: "int", requerido: true, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionModalidad = {
@@ -101,7 +101,7 @@ export const reglasValidacionModalidad = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
- // Estado: { tipo: "int", requerido: true, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
+ // Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionMunicipio = {
@@ -115,17 +115,17 @@ export const reglasValidacionMunicipio = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionInstituto = {
-  Nombre_Instituto: { ...reglasGenerales.NombreCompuesto(10, 75), requerido: true },
-  Direccion: { ...reglasGenerales.TextoLibre(10, 75), requerido: true },
+  Nombre_Instituto: { ...reglasGenerales.Descripciones(10, 75), requerido: true },
+  Direccion: { ...reglasGenerales.Direccion(10, 75), requerido: true },
   
   Telefono: { ...reglasGenerales.Telefono(), requerido: true },
   Correo: { ...reglasGenerales.Correo(), requerido: true },
   
-  Director: { ...reglasGenerales.TextoLibre(3, 80), requerido: true },
+  Director: { ...reglasGenerales.NombreCompuesto(3, 80), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
@@ -133,7 +133,7 @@ export const reglasValidacionInstituto = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionMatricula = {
@@ -150,7 +150,7 @@ export const reglasValidacionMatricula = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 
@@ -163,7 +163,7 @@ export const reglasValidacionDepartamento = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionSeccion = {
@@ -190,7 +190,7 @@ export const reglasValidacionArea = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionGrado = {
@@ -222,7 +222,7 @@ export const reglasValidacionGrado = {
     Modificado_Por: { tipo: "int", requerido: false },
     Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-    Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+    Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 export const reglasValidacionConfiguracion = {
   //Id_Configuracion: { tipo: "int", requerido: true }, // Clave primaria, debe ser un número entero
@@ -248,5 +248,5 @@ export const reglasValidacionRoles = {
   //Modificado_Por: { tipo: "int", requerido: false }, // ✅ Puede ser nulo si no se ha modificado
   //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false }, // ✅ Puede ser nulo si no se ha modificado
 
-  Estado: { tipo: "int", requerido: true, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };
