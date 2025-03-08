@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva línea de beneficio
-    const { Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio } = req.body;
+    const { Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio ,Estado} = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_lineas_de_beneficio (Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio) VALUES (?, ?, ?, ?)', 
+        'INSERT INTO tbl_lineas_de_beneficio (Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio,Estado) VALUES (?, ?, ?, ?, ?)', 
         {
-          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio],
+          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -31,12 +31,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar una línea de beneficio
-    const { Id_Beneficio, Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio } = req.body;
+    const { Id_Beneficio, Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado } = req.body;
     try {
       await sequelize.query(
-        'UPDATE tbl_lineas_de_beneficio SET Nombre_Beneficio = ?, Tipo_Beneficio = ?, Monto_Beneficio = ?, Responsable_Beneficio = ? WHERE Id_Beneficio = ?', 
+        'UPDATE tbl_lineas_de_beneficio SET Nombre_Beneficio = ?, Tipo_Beneficio = ?, Monto_Beneficio = ?, Responsable_Beneficio = ? , Estado = ? WHERE Id_Beneficio = ?', 
         {
-          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Id_Beneficio],
+          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado, Id_Beneficio ],
           type: QueryTypes.UPDATE,
         }
       );

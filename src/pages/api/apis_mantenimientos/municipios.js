@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     // Obtener municipios con su nombre de departamento
     try {
       const municipios = await sequelize.query(
-        `SELECT m.Id_Municipio, m.Id_Departamento, m.Nombre_Municipio, d.Nombre_Departamento
+        `SELECT m.Id_Municipio, m.Id_Departamento, m.Nombre_Municipio, d.Nombre_Departamento, m.Estado
          FROM tbl_municipio m
          JOIN tbl_departamento d ON m.Id_Departamento = d.Id_Departamento`,
         {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear un nuevo municipio
-    const { Id_Departamento, Nombre_Municipio } = req.body;
+    const { Id_Departamento, Nombre_Municipio, Estado } = req.body;
     
     // Validar que los datos requeridos estén presentes
     if (!Id_Departamento || !Nombre_Municipio) {
@@ -31,9 +31,9 @@ export default async function handler(req, res) {
 
     try {
       await sequelize.query(
-        'INSERT INTO tbl_municipio (Id_Departamento, Nombre_Municipio) VALUES (?, ?)',
+        'INSERT INTO tbl_municipio (Id_Departamento, Nombre_Municipio,Estado) VALUES (?, ?, ?)',
         {
-          replacements: [Id_Departamento, Nombre_Municipio],
+          replacements: [Id_Departamento, Nombre_Municipio,Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar un municipio existente
-    const { Id_Municipio, Id_Departamento, Nombre_Municipio } = req.body;
+    const { Id_Municipio, Id_Departamento, Nombre_Municipio ,Estado} = req.body;
     
     // Validar que los datos requeridos estén presentes
     if (!Id_Municipio || !Id_Departamento || !Nombre_Municipio) {
@@ -53,9 +53,9 @@ export default async function handler(req, res) {
 
     try {
       await sequelize.query(
-        'UPDATE tbl_municipio SET Id_Departamento = ?, Nombre_Municipio = ? WHERE Id_Municipio = ?',
+        'UPDATE tbl_municipio SET Id_Departamento = ?, Nombre_Municipio = ?,  Estado = ? WHERE Id_Municipio = ?',
         {
-          replacements: [Id_Departamento, Nombre_Municipio, Id_Municipio],
+          replacements: [Id_Departamento, Nombre_Municipio,Estado, Id_Municipio],
           type: QueryTypes.UPDATE,
         }
       );

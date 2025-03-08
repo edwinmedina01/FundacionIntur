@@ -210,7 +210,7 @@ const handleSubmit = async (e) => {
     
         formData.Modificado_Por = user.id;
         formData.Fecha_Modificacion = obtenerFechaActual();
-        formData.Estado = 1;
+        formData.Estado = Number(formData.Estado);
        const errores = validarFormulario(formData, reglasValidacionMunicipio);
     
           if (errores.length > 0) {

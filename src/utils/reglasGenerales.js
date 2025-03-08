@@ -279,6 +279,22 @@ Duracion: (min = 1, max = 60) => ({
             { label: `Debe ser un valor numérico entre ${min} y ${max}.`, test: (valor) => /^\d+(\.\d{1,2})?$/.test(valor) }
         ]
     }),
+    Porcentaje: (min = 0, max = 100) => ({
+        tipo: "decimal",
+        validaciones: [
+            { 
+                label: `Debe ser un valor numérico entre ${min} y ${max}, con o sin el símbolo '%'.`, 
+                test: (valor) => /^(\d{1,2}(\.\d{1,2})?|100(\.00?)?)%?$/.test(valor.trim()) 
+            },
+            { 
+                label: `El valor debe estar entre ${min} y ${max}.`, 
+                test: (valor) => {
+                    const numero = parseFloat(valor.replace('%', ''));
+                    return !isNaN(numero) && numero >= min && numero <= max;
+                }
+            }
+        ]
+    }),
 
     // ✅ Teléfono (Formato internacional)
     Telefono: () => ({

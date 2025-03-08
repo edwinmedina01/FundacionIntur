@@ -211,10 +211,10 @@ export const reglasValidacionGrado = {
 
 
   export const reglasValidacionBeneficio = {
-    Nombre_Beneficio: { ...reglasGenerales.NombreCompuesto(3, 80), requerido: true },
-    Tipo_Beneficio: { ...reglasGenerales.NombreCompuesto(3, 80), requerido: true },
-    Monto_Beneficio: { ...reglasGenerales.Moneda(0, 999999.99), requerido: true },
-    Responsable_Beneficio: { ...reglasGenerales.TextoLibre(3, 45), requerido: true },
+    Nombre_Beneficio: { ...reglasGenerales.DescripcionGrado(3, 80), requerido: true },
+    Tipo_Beneficio: { ...reglasGenerales.DescripcionGrado(3, 80), requerido: true },
+    Monto_Beneficio: { ...reglasGenerales.Porcentaje(0, 999999.99), requerido: true },
+    Responsable_Beneficio: { ...reglasGenerales.NombreCompuesto(3, 45), requerido: true },
 
     Creado_Por: { tipo: "int", requerido: true },
     Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },

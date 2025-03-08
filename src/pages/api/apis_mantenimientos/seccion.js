@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const { Nombre_Seccion, Id_Grado , Estado} = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado, Estado) VALUES (?, ?)', 
+        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado, Estado) VALUES (?, ? , ?)', 
         {
           replacements: [Nombre_Seccion, Id_Grado,Estado],
           type: QueryTypes.INSERT,
