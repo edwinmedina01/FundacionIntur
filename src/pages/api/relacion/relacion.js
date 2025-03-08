@@ -87,6 +87,7 @@ export default async function handler(req, res) {
             personaRelacion.Id_Departamento=personaRelacion.Estudiante.Persona.Id_Departamento;
             personaRelacion.Id_estudiante=personaRelacion.Estudiante.Id_Estudiante;
             personaRelacion.Estudiante=0;
+            personaRelacion.Estado=personaRelacion.Estado;
             const persona = await Persona.create(personaRelacion);
 
             // Crear la relación con los datos proporcionados
@@ -107,12 +108,22 @@ export default async function handler(req, res) {
             const persona = await Persona.findOne({
                 where: { Id_Persona: personaRelacion.Id_Persona },
               });
+
+              const relacion = await Relacion.findOne({
+                where: { Id: personaRelacion.Id },
+              });
+      
       
               if (!persona) {
                 return res.status(404).json({ error: 'Persona no encontrada' });
               }
 
+              if (!relacion) {
+                return res.status(404).json({ error: 'relacion no encontrada' });
+              }
+
               await persona.update(personaRelacion);
+              await relacion.update(personaRelacion);
 
               return res.status(201).json(personaRelacion);
       

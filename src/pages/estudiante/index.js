@@ -254,34 +254,34 @@ const [benefactorData, setBenefactorData] = useState({
 
  
 
-    //    // Si hay un estudiante seleccionado, actualizarlo
-    // if (selectedStudent||idEstudiante) {
+       // Si hay un estudiante seleccionado, actualizarlo
+    if (selectedStudent||idEstudiante) {
 
-    //   const updatedStudent = response.data.find(
-    //     (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
-    //   );
-    //   setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+      const updatedStudent = response.data.find(
+        (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
+      );
+      setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
   
-    //   handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
-    //   setActiveTab(Number(tab))
-    //   switch (Number(tab))
+      handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
+      setActiveTab(Number(tab))
+      switch (Number(tab))
       
-    //   {
-    //       case 3:
-    //       case 2:
-    //         const relacion = updatedStudent.Relaciones.find(
-    //           (e) =>  e.Id === Number( relacionId)
-    //         );
-    //         if (relacion){
-    //           handleEditTutor(relacion)
+      {
+          case 3:
+          case 2:
+            const relacion = updatedStudent.Relaciones.find(
+              (e) =>  e.Id === Number( relacionId)
+            );
+            if (relacion){
+              handleEditTutor(relacion)
             
-    //         }
+            }
         
-    //       break;
+          break;
 
 
-    //   }
-    // }
+      }
+    }
       console.log(response.data)
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
@@ -981,8 +981,9 @@ setPersonaDataRelacion({
   Direccion: tutor.Persona.Direccion,
   Telefono:  tutor.Persona.Telefono,
   Id_Persona:tutor.Persona.Id_Persona,
-  Estado:tutor.Persona.Estado,
-  Update:true
+  Estado:tutor.Estado,
+  Update:true,
+  Id: tutor.Id,
 
 })
     
@@ -2077,6 +2078,18 @@ if (!permisos) {
     onChange={handleChange}
     className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
   />
+</div>
+<div>
+                    {/* Campo de estado genérico */}
+                    <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={graduacion.Estado || ""} onChange={handleChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
 </div>
 <br></br>
 
