@@ -5,10 +5,10 @@ export const reglasValidacionPermisos = {
     Id_Objeto: { tipo: "int", requerido: true }, // ID del objeto al que se le asigna el permiso
 
     // ✅ Validaciones para permisos (Debe ser "SI" o "NO")
-    Permiso_Insertar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
-    Permiso_Actualizar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
-    Permiso_Eliminar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
-    Permiso_Consultar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
+   // Permiso_Insertar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
+  //  Permiso_Actualizar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
+  //  Permiso_Eliminar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
+ //   Permiso_Consultar: { tipo: "string", requerido: true, opciones: ["SI", "NO"] },
 
     // ✅ Creado_Por y Modificado_Por deben ser enteros (ID de usuario)
     Creado_Por: { tipo: "int", requerido: true },

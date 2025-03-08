@@ -194,7 +194,7 @@ const fetchPermisos = async () => {
 
 const handleSubmit = async (e) => {
 
-
+  e.preventDefault();
 
     formData.Creado_Por = user.id;
    formData.Fecha_Creacion = obtenerFechaActual();
@@ -211,7 +211,7 @@ const handleSubmit = async (e) => {
       }
      
 
-    e.preventDefault();
+
     try {
       const response = isEditing
         ? await fetch('/api/apis_mantenimientos/area', {

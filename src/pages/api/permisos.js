@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   } 
   
   else if (req.method === 'POST') {
-    const { Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por } = req.body;
+    const { Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por, Estado } = req.body;
 
     try {
       // Validar que los campos requeridos existan
@@ -51,9 +51,9 @@ export default async function handler(req, res) {
       const fechaCreacion = new Date().toISOString().split("T")[0];
 
       await sequelize.query(
-        'INSERT INTO tbl_permisos (Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por, Fecha_Creacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO tbl_permisos (Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por, Fecha_Creacion,Estado) VALUES (?, ?, ?, ?, ?, ?, ?, ? ,?)',
         {
-          replacements: [Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por, fechaCreacion],
+          replacements: [Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Creado_Por, fechaCreacion, Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -66,11 +66,11 @@ export default async function handler(req, res) {
   } 
   
   else if (req.method === 'PUT') {
-    const { Id_Permiso, Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Modificado_Por } = req.body;
+    const { Id_Permiso, Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Modificado_Por, Estado } = req.body;
 
     try {
       if (!Id_Permiso || !Id_Rol || !Id_Objeto || !Modificado_Por) {
-        return res.status(400).json({ error: 'Faltan campos requeridos: Id_Permiso, Id_Rol, Id_Objeto o Modificado_Por' });
+        return res.status(400).json({ error: 'Faltan campos requeridos: Id_Permiso, Id_Rol, Id_Objeto o Modificado_Por, Estado' });
       }
 
       if (isNaN(Id_Permiso) || isNaN(Id_Rol) || isNaN(Id_Objeto) || isNaN(Modificado_Por)) {
@@ -91,9 +91,9 @@ export default async function handler(req, res) {
       const fechaModificacion = new Date().toISOString().split("T")[0];
 
       await sequelize.query(
-        'UPDATE tbl_permisos SET Id_Rol = ?, Id_Objeto = ?, Permiso_Insertar = ?, Permiso_Actualizar = ?, Permiso_Eliminar = ?, Permiso_Consultar = ?, Modificado_Por = ?, Fecha_Modificacion = ? WHERE Id_Permiso = ?',
+        'UPDATE tbl_permisos SET Id_Rol = ?, Id_Objeto = ?, Permiso_Insertar = ?, Permiso_Actualizar = ?, Permiso_Eliminar = ?, Permiso_Consultar = ?, Modificado_Por = ?, Fecha_Modificacion = ? , Estado = ? WHERE Id_Permiso = ?',
         {
-          replacements: [Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Modificado_Por, fechaModificacion, Id_Permiso],
+          replacements: [Id_Rol, Id_Objeto, Permiso_Insertar, Permiso_Actualizar, Permiso_Eliminar, Permiso_Consultar, Modificado_Por, fechaModificacion,Estado, Id_Permiso],
           type: QueryTypes.UPDATE,
         }
       );

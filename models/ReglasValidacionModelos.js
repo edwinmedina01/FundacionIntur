@@ -107,7 +107,7 @@ export const reglasValidacionModalidad = {
 export const reglasValidacionMunicipio = {
   Id_Departamento: { tipo: "int", requerido: true },
 
-  Nombre_Municipio: { ...reglasGenerales.TextoLibre(3, 80), requerido: true },
+  Nombre_Municipio: { ...reglasGenerales.NombreCompuesto(3, 80), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
@@ -181,8 +181,8 @@ export const reglasValidacionSeccion = {
 
 export const reglasValidacionArea = {
   Nombre_Area: { ...reglasGenerales.NombreCompuesto(5, 80), requerido: true },
-  Tipo_Area: { ...reglasGenerales.NombreCompuesto(3, 50), requerido: true },
-  Responsable_Area: { ...reglasGenerales.TextoLibre(3, 75), requerido: true },
+  Tipo_Area: { ...reglasGenerales.DescripcionGrado(3, 50), requerido: true },
+  Responsable_Area: { ...reglasGenerales.NombreCompuesto(3, 75), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },

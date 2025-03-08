@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext,useCallback } from 'react';
 import axios from 'axios';
 //import * as XLSX from 'xlsx';
 import ExcelJS from "exceljs";
@@ -14,10 +14,13 @@ import useModal from "../hooks/useModal";
 import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacionPermisos } from "../../models/Permiso"; // Importamos las reglas del modelo
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
+import { obtenerEstados } from "../utils/api"; // Importar la función
 
 
 
 const PermissionsManagement = () => {
+    const [estados, setEstados] = useState([]);
+  
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [permissions, setPermissions] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -48,7 +51,16 @@ const PermissionsManagement = () => {
  const [perPage] = useState(8); // Número de elementos por página
  const [searchTerm, setSearchTerm] = useState(''); // Búsqueda
 
+  const cargarEstados = useCallback(async () => {
+  //  setLoading(true);
+    const data = await obtenerEstados("GENÉRICO");
+    setEstados(data);
+  //  setLoading(false);
+}, []); // 🔥 Se ejecu
+
+
   useEffect(() => {
+    cargarEstados();
     fetchPermissions();
     fetchRoles();
     fetchObjects(); // Llama a la función para obtener objetos
@@ -151,12 +163,13 @@ const handleClearSearch = () => {
 }; 
 
 const handleSubmit = async (e) => {
-  
+  e.preventDefault();
    formData.Creado_Por=user.id;
     formData.Modificado_Por=user.id;
+    formData.Estado=Number(formData.Estado);
   const errores = validarFormulario(formData, reglasValidacionPermisos);
   
-  e.preventDefault();
+
   try {
     const requestData = {
       ...formData,
@@ -463,6 +476,16 @@ if (!permisos) {
               )
             )}
           </div>
+                              {/* Campo de estado genérico */}
+                              <label>Estado:</label>
+            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
+                <option value="">Seleccione un estado</option>
+                {estados.map((estado) => (
+                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+                        {estado.Nombre_Estado}
+                    </option>
+                ))}
+            </select>
 
           <div className="flex justify-end">
   {isEditing
@@ -558,77 +581,71 @@ if (!permisos) {
 
 
 
-        <table className="xls_style-excel-table">
-          <thead className="bg-slate-200">
-            <tr>
-              <th className="py-4 px-6 text-left">Id Permiso</th>
-              <th className="py-4 px-6 text-left">Rol</th>
-              <th className="py-4 px-6 text-left">Objeto</th>{" "}
-              {/* Nueva columna para objeto */}
-              <th className="py-4 px-6 text-left">Consultar</th>
-              <th className="py-4 px-6 text-left">Insertar</th>
-              <th className="py-4 px-6 text-left">Actualizar</th>
-              <th className="py-4 px-6 text-left">Eliminar</th>
-              <th className="py-4 px-6 text-center">Acciones</th>
-            </tr>
-          </thead>
-          {permisos?.Permiso_Consultar === "1" && (
-          <tbody>
-            {currentPermissions.map((permiso) => (
-              <tr
-                key={permiso.Id_Permiso}
-                className="border-b hover:bg-gray-100"
-              >
-                <td className="py-4 px-6">{permiso.Id_Permiso}</td>
-                <td className="py-4 px-6">
-                  <strong>{roleMap[permiso.Id_Rol]}</strong>
-                </td>{" "}
-                {/* Mostrar nombre del rol */}
-                <td className="py-4 px-6">
-                  {objectMap[permiso.Id_Objeto]}
-                </td>{" "}
-                {/* Mostrar nombre del objeto correctamente */}
-                <td className="py-4 px-6">
-                  {permiso.Permiso_Consultar === "1" ? "Sí" : "No"}
-                </td>
-                <td className="py-4 px-6">
-                  {permiso.Permiso_Insertar === "1" ? "Sí" : "No"}
-                </td>
-                <td className="py-4 px-6">
-                  {permiso.Permiso_Actualizar === "1" ? "Sí" : "No"}
-                </td>
-                <td className="py-4 px-6">
-                  {permiso.Permiso_Eliminar === "1" ? "Sí" : "No"}
-                </td>
-                <td className="flex items-center space-x-2">
-  {/* Agregar la condicional para verificar si tiene permiso */}
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-      onClick={() => {handleEdit(permiso); showModal("modalAddPermiso");}}
-      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-    >
-      Editar
-    </button>
-  )}
-  
-  {/* Agregar la condicional para verificar si tiene permiso */}
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-    onClick={() => {
-       setFormData(permiso)
-       showModal("modalConfirmacion");
-     }}
-      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-    >
-      X
-    </button>
-  )}
-</td>
+<table className="xls_style-excel-table"> 
+  <thead className="bg-slate-200">
+    <tr>
+      <th className="py-4 px-6 text-left">Id Permiso</th>
+      <th className="py-4 px-6 text-left">Rol</th>
+      <th className="py-4 px-6 text-left">Objeto</th> {/* Nueva columna para objeto */}
+      <th className="py-4 px-6 text-left">Consultar</th>
+      <th className="py-4 px-6 text-left">Insertar</th>
+      <th className="py-4 px-6 text-left">Actualizar</th>
+      <th className="py-4 px-6 text-left">Eliminar</th>
+      <th className="py-4 px-6 text-left">Estado</th> {/* ✅ Nueva columna de Estado */}
+      <th className="py-4 px-6 text-center">Acciones</th>
+    </tr>
+  </thead>
 
-              </tr>
-            ))}
-          </tbody>)}
-        </table>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentPermissions.map((permiso) => {
+        // Buscar el estado correspondiente en el diccionario de estados
+        const estado = estados.find(e => e.Codigo_Estado === permiso.Estado);
+
+        return (
+          <tr key={permiso.Id_Permiso} className="border-b hover:bg-gray-100">
+            <td className="py-4 px-6">{permiso.Id_Permiso}</td>
+            <td className="py-4 px-6"><strong>{roleMap[permiso.Id_Rol]}</strong></td> {/* Mostrar nombre del rol */}
+            <td className="py-4 px-6">{objectMap[permiso.Id_Objeto]}</td> {/* Mostrar nombre del objeto correctamente */}
+            <td className="py-4 px-6">{permiso.Permiso_Consultar === "1" ? "Sí" : "No"}</td>
+            <td className="py-4 px-6">{permiso.Permiso_Insertar === "1" ? "Sí" : "No"}</td>
+            <td className="py-4 px-6">{permiso.Permiso_Actualizar === "1" ? "Sí" : "No"}</td>
+            <td className="py-4 px-6">{permiso.Permiso_Eliminar === "1" ? "Sí" : "No"}</td>
+
+            {/* ✅ Nueva Celda para Estado */}
+            <td className="py-4 px-6">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
+
+            <td className="flex items-center space-x-2">
+              {/* Verificar permiso para Editar */}
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => { handleEdit(permiso); showModal("modalAddPermiso"); }}
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                >
+                  Editar
+                </button>
+              )}
+
+              {/* Verificar permiso para Eliminar */}
+              {permisos.Permiso_Eliminar === "1" && (
+                <button
+                  onClick={() => {
+                    setFormData(permiso);
+                    showModal("modalConfirmacion");
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  X
+                </button>
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  )}
+</table>
+
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
           {/* Botón "Anterior" */}

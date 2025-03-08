@@ -3,9 +3,9 @@
 
   export const reglasValidacion = {
     Objeto: { ...reglasGenerales.NombreUnicoConGuion(5, 45), requerido: true },
-    Descripcion: { ...reglasGenerales.TextoLibre(10, 80), requerido: true },
+    Descripcion: { ...reglasGenerales.Descripciones(10, 80), requerido: true },
     Tipo_Objeto: { ...reglasGenerales.NombreUnico(5, 45), requerido: true },
-    Estado: { tipo: "int", requerido: true, opciones: [0, 1] },
+   // Estado: { tipo: "int", requerido: false, opciones: [0, 1] },
 };
 
 
