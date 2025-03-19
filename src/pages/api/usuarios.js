@@ -59,21 +59,28 @@ export default async function handler(req, res) {
         // Buscar usuarios excluyendo superusuarios si no es superusuario
         console.log("info"," Buscar usuarios excluyendo superusuarios si no es superusuario:");
         const existingUser = await sequelize.query(
-          `SELECT * FROM tbl_usuario 
-           WHERE (Usuario = ? OR Correo = ?) 
-           ${esSuperUsuario ? '' : 'AND Correo <> ?'}`,
-          { replacements: esSuperUsuario ? [usuario, correo] : [usuario, correo, superuserEmail], type: QueryTypes.SELECT }
+          `SELECT u.*, e.Descripcion AS EstadoDisplay
+           FROM tbl_usuario u
+           LEFT JOIN tbl_estado_usuario e ON u.Id_EstadoUsuario = e.Id_EstadoUsuario
+           WHERE (u.Usuario = ? OR u.Correo = ?)
+           ${esSuperUsuario ? '' : 'AND u.Correo <> ?'}`,
+          { 
+            replacements: esSuperUsuario ? [usuario, correo] : [usuario, correo, superuserEmail], 
+            type: QueryTypes.SELECT 
+          }
         );
-
         return res.status(200).json(existingUser);
       }
 
-      // Obtener todos los usuarios excluyendo superusuarios si no es superusuario
-      const usuarios = await sequelize.query(
-        `SELECT * FROM tbl_usuario 
-         ${esSuperUsuario ? '' : 'WHERE Correo <> ?'}`,
-        { replacements: esSuperUsuario ? [] : [superuserEmail], type: QueryTypes.SELECT }
-      );
+// Obtener todos los usuarios excluyendo superusuarios si no es superusuario
+const usuarios = await sequelize.query(
+  `SELECT u.*, e.Descripcion AS EstadoDisplay
+   FROM tbl_usuario u
+   LEFT JOIN tbl_estado_usuario e ON u.Id_EstadoUsuario = e.Id_EstadoUsuario
+   ${esSuperUsuario ? '' : 'WHERE u.Correo <> ?'}`,
+  { replacements: esSuperUsuario ? [] : [superuserEmail], type: QueryTypes.SELECT }
+);
+
 
       res.status(200).json(usuarios);
     } 

@@ -12,6 +12,7 @@ import { reglasValidacionDepartamento } from "../../../models/ReglasValidacionMo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
+import { exportToExcel } from "../../utils/exportToExcel"; // Importar la función
 
 const Departamentos = () => {
     const [estados, setEstados] = useState([]);
@@ -77,7 +78,7 @@ const Departamentos = () => {
   // };
 
 
-  const exportToExcel = async () => {
+  const exportToExcelOld = async () => {
     // 1️⃣ Crear un nuevo libro y hoja de Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Departamentos");
@@ -113,6 +114,32 @@ const Departamentos = () => {
   
     saveAs(fileBlob, "Departamentos.xlsx");
   };
+
+  //import { exportToExcel } from "./exportToExcel"; // Importar la función genérica
+
+const exportDepartamentos = async () => {
+    // 📌 Definir el nombre del archivo y título del reporte
+    const fileName = "Departamentos.xlsx";
+    const title = "Reporte de Departamentos";
+
+    // 📌 Definir los encabezados de la tabla
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Estado", key: "Estado", width: 15 }, // Se añade la columna Estado
+    ];
+
+    // 📌 Transformar los datos antes de exportar
+    const data = departamentos.map((departamento) => ({
+        ID: departamento.Id_Departamento,
+        Nombre: departamento.Nombre_Departamento,
+        Estado: departamento.Estado === "1" ? "Activo" : "Inactivo", // Convertir estado
+    }));
+
+    // 📌 Llamar la función reutilizable para generar el Excel
+    await exportToExcel({ fileName, title, headers, data });
+};
+
   
   const cargarEstados = useCallback(async () => {
     //  setLoading(true);
@@ -400,7 +427,7 @@ if (!permisos) {
       {/* Columna derecha: Tabla de departamentos */}
       <div className="w-full max-w-3xl mx-auto">
         <button
-          onClick={exportToExcel}
+          onClick={exportDepartamentos}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         >
           Exportar a Excel

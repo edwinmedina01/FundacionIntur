@@ -9,8 +9,7 @@ import { reglasValidacionBeneficio } from "../../../models/ReglasValidacionModel
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
-
-
+import { exportToExcel } from "../../utils/exportToExcel"; // Importar la función
 const LineaBeneficioManagement = () => {
     const [estados, setEstados] = useState([]);
   
@@ -84,7 +83,7 @@ const LineaBeneficioManagement = () => {
   //   XLSX.writeFile(workbook, 'LineasBeneficio.xlsx');
   // };
 
-const exportToExcel = async () => {
+const exportToExcelOld = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Líneas de Beneficio");
@@ -126,6 +125,37 @@ const exportToExcel = async () => {
 
   saveAs(fileBlob, "LineasBeneficio.xlsx");
 };
+
+
+const exportBeneficios = async () => {
+    // 📌 Definir el nombre del archivo y título del reporte
+    const fileName = "LineasBeneficio.xlsx";
+    const title = "Reporte de Líneas de Beneficio";
+
+    // 📌 Definir los encabezados de la tabla
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Tipo", key: "Tipo", width: 20 },
+        { header: "Monto", key: "Monto", width: 15 },
+        { header: "Responsable", key: "Responsable", width: 30 },
+        { header: "Estado", key: "Estado", width: 15 }, // Se añade la columna Estado
+    ];
+
+    // 📌 Transformar los datos antes de exportar
+    const data = currentBeneficios.map((beneficio) => ({
+        ID: beneficio.Id_Beneficio,
+        Nombre: beneficio.Nombre_Beneficio,
+        Tipo: beneficio.Tipo_Beneficio,
+        Monto: beneficio.Monto_Beneficio,
+        Responsable: beneficio.Responsable_Beneficio,
+        Estado: beneficio.Estado === "1" ? "Activo" : "Inactivo", // Convertir estado
+    }));
+
+    // 📌 Llamar la función reutilizable para generar el Excel
+    await exportToExcel({ fileName, title, headers, data });
+};
+
 
   const cargarEstados = useCallback(async () => {
   //  setLoading(true);
@@ -421,7 +451,7 @@ if (!permisos) {
       {/* Columna derecha: Tabla de beneficios */}
       <div className="w-2/3">
         <button
-          onClick={exportToExcel}
+          onClick={exportBeneficios}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         >
           Exportar a Excel

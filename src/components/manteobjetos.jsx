@@ -13,7 +13,7 @@ import ModalConfirmacion from '../utils/ModalConfirmacion';
 import useModal from "../hooks/useModal"; 
 import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacion } from "../../models/ObjetoDto"; // Importamos las reglas del modelo
-
+import { exportToExcel } from '../utils/exportToExcel';
 
 const ManejoObjetos = () => {
   const { user } = useContext(AuthContext); // Usuario logueado
@@ -57,7 +57,7 @@ const totalPages = Math.ceil(filteredObjetos.length / perPage);
 
 
 
-const exportToExcel = async () => {
+const exportToExcelObjetosv1 = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Objetos");
@@ -96,6 +96,33 @@ const exportToExcel = async () => {
 
   saveAs(fileBlob, "objetos.xlsx");
 };
+
+
+
+const exportToExcelObjetos = async () => {
+    const headers = [
+        { header: "ID", key: "Id_Objeto", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Descripción", key: "Descripcion", width: 40 },
+        { header: "Estado", key: "Estado", width: 15 },
+    ];
+
+    const data = filteredObjetos.map((objeto) => ({
+        Id_Objeto: objeto.Id_Objeto,
+        Nombre: objeto.Objeto,
+        Descripcion: objeto.Descripcion,
+        Estado: objeto.Estado === "1" ? "Activo" : "Inactivo",
+    }));
+
+    await exportToExcel({
+        fileName: "Objetos.xlsx",
+        title: "Reporte de Objetos",
+        headers,
+        data,
+        searchTerm, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
+};
+
 
 // Exportar a Excel
 // const exportToExcel = () => {
@@ -339,7 +366,7 @@ if (!permisos) {
 </button>
     
     <button
-      onClick={exportToExcel}
+      onClick={exportToExcelObjetos}
       className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
     >
       <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar

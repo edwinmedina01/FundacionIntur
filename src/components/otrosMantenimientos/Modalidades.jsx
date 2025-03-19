@@ -6,7 +6,7 @@ import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { EyeIcon, EyeSlashIcon,MagnifyingGlassIcon  } from "@heroicons/react/24/outline"; 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 
@@ -15,7 +15,8 @@ import { reglasValidacionModalidad } from "../../../models/ReglasValidacionModel
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
-
+import { getBase64ImageFromUrl } from "../../utils/getBase64ImageFromUrl"; 
+import { deepSearch } from "../../utils/deepSearch";// Importar la función
 const ModalidadesManagement = () => {
 
   const [estados, setEstados] = useState([]);
@@ -37,14 +38,24 @@ const ModalidadesManagement = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const modalidadesPerPage = 8;  // cantidad de modalidades por página
-  const [searchQuery, setSearchQuery] = useState('');
+  
+    const [modalidadesPerPage, setUsersPerPage] = useState(10); // Valor inicial
+ 
+   const [searchQuery, setSearchQuery] = useState({
+     general: "",
+
+   });
+
+   // 📌 Limpiar búsqueda
+const handleClearSearch = () => {
+  setSearchQuery({ general: "", Usuario: "", Estado: "", Created: "" });
+  setCurrentPage(1); // Reiniciar a la primera página
+};
 
 
   // Filtros del buscador por nombre
-  const filteredModalidades = modalidades.filter(modalidad =>
-    modalidad.Nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+    const filteredModalidades = modalidades.filter((user) => deepSearch(user, searchQuery, 0, 3));
 
   // Lógica de paginación para modalidades filtradas
   const indexOfLastModalidad = currentPage * modalidadesPerPage;
@@ -86,7 +97,7 @@ const ModalidadesManagement = () => {
   // };
 
 
-  const exportToExcel = async () => {
+  const exportToExcelold = async () => {
     // 1️⃣ Crear un nuevo libro y hoja de Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Modalidades");
@@ -128,6 +139,96 @@ const ModalidadesManagement = () => {
   
     saveAs(fileBlob, "Modalidades.xlsx");
   };
+
+  
+
+const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Modalidades");
+
+    // 📌 **Obtener la Imagen en Base64**
+    const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+    const imageId = workbook.addImage({
+        base64: logoBase64,
+        extension: "png",
+    });
+
+    // 📌 **Insertar el Logo en la Esquina Izquierda**
+    worksheet.addImage(imageId, {
+        tl: { col: 0, row: 0 }, // Posición en la celda A1
+        ext: { width: 120, height: 50 }, // Tamaño del logo
+    });
+
+    // 📌 **Insertar el Título en la Fila 1**
+    worksheet.mergeCells("B1", "K1");
+    worksheet.getCell("B1").value = "Reporte de Modalidades";
+    worksheet.getCell("B1").font = { bold: true, size: 16 };
+    worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Fecha de Exportación en la Fila 2**
+    worksheet.mergeCells("B2", "K2");
+    worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+    worksheet.getCell("B2").font = { italic: true, size: 12 };
+    worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Criterios de Búsqueda en la Fila 3**
+    const filterCriteria = Object.entries(searchQuery || {})
+        .filter(([_, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ") || "Sin filtros";
+
+    worksheet.mergeCells("B3", "K3");
+    worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+    worksheet.getCell("B3").font = { italic: true, size: 12 };
+    worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Agregar una Fila Vacía en la Fila 4 para Separar los Encabezados**
+    worksheet.getRow(4).values = [];
+
+    // 📌 **Definir Encabezados desde la Fila 5**
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Descripción", key: "Descripcion", width: 40 },
+        { header: "Duración", key: "Duracion", width: 15 },
+        { header: "Horario", key: "Horario", width: 20 },
+    ];
+
+    // 📌 **Estilizar los Encabezados en la Fila 5**
+    const headerRow = worksheet.getRow(5);
+    headerRow.values = headers.map((h) => h.header);
+    headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+    headerRow.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+
+    // 📌 **Definir Anchos de Columna**
+    headers.forEach((col, index) => {
+        worksheet.getColumn(index + 1).width = col.width;
+    });
+
+    // 📌 **Filtrar Modalidades con deepSearch**
+    const filteredModalidades = currentModalidades.filter((modalidad) => deepSearch(modalidad, searchQuery));
+
+    // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
+    let rowIndex = 6;
+    filteredModalidades.forEach((modalidad) => {
+        worksheet.getRow(rowIndex).values = [
+            modalidad.Id_Modalidad,
+            modalidad.Nombre,
+            modalidad.Descripcion,
+            modalidad.Duracion || "-",
+            modalidad.Horario || "-",
+        ];
+        rowIndex++;
+    });
+
+    // 📌 **Descargar el Archivo**
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(blob, "Reporte_Modalidades.xlsx");
+};
+
   
   const cargarEstados = useCallback(async () => {
   //  setLoading(true);
@@ -192,10 +293,7 @@ const ModalidadesManagement = () => {
     return fecha.toISOString().split('T')[0]; // Formato YYYY-MM-DD
 };
 
-  const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
+
 
 const handleSubmit = async (e) => {
     e.preventDefault();
@@ -455,13 +553,29 @@ if (!permisos) {
         >
           Exportar a Excel
         </button>
-        <input
-          type="text"
-          placeholder="Buscar por nombre"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 mb-4 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+   {/* Barra de búsqueda */}
+   <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+    <input
+  type="text"
+  value={searchQuery.general}
+  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
+  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+  placeholder="Buscar por nombre o correo"
+/>
+
+      {/* Botón para limpiar búsqueda */}
+  {searchQuery.general && (
+    <button
+      onClick={handleClearSearch}
+      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
+    >
+      ❌ 
+    </button>
+    
+  )
+  }
+  </div>
 
 <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
@@ -524,8 +638,18 @@ if (!permisos) {
             )}
           </td>
         </tr>
+       
       );
     })}
+    {filteredModalidades.length === 0  && (
+  <tr>
+    <td colSpan="7" className="py-4 text-center text-gray-500">
+      ❌ No se encontraron modalidades con los criterios de búsqueda
+    </td>
+  </tr>
+)}
+
+
   </tbody>
   )}
 </table>
@@ -533,6 +657,25 @@ if (!permisos) {
 
         {/* Paginación */}
         <div className="flex justify-between mt-4">
+        <div className="flex items-center mb-4">
+        <span className="mr-2 text-gray-700">Mostrar:</span>
+        <select
+          className="border border-gray-300 rounded-md px-2 py-1"
+          value={filteredModalidades.length}
+          onChange={(e) => {
+            setUsersPerPage(Number(e.target.value));
+            setCurrentPage(1); // Reinicia a la página 1 al cambiar cantidad
+          }}
+        >
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+
+      </div>
+        <div className="flex space-x-2">
           <button
             onClick={prevPage}
             className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
@@ -541,7 +684,7 @@ if (!permisos) {
           </button>
 
           {/* Páginas */}
-          <div className="flex space-x-2">
+    
             {Array.from({ length: Math.ceil(modalidades.length / modalidadesPerPage) }, (_, index) => (
               <button
                 key={index + 1}
@@ -555,7 +698,7 @@ if (!permisos) {
                 {index + 1}
               </button>
             ))}
-          </div>
+        
 
           {/* Botón "Siguiente" */}
           <button
@@ -564,6 +707,7 @@ if (!permisos) {
           >
             Siguiente
           </button>
+          </div>
         </div>
       </div>
     </div>

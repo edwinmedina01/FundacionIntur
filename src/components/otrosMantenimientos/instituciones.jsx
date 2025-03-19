@@ -12,6 +12,7 @@ import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionInstituto } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
+import { exportToExcel } from '../../utils/exportToExcel';
 
 import { obtenerEstados } from "../../utils/api"; // Importar la función
 
@@ -92,7 +93,7 @@ const InstitucionManagement = () => {
   //       XLSX.writeFile(workbook, 'Instituciones.xlsx');
   //     };
  
-  const exportToExcel = async () => {
+  const exportToExcelold = async () => {
     // 1️⃣ Crear un nuevo libro y hoja de Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Instituciones");
@@ -136,6 +137,37 @@ const InstitucionManagement = () => {
   
     saveAs(fileBlob, "Instituciones.xlsx");
   };
+
+ 
+
+const handleExportInstituciones = async () => {
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Dirección", key: "Direccion", width: 40 },
+        { header: "Teléfono", key: "Telefono", width: 15 },
+        { header: "Correo", key: "Correo", width: 30 },
+        { header: "Director", key: "Director", width: 25 },
+    ];
+
+    const data = currentInstituciones.map((instituto) => ({
+        ID: instituto.Id_Instituto,
+        Nombre: instituto.Nombre_Instituto,
+        Direccion: instituto.Direccion,
+        Telefono: instituto.Telefono,
+        Correo: instituto.Correo,
+        Director: instituto.Director,
+    }));
+
+    await exportToExcel({
+        fileName: "Instituciones.xlsx",
+        title: "Reporte de Instituciones",
+        headers,
+        data,
+        searchQuery, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
+};
+
   
 
   // Fetch de instituciones desde el backend
@@ -442,7 +474,7 @@ if (!permisos) {
       
       <div className="w-2/3">
       <button
-          onClick={exportToExcel}
+          onClick={handleExportInstituciones}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         >
           Exportar a Excel

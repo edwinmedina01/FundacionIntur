@@ -14,7 +14,8 @@ import { saveAs } from "file-saver"; // Para descargar el archivo en el navegado
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacionRoles } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
-
+import { deepSearch } from '../utils/deepSearch';
+import { exportToExcel  } from '../utils/exportToExcel';
 
 const RolesManagement = () => {
 const router = useRouter();
@@ -268,12 +269,14 @@ const handleSubmit = async (e) => {
     return estado === 1 ? "Activo" : "Inactivo";
   };
 
- // Filtros por búsqueda
- const filteredRoles = roles.filter(role =>
-  role.Rol.toLowerCase().includes(search.toLowerCase()) ||
-  role.Descripcion.toLowerCase().includes(search.toLowerCase())
-);
+//  // Filtros por búsqueda
+//  const filteredRoles = roles.filter(role =>
+//   role.Rol.toLowerCase().includes(search.toLowerCase()) ||
+//   role.Descripcion.toLowerCase().includes(search.toLowerCase())
+// );
 
+  
+    const filteredRoles = roles.filter((user) => deepSearch(user, search, 0, 3));
   // Paginación
   const indexOfLastRole = currentPage * rolesPerPage;
   const indexOfFirstRole = indexOfLastRole - rolesPerPage;
@@ -302,7 +305,7 @@ const handleSubmit = async (e) => {
   //   XLSX.writeFile(workbook, "roles.xlsx");
   // };
 
-const handleExport = async () => {
+const handleExportOld = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Roles");
@@ -341,6 +344,31 @@ const handleExport = async () => {
   });
 
   saveAs(fileBlob, "roles.xlsx");
+};
+
+
+const handleExport = async () => {
+    const headers = [
+        { header: "ID Rol", key: "Id_Rol", width: 10 },
+        { header: "Rol", key: "Rol", width: 25 },
+        { header: "Descripción", key: "Descripcion", width: 40 },
+        { header: "Estado", key: "Estado", width: 15 },
+    ];
+
+    const data = filteredRoles.map((role) => ({
+        Id_Rol: role.Id_Rol,
+        Rol: role.Rol,
+        Descripcion: role.Descripcion,
+        Estado: convertEstado(role.Estado),
+    }));
+
+    await exportToExcel({
+        fileName: "Roles.xlsx",
+        title: "Reporte de Roles",
+        headers,
+        data,
+        searchQuery: search,
+    });
 };
 
 
@@ -461,18 +489,27 @@ if (!permisos) {
 
  <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
   {/* Barra de búsqueda */}
-  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
+   <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
     <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+    <input
+  type="text"
+  value={search.general}
+  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
+  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+  placeholder="Buscar por nombre o correo"
+/>
 
-
-
-<input
-      type="text"
-      value={search}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-      placeholder="Buscar por nombre o correo"
-    />
+      {/* Botón para limpiar búsqueda */}
+  {search.general && (
+    <button
+      onClick={handleClearSearch}
+      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
+    >
+      ❌ 
+    </button>
+    
+  )
+  }
   </div>
 
   {/* Título de la sección */}

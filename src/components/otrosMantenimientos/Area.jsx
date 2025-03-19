@@ -13,6 +13,9 @@ import { reglasValidacionArea } from "../../../models/ReglasValidacionModelos"; 
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
+import { exportToExcel } from "../../utils/exportToExcel"; // Importar la función
+
+
 
 const AreaManagement = () => {
     const [estados, setEstados] = useState([]);
@@ -84,7 +87,7 @@ const [currentPage, setCurrentPage] = useState(1);
   // };
 
 
-const exportToExcel = async () => {
+const exportToExcelOld = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Áreas");
@@ -123,6 +126,60 @@ const exportToExcel = async () => {
   });
 
   saveAs(fileBlob, "Areas.xlsx");
+};
+
+
+
+const handleExportAreasOld = async () => {
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Tipo", key: "Tipo", width: 20 },
+        { header: "Responsable", key: "Responsable", width: 30 },
+    ];
+
+    const data = currentAreas.map((area) => ({
+        ID: area.Id_Area,
+        Nombre: area.Nombre_Area,
+        Tipo: area.Tipo_Area,
+        Responsable: area.Responsable_Area,
+    }));
+
+    await exportToExcel({
+        fileName: "Areas.xlsx",
+        title: "Reporte de Áreas",
+        headers,
+        data,
+        searchQuery, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
+};
+
+
+
+const handleExportAreas = async () => {
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Tipo", key: "Tipo", width: 20 },
+        { header: "Responsable", key: "Responsable", width: 30 },
+        { header: "Estado", key: "Estado", width: 15 }, // Nueva columna de Estado
+    ];
+
+    const data = currentAreas.map((area) => ({
+        ID: area.Id_Area,
+        Nombre: area.Nombre_Area,
+        Tipo: area.Tipo_Area,
+        Responsable: area.Responsable_Area,
+        Estado: area.Estado === "1" ? "Activo" : "Inactivo", // Conversión de estado
+    }));
+
+    await exportToExcel({
+        fileName: "Areas.xlsx",
+        title: "Reporte de Áreas",
+        headers,
+        data,
+        searchQuery, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
 };
 
 
@@ -403,7 +460,7 @@ if (!permisos) {
       {/* Columna derecha: Tabla de áreas */}
       <div className="w-2/3">
         <button
-          onClick={exportToExcel}
+          onClick={handleExportAreas}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         >
           Exportar a Excel

@@ -15,7 +15,7 @@ import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacionPermisos } from "../../models/Permiso"; // Importamos las reglas del modelo
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 import { obtenerEstados } from "../utils/api"; // Importar la función
-
+import { exportToExcel  } from '../utils/exportToExcel';
 
 
 const PermissionsManagement = () => {
@@ -332,7 +332,7 @@ const paginate = (pageNumber) => {
 
 
 
-const exportToExcel = async () => {
+const exportToExcelold = async () => {
   // 1️⃣ Crear un nuevo libro de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Permisos");
@@ -377,6 +377,40 @@ const exportToExcel = async () => {
   const fileBlob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   
   saveAs(fileBlob, "permisos.xlsx");
+};
+
+
+
+const handleExportPermissions = async () => {
+    const headers = [
+        { header: "ID Rol", key: "Id_Rol", width: 15 },
+        { header: "Rol", key: "Rol", width: 25 },
+        { header: "ID Objeto", key: "Id_Objeto", width: 15 },
+        { header: "Objeto", key: "Objeto", width: 25 },
+        { header: "Consultar", key: "Permiso_Consultar", width: 15 },
+        { header: "Insertar", key: "Permiso_Insertar", width: 15 },
+        { header: "Actualizar", key: "Permiso_Actualizar", width: 15 },
+        { header: "Eliminar", key: "Permiso_Eliminar", width: 15 },
+    ];
+
+    const data = permissions.map((permission) => ({
+        Id_Rol: permission.Id_Rol,
+        Rol: roleMap[permission.Id_Rol] || "Desconocido",
+        Id_Objeto: permission.Id_Objeto,
+        Objeto: objectMap[permission.Id_Objeto] || "Desconocido",
+        Permiso_Consultar: permission.Permiso_Consultar === "1" ? "Sí" : "No",
+        Permiso_Insertar: permission.Permiso_Insertar === "1" ? "Sí" : "No",
+        Permiso_Actualizar: permission.Permiso_Actualizar === "1" ? "Sí" : "No",
+        Permiso_Eliminar: permission.Permiso_Eliminar === "1" ? "Sí" : "No",
+    }));
+
+    await exportToExcel({
+        fileName: "Permisos.xlsx",
+        title: "Reporte de Permisos",
+        headers,
+        data,
+        searchTerm, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
 };
 
 
@@ -557,7 +591,7 @@ if (!permisos) {
 </button>
     
     <button
-      onClick={exportToExcel}
+      onClick={handleExportPermissions}
       className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
     >
       <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar

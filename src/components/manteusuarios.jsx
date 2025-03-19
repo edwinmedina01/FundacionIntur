@@ -10,6 +10,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importac
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import ExcelJS from "exceljs";
 import { validateNombre, validateUsername, validateEmail } from "../utils/ValidadorCampos";
+import { deepSearch } from "../utils/deepSearch";
 import ModalConfirmacion from "../utils/ModalConfirmacion"; 
 import { saveAs } from "file-saver";
 import {
@@ -26,8 +27,22 @@ const UsersManagement = () => {
   const [roles, setRoles] = useState([]);
   const [userStates, setUserStates] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 8; // cantidad de usuarios por pagina
-  const [searchQuery, setSearchQuery] = useState("");
+  const [usersPerPage, setUsersPerPage] = useState(10); // Valor inicial
+
+  const [searchQuery, setSearchQuery] = useState({
+    general: "",
+    Usuario: "",
+    Estado: "",
+    Created: "",
+  });
+  
+
+  useEffect(() => {
+  //  const newTotalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  //  setTotalPages(newTotalPages);
+  //  setCurrentPage(1); // Reiniciar a la primera página
+}, [searchQuery, usersPerPage]);
+
   // ------------------- FUNCIONALIDAD ROLES----------------------//
   const { user } = useContext(AuthContext); // Usuario logueado
   const [permisos, setPermisos] = useState(null); //obtener permiso
@@ -100,12 +115,8 @@ const handleReset = (user) => {
   const [passwordError, setPasswordError] = useState("");
   const [passwordValidation, setPasswordValidation] = useState([]);
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.Usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.Correo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.Nombre_Usuario.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const filteredUsers = users.filter((user) => deepSearch(user, searchQuery, 0, 3));
 
 
   // ✅ Función para generar una nueva contraseña segura
@@ -119,7 +130,15 @@ const handleReset = (user) => {
   };
 
 
-  
+  const getBase64ImageFromUrl = async (url) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]); // Extraer base64
+        reader.readAsDataURL(blob);
+    });
+};
 
 // ✅ Restablecer contraseña y enviarla por correo
 const handleResetPassword = async (item) => {
@@ -578,7 +597,7 @@ if (emailExists) {
   };
 
   // Función para exportar a Excel
- const exportToExcel = async () => {
+ const exportToExcelOld = async () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Usuarios");
   
@@ -633,6 +652,386 @@ console.log(users)
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       saveAs(blob, "Usuarios.xlsx");
   };
+
+
+
+const exportToExcelv1 = async ( ) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Usuarios");
+   // 📌 **Obtener la Imagen en Base64**
+   const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+   const imageId = workbook.addImage({
+       base64: logoBase64,
+       extension: "png",
+   });
+
+   // 📌 **Insertar el Logo en la Esquina Izquierda**
+   worksheet.addImage(imageId, {
+       tl: { col: 0, row: 0 }, // Posición en la celda A1
+       ext: { width: 120, height: 50 }, // Tamaño del logo
+   });
+
+    // 📌 **Convertir `searchQuery` en Texto para el Excel**
+    const filterCriteria = Object.entries(searchQuery)
+        .filter(([_, value]) => value) // Elimina filtros vacíos
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ") || "Sin filtros"; // Si no hay filtros, mostrar "Sin filtros"
+
+    // 📌 **Título del Reporte**
+    worksheet.mergeCells("B1", "K1"); // Mover el título a la columna B para evitar el logo
+    worksheet.getCell("B1").value = "Reporte de Usuarios";
+    worksheet.getCell("B1").font = { bold: true, size: 16 };
+    worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Fecha de Exportación**
+    worksheet.mergeCells("B2", "K2"); // Mover la fecha de exportación a la columna B
+    worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+    worksheet.getCell("B2").font = { italic: true, size: 12 };
+    worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Criterios de Búsqueda**
+    worksheet.mergeCells("B3", "K3");
+    worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+    worksheet.getCell("B3").font = { italic: true, size: 12 };
+    worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+    // 📌 **Definir Encabezados**
+    const headers = [
+        { header: "ID", key: "Id_Usuario", width: 10 },
+        { header: "Usuario", key: "Usuario", width: 15 },
+        { header: "Nombre", key: "Nombre_Usuario", width: 20 },
+        { header: "Correo", key: "Correo", width: 25 },
+        { header: "Rol", key: "Rol", width: 15 },
+        { header: "Estado", key: "Estado", width: 15 },
+        { header: "Fecha Última Conexión", key: "Fecha_Ultima_Conexion", width: 18 },
+        { header: "Creado Por", key: "Creado_Por", width: 15 },
+        { header: "Fecha Creación", key: "Fecha_Creacion", width: 18 },
+        { header: "Modificado Por", key: "Modificado_Por", width: 15 },
+        { header: "Fecha Modificación", key: "Fecha_Modificacion", width: 18 },
+    ];
+
+    worksheet.columns = headers;
+    worksheet.getRow(5).values = headers.map((h) => h.header);
+
+    // 📌 **Estilizar los Encabezados**
+    worksheet.getRow(5).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFF" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+    });
+
+    // 📌 **Filtrar Usuarios con deepSearch**
+    const filteredUsers = users.filter((user) => deepSearch(user, searchQuery));
+
+    // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
+    filteredUsers.forEach((user) => {
+        worksheet.addRow({
+            Id_Usuario: user.Id_Usuario,
+            Usuario: user.Usuario,
+            Nombre_Usuario: user.Nombre_Usuario,
+            Correo: user.Correo,
+            Rol: getRoleNameById(user.Id_Rol),
+            Estado: getUserStateNameById(user.Id_EstadoUsuario),
+            Fecha_Ultima_Conexion: user.Fecha_Ultima_Conexion ? new Date(user.Fecha_Ultima_Conexion).toLocaleDateString("es-ES") : "-",
+            Creado_Por: user.Creado_Por,
+            Fecha_Creacion: user.Fecha_Creacion ? new Date(user.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+            Modificado_Por: user.Modificado_Por,
+            Fecha_Modificacion: user.Fecha_Modificacion ? new Date(user.Fecha_Modificacion).toLocaleDateString("es-ES") : "-",
+        });
+    });
+
+    // 📌 **Descargar el Archivo**
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(blob, "Usuarios.xlsx");
+};
+
+const exportToExcelv2 = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Usuarios");
+
+  // 📌 **Obtener la Imagen en Base64**
+  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+  const imageId = workbook.addImage({
+      base64: logoBase64,
+      extension: "png",
+  });
+
+  // 📌 **Insertar el Logo en la Esquina Izquierda**
+  worksheet.addImage(imageId, {
+      tl: { col: 0, row: 0 }, // Posición en la celda A1
+      ext: { width: 120, height: 50 }, // Tamaño del logo
+  });
+
+  // 📌 **Título del Reporte**
+  worksheet.mergeCells("B1", "K1"); // Fusiona de B1 a K1
+  worksheet.getCell("B1").value = "Reporte de Usuarios";
+  worksheet.getCell("B1").font = { bold: true, size: 16 };
+  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Fecha de Exportación**
+  worksheet.mergeCells("B2", "K2");
+  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+  worksheet.getCell("B2").font = { italic: true, size: 12 };
+  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Criterios de Búsqueda**
+  const filterCriteria = Object.entries(searchQuery || {}) // Evita error si `searchQuery` es undefined
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ") || "Sin filtros"; // Si no hay filtros, mostrar "Sin filtros"
+
+  worksheet.mergeCells("B3", "K3");
+  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+  worksheet.getCell("B3").font = { italic: true, size: 12 };
+  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Definir Encabezados**
+  worksheet.columns = [
+      { header: "ID", key: "Id_Usuario", width: 10 },
+      { header: "Usuario", key: "Usuario", width: 15 },
+      { header: "Nombre", key: "Nombre_Usuario", width: 20 },
+      { header: "Correo", key: "Correo", width: 25 },
+      { header: "Rol", key: "Rol", width: 15 },
+      { header: "Estado", key: "Estado", width: 15 },
+      { header: "Fecha Última Conexión", key: "Fecha_Ultima_Conexion", width: 18 },
+      { header: "Creado Por", key: "Creado_Por", width: 15 },
+      { header: "Fecha Creación", key: "Fecha_Creacion", width: 18 },
+      { header: "Modificado Por", key: "Modificado_Por", width: 15 },
+      { header: "Fecha Modificación", key: "Fecha_Modificacion", width: 18 },
+  ];
+
+  // 📌 **Asegurar que los encabezados de la tabla están en la fila 5**
+  const headerRow = worksheet.getRow(5);
+  headerRow.values = worksheet.columns.map((col) => col.header);
+  headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+
+  // 📌 **Filtrar Usuarios con `deepSearch`**
+  const filteredUsers = users.filter((user) => deepSearch(user, searchQuery));
+
+  // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
+  filteredUsers.forEach((user) => {
+      worksheet.addRow({
+          Id_Usuario: user.Id_Usuario,
+          Usuario: user.Usuario,
+          Nombre_Usuario: user.Nombre_Usuario,
+          Correo: user.Correo,
+          Rol: getRoleNameById(user.Id_Rol),
+          Estado: getUserStateNameById(user.Id_EstadoUsuario),
+          Fecha_Ultima_Conexion: user.Fecha_Ultima_Conexion ? new Date(user.Fecha_Ultima_Conexion).toLocaleDateString("es-ES") : "-",
+          Creado_Por: user.Creado_Por,
+          Fecha_Creacion: user.Fecha_Creacion ? new Date(user.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+          Modificado_Por: user.Modificado_Por,
+          Fecha_Modificacion: user.Fecha_Modificacion ? new Date(user.Fecha_Modificacion).toLocaleDateString("es-ES") : "-",
+      });
+  });
+
+  // 📌 **Descargar el Archivo**
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, "Reporte_Usuarios.xlsx");
+};
+const exportToExcelv3 = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Usuarios");
+
+  // 📌 **Obtener la Imagen en Base64**
+  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+  const imageId = workbook.addImage({
+      base64: logoBase64,
+      extension: "png",
+  });
+
+  // 📌 **Insertar el Logo en la Esquina Izquierda**
+  worksheet.addImage(imageId, {
+      tl: { col: 0, row: 0 }, // Posición en la celda A1
+      ext: { width: 120, height: 50 }, // Tamaño del logo
+  });
+
+  // 📌 **Título del Reporte**
+  worksheet.mergeCells("B1", "K1"); // Fusiona desde B1 hasta K1
+  worksheet.getCell("B1").value = "Reporte de Usuarios";
+  worksheet.getCell("B1").font = { bold: true, size: 16 };
+  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Fecha de Exportación**
+  worksheet.mergeCells("B2", "K2");
+  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+  worksheet.getCell("B2").font = { italic: true, size: 12 };
+  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Criterios de Búsqueda**
+  const filterCriteria = Object.entries(searchQuery || {})
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ") || "Sin filtros";
+
+  worksheet.mergeCells("B3", "K3");
+  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+  worksheet.getCell("B3").font = { italic: true, size: 12 };
+  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Dejar la fila 4 vacía para separar el título de la tabla**
+  worksheet.getRow(4).values = [];
+
+  // 📌 **Definir Encabezados desde la Fila 5**
+  const headers = [
+      { header: "ID", key: "Id_Usuario", width: 10 },
+      { header: "Usuario", key: "Usuario", width: 15 },
+      { header: "Nombre", key: "Nombre_Usuario", width: 20 },
+      { header: "Correo", key: "Correo", width: 25 },
+      { header: "Rol", key: "Rol", width: 15 },
+      { header: "Estado", key: "Estado", width: 15 },
+      { header: "Fecha Última Conexión", key: "Fecha_Ultima_Conexion", width: 18 },
+      { header: "Creado Por", key: "Creado_Por", width: 15 },
+      { header: "Fecha Creación", key: "Fecha_Creacion", width: 18 },
+      { header: "Modificado Por", key: "Modificado_Por", width: 15 },
+      { header: "Fecha Modificación", key: "Fecha_Modificacion", width: 18 },
+  ];
+
+  worksheet.columns = headers;
+
+  // 📌 **Estilizar los Encabezados en la Fila 5**
+  const headerRow = worksheet.getRow(5);
+  headerRow.values = headers.map((h) => h.header);
+  headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+
+  // 📌 **Filtrar Usuarios con deepSearch**
+  const filteredUsers = users.filter((user) => deepSearch(user, searchQuery));
+
+  // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
+  filteredUsers.forEach((user) => {
+      worksheet.addRow({
+          Id_Usuario: user.Id_Usuario,
+          Usuario: user.Usuario,
+          Nombre_Usuario: user.Nombre_Usuario,
+          Correo: user.Correo,
+          Rol: getRoleNameById(user.Id_Rol),
+          Estado: getUserStateNameById(user.Id_EstadoUsuario),
+          Fecha_Ultima_Conexion: user.Fecha_Ultima_Conexion ? new Date(user.Fecha_Ultima_Conexion).toLocaleDateString("es-ES") : "-",
+          Creado_Por: user.Creado_Por,
+          Fecha_Creacion: user.Fecha_Creacion ? new Date(user.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+          Modificado_Por: user.Modificado_Por,
+          Fecha_Modificacion: user.Fecha_Modificacion ? new Date(user.Fecha_Modificacion).toLocaleDateString("es-ES") : "-",
+      });
+  });
+
+  // 📌 **Descargar el Archivo**
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, "Usuarios.xlsx");
+};
+
+const exportToExcel = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Usuarios");
+
+  // 📌 **Obtener la Imagen en Base64**
+  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+  const imageId = workbook.addImage({
+      base64: logoBase64,
+      extension: "png",
+  });
+
+  // 📌 **Insertar el Logo en la Esquina Izquierda**
+  worksheet.addImage(imageId, {
+      tl: { col: 0, row: 0 }, // Posición en la celda A1
+      ext: { width: 120, height: 50 }, // Tamaño del logo
+  });
+
+  // 📌 **Insertar el Título en la Fila 1**
+  worksheet.mergeCells("B1", "K1");
+  worksheet.getCell("B1").value = "Reporte de Usuarios";
+  worksheet.getCell("B1").font = { bold: true, size: 16 };
+  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Fecha de Exportación en la Fila 2**
+  worksheet.mergeCells("B2", "K2");
+  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+  worksheet.getCell("B2").font = { italic: true, size: 12 };
+  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Criterios de Búsqueda en la Fila 3**
+  const filterCriteria = Object.entries(searchQuery || {})
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ") || "Sin filtros";
+
+  worksheet.mergeCells("B3", "K3");
+  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+  worksheet.getCell("B3").font = { italic: true, size: 12 };
+  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+  // 📌 **Agregar una Fila Vacía en la Fila 4 para Separar los Encabezados**
+  worksheet.getRow(4).values = [];
+
+  // 📌 **Definir Encabezados desde la Fila 5**
+  const headers = [
+      { header: "ID", key: "Id_Usuario", width: 20 },
+      { header: "Usuario", key: "Usuario", width: 15 },
+      { header: "Nombre", key: "Nombre_Usuario", width: 30 },
+      { header: "Correo", key: "Correo", width: 40 },
+      { header: "Rol", key: "Rol", width: 15 },
+      { header: "Estado", key: "Estado", width: 15 },
+      { header: "Fecha Última Conexión", key: "Fecha_Ultima_Conexion", width: 18 },
+      { header: "Creado Por", key: "Creado_Por", width: 15 },
+      { header: "Fecha Creación", key: "Fecha_Creacion", width: 18 },
+      { header: "Modificado Por", key: "Modificado_Por", width: 15 },
+      { header: "Fecha Modificación", key: "Fecha_Modificacion", width: 18 },
+  ];
+
+  //worksheet.columns = headers;
+
+  // 📌 **Estilizar los Encabezados en la Fila 5**
+  const headerRow = worksheet.getRow(5);
+  headerRow.values = headers.map((h) => h.header);
+  headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  headerRow.alignment = { horizontal: "center", vertical: "middle" };
+  headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
+
+
+
+  headers.forEach((col, index) => {
+    worksheet.getColumn(index + 1).width = col.width;
+});
+
+
+  // 📌 **Filtrar Usuarios con deepSearch**
+  const filteredUsers = users.filter((user) => deepSearch(user, searchQuery));
+
+  // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
+  let rowIndex = 6;
+  filteredUsers.forEach((user) => {
+      worksheet.getRow(rowIndex).values = [
+          user.Id_Usuario,
+          user.Usuario,
+          user.Nombre_Usuario,
+          user.Correo,
+          getRoleNameById(user.Id_Rol),
+          getUserStateNameById(user.Id_EstadoUsuario),
+          user.Fecha_Ultima_Conexion ? new Date(user.Fecha_Ultima_Conexion).toLocaleDateString("es-ES") : "-",
+          user.Creado_Por,
+          user.Fecha_Creacion ? new Date(user.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
+          user.Modificado_Por,
+          user.Fecha_Modificacion ? new Date(user.Fecha_Modificacion).toLocaleDateString("es-ES") : "-",
+      ];
+      rowIndex++;
+  });
+
+  // 📌 **Descargar el Archivo**
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  saveAs(blob, "Usuarios.xlsx");
+};
+
   
 // Renderizado
 if (!user) {
@@ -641,7 +1040,7 @@ if (!user) {
 
 // 📌 Limpiar búsqueda
 const handleClearSearch = () => {
-  setSearchQuery("");
+  setSearchQuery({ general: "", Usuario: "", Estado: "", Created: "" });
   setCurrentPage(1); // Reiniciar a la primera página
 };
 
@@ -675,14 +1074,15 @@ if (!permisos) {
   <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
     <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
     <input
-      type="text"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-      placeholder="Buscar por nombre o correo"
-    />
+  type="text"
+  value={searchQuery.general}
+  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
+  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
+  placeholder="Buscar por nombre o correo"
+/>
+
       {/* Botón para limpiar búsqueda */}
-  {searchQuery && (
+  {searchQuery.general && (
     <button
       onClick={handleClearSearch}
       className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
@@ -705,7 +1105,7 @@ if (!permisos) {
   onClick={() => setShowModalUsuario(true)}
   className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
 >
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Usuario
+  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar
 </button>
     
     <button
@@ -719,7 +1119,7 @@ if (!permisos) {
       onClick={() => router.push("/permisos")}
       className="flex items-center bg-cyan-900 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400"
     >
-      <PencilSquareIcon className="h-5 w-5 mr-2" /> Ver Permisos
+      <EyeIcon className="h-5 w-5 mr-2" /> Permisos
     </button>
   </div>
 </div>
@@ -732,7 +1132,22 @@ if (!permisos) {
               <th className="py-4 px-6 text-left">Nombre</th>
               <th className="py-4 px-6 text-left">Correo</th>
               <th className="py-4 px-6 text-left">Rol</th>
-              <th className="py-4 px-6 text-left">Estado</th>
+              <th className="py-4 px-6 text-left">
+    Estado
+    <select
+        className="ml p-1 border border-gray-300 rounded"
+        value={searchQuery.Estado}
+        onChange={(e) => setSearchQuery({ ...searchQuery, EstadoDisplay: e.target.value })}
+    >
+        <option value="">Todos</option>
+        {userStates.map((state) => (
+            <option key={state.Id_EstadoUsuario} value={state.Descripcion}>
+                {state.Descripcion}
+            </option>
+        ))}
+    </select>
+</th>
+
               <th className="py-4 px-6 text-center">Acciones</th>
             </tr>
           </thead>
@@ -856,7 +1271,33 @@ if (!permisos) {
         </table>
         {/* Paginación */}
         <div className="flex justify-between items-center mt-4">
-          {/* Botón "Anterior" */}
+
+
+
+        <div className="flex items-center mb-4">
+        <span className="mr-2 text-gray-700">Mostrar:</span>
+        <select
+          className="border border-gray-300 rounded-md px-2 py-1"
+          value={usersPerPage}
+          onChange={(e) => {
+            setUsersPerPage(Number(e.target.value));
+            setCurrentPage(1); // Reinicia a la página 1 al cambiar cantidad
+          }}
+        >
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+
+      </div>
+ 
+
+
+          {/* Páginas */}
+          <div className="flex space-x-2">
+                     {/* Botón "Anterior" */}
           <button
             onClick={prevPage}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
@@ -868,12 +1309,8 @@ if (!permisos) {
           >
             Anterior
           </button>
-
-
-          {/* Páginas */}
-          <div className="flex space-x-2">
             {Array.from(
-              { length: Math.ceil(users.length / usersPerPage) },
+              { length: Math.ceil(filteredUsers.length / usersPerPage) },
               (_, index) => (
                 <button
                   key={index + 1}
@@ -888,8 +1325,7 @@ if (!permisos) {
                 </button>
               )
             )}
-          </div>
-
+            
           {/* Botón "Siguiente" */}
           <button
             onClick={nextPage}
@@ -902,6 +1338,8 @@ if (!permisos) {
           >
             Siguiente
           </button>
+          </div>
+
         </div>
       </div>
 

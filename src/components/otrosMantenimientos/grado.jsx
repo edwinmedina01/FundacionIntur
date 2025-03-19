@@ -11,7 +11,7 @@ import { reglasValidacionGrado } from "../../../models/ReglasValidacionModelos";
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
-
+import { exportToExcel } from '../../utils/exportToExcel';
 const GradoManagement = () => {
     const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
@@ -66,7 +66,7 @@ const [currentPage, setCurrentPage] = useState(1);
   };
 
 
-const exportToExcel = async () => {
+const exportToExcelOld = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Grados");
@@ -111,6 +111,36 @@ const exportToExcel = async () => {
   saveAs(fileBlob, "Grados.xlsx");
 };
 
+//import { exportToExcel } from "./excelExport";
+
+const handleExportGrados = async () => {
+    const headers = [
+        { header: "ID", key: "ID", width: 10 },
+        { header: "Nombre", key: "Nombre", width: 30 },
+        { header: "Descripción", key: "Descripcion", width: 40 },
+        { header: "Nivel Académico", key: "Nivel_Academico", width: 25 },
+        { header: "Duración", key: "Duracion", width: 15 },
+        { header: "Cantidad de Materias", key: "Cantidad_Materias", width: 25 },
+    ];
+
+    const data = currentGrados.map((grado) => ({
+        ID: grado.Id_Grado,
+        Nombre: grado.Nombre,
+        Descripcion: grado.Descripcion,
+        Nivel_Academico: grado.Nivel_Academico,
+        Duracion: grado.Duracion,
+        Cantidad_Materias: grado.Cantidad_Materias,
+    }));
+
+    await exportToExcel({
+        fileName: "Grados.xlsx",
+        title: "Reporte de Grados",
+        headers,
+        data,
+        searchQuery, // Se mantiene para mostrar los filtros utilizados en la exportación
+    });
+};
+//
 
   // // Función para exportar a Excel
   // const exportToExcel = () => {
@@ -472,7 +502,7 @@ if (!permisos) {
       
       <div className="w-2/3">
       <button
-          onClick={exportToExcel}
+          onClick={handleExportGrados}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         >
           Exportar a Excel
