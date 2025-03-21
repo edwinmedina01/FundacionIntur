@@ -86,7 +86,7 @@ export const reglasValidacionEstudiante = {
   //Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
 
-export const reglasValidacionModalidad = {
+export const reglasValidacionModalidadold = {
   //Id_Modalidad: { tipo: "int", requerido: true },
 
   Nombre: { ...reglasGenerales.NombreGeneral(5, 75), requerido: true },
@@ -103,6 +103,38 @@ export const reglasValidacionModalidad = {
 
  // Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
+
+
+
+export const reglasValidacionModalidad = {
+  Nombre: { ...reglasGenerales.NombreGeneral(5, 75), requerido: true },
+  Descripcion: { ...reglasGenerales.Descripciones(10 ,80), requerido: true },
+
+  Duracion: { ...reglasGenerales.DuracionMeses(1, 60), requerido: true },
+  Hora_Inicio: { ...reglasGenerales.HoraMilitar(), requerido: true },
+  Hora_Final: {
+    ...reglasGenerales.HoraMilitar(),
+    requerido: true,
+    validaciones: [
+      {
+        label: "La hora final debe ser mayor que la hora de inicio.",
+        test: (valor, formData) => {
+          if (!formData?.Hora_Inicio) return true;
+          return valor > formData.Hora_Inicio;
+        },
+      },
+    ],
+  },
+
+  Creado_Por: { tipo: "int", requerido: true },
+  //Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
+
+  Modificado_Por: { tipo: "int", requerido: false },
+ // Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
+
+ // Estado: { tipo: "int", requerido: true, opciones: [1, 2, 3] } // 1 = Activo, 2 = Inactivo, 3 = Eliminado
+};
+
 
 export const reglasValidacionMunicipio = {
   Id_Departamento: { tipo: "int", requerido: true },

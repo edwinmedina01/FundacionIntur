@@ -65,7 +65,7 @@ export const reglasGenerales = {
         ]
     }),
 
-DuracionMeses: (min = 1, max = 60) => ({
+DuracionMesesv1: (min = 1, max = 60) => ({
     tipo: "string",
     validaciones: [
         {
@@ -81,6 +81,32 @@ DuracionMeses: (min = 1, max = 60) => ({
         }
     ]
 }),
+
+
+DuracionMeses: (min = 1, max = 60) => ({
+    tipo: "int",
+    validaciones: [
+      {
+        label: `Debe ser un número entre ${min} y ${max}.`,
+        test: (valor) => {
+          const numero = Number(valor);
+          return Number.isInteger(numero) && numero >= min && numero <= max;
+        }
+      }
+    ]
+  }),
+  
+
+HoraMilitar: () => ({
+    tipo: "string",
+    validaciones: [
+      {
+        label: "Debe tener el formato de hora militar (HH:MM o HH:MM:SS).",
+        test: (valor) => /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(valor),
+      }
+    ],
+  }),
+  
 
 Duracion: (min = 1, max = 60) => ({
     tipo: "string",

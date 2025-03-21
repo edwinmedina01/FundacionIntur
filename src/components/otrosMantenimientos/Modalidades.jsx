@@ -15,8 +15,12 @@ import { reglasValidacionModalidad } from "../../../models/ReglasValidacionModel
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
+import { exportToExcel } from "../../utils/exportToExcel"; // Importar la función
 import { getBase64ImageFromUrl } from "../../utils/getBase64ImageFromUrl"; 
 import { deepSearch } from "../../utils/deepSearch";// Importar la función
+import  ModalGenerico  from "../../utils/ModalGenerico";// Importar la función
+import Pagination from "../../components/basicos/Pagination"; 
+
 const ModalidadesManagement = () => {
 
   const [estados, setEstados] = useState([]);
@@ -142,7 +146,7 @@ const handleClearSearch = () => {
 
   
 
-const exportToExcel = async () => {
+const exportToExcelv1 = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Modalidades");
 
@@ -228,6 +232,67 @@ const exportToExcel = async () => {
     const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     saveAs(blob, "Reporte_Modalidades.xlsx");
 };
+
+const handleExportModalidadesOld = async () => {
+  const headers = [
+    { header: "ID", key: "ID", width: 10 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Descripción", key: "Descripcion", width: 40 },
+    { header: "Duración", key: "Duracion", width: 15 },
+    { header: "Horario", key: "Horario", width: 20 },
+  ];
+
+  const data = currentModalidades.map((modalidad) => ({
+    ID: modalidad.Id_Modalidad,
+    Nombre: modalidad.Nombre,
+    Descripcion: modalidad.Descripcion,
+    Duracion: modalidad.Duracion || "-",
+    Horario: modalidad.Horario || "-",
+  }));
+
+  await exportToExcel({
+    fileName: "Modalidades.xlsx",
+    title: "Reporte de Modalidades",
+    headers,
+    data,
+    searchQuery, // Se usa para mostrar los filtros aplicados
+  });
+};
+
+const handleExportModalidades = async () => {
+  const headers = [
+    { header: "ID", key: "ID", width: 10 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Descripción", key: "Descripcion", width: 40 },
+    { header: "Duración (Meses)", key: "Duracion", width: 18 },
+    { header: "Hora Inicio", key: "Hora_Inicio", width: 18 },
+    { header: "Hora Final", key: "Hora_Final", width: 18 },
+    { header: "Estado", key: "Estado", width: 20 },
+  ];
+
+  const data = filteredModalidades.map((modalidad) => {
+    const estado = estados.find((e) => e.Codigo_Estado === modalidad.Estado)?.Nombre_Estado || "Desconocido";
+
+    return {
+      ID: modalidad.Id_Modalidad,
+      Nombre: modalidad.Nombre,
+      Descripcion: modalidad.Descripcion,
+      Duracion: modalidad.Duracion || "-",
+      Hora_Inicio: modalidad.Hora_Inicio || "-",
+      Hora_Final: modalidad.Hora_Final || "-",
+      Estado: estado,
+    };
+  });
+
+  await exportToExcel({
+    fileName: "Modalidades.xlsx",
+    title: "Reporte de Modalidades",
+    headers,
+    data,
+    searchQuery, // Se usa para mostrar los filtros aplicados
+  });
+};
+
 
   
   const cargarEstados = useCallback(async () => {
@@ -375,7 +440,9 @@ const handleSubmit = async (e) => {
       }
 
       fetchModalidades();
+      closeModal("modalAddRow");
       resetForm();
+     
     } catch (error) {
       toast.error('Error al guardar la modalidad:', error);
     }
@@ -384,6 +451,8 @@ const handleSubmit = async (e) => {
   const handleEdit = (modalidad) => {
     setFormData(modalidad);
     setIsEditing(true);
+    showModal("modalAddRow");
+  
   };
 
   const handleDelete = async (Id_Modalidad) => {
@@ -452,69 +521,107 @@ if (!permisos) {
 
 
   return (
-    <div className="p-8 mt-4 bg-gray-100 flex space-x-8">
+    <div >
       {/* Columna izquierda: Formulario */}
-      <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
-        <center><h2 className="text-2xl font-semibold mb-4">{isEditing ? 'Editar Modalidad' : 'Agregar Modalidad'}</h2></center>
+  
+         {/* Columna izquierda: Formulario */}
+         <ModalGenerico
+        id="modalAddRow"
+        isOpen={modals["modalAddRow"]}
+        onClose={() => closeModal("modalAddRow")}
+        titulo=  {isEditing ? "Editar Modalidad" : "Agregar Modalidad"}
+      >
         <form onSubmit={handleSubmit}>
-          <label htmlFor="Nombre" className="block mb-2 text-sm font-medium text-gray-700">Nombre de la Modalidad</label>
-          <input
-            type="text"
-            name="Nombre"
-            placeholder="Nombre de la Modalidad"
-            value={formData.Nombre}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          
-          <label htmlFor="Descripcion" className="block mb-2 text-sm font-medium text-gray-700">Descripción</label>
-          <input
-            type="text"
-            name="Descripcion"
-            placeholder="Descripción"
-            value={formData.Descripcion}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+  {/* Nombre */}
+  <label htmlFor="Nombre" className="block mb-2 text-sm font-medium text-gray-700">
+    Nombre de la Modalidad
+  </label>
+  <input
+    type="text"
+    name="Nombre"
+    placeholder="Nombre de la Modalidad"
+    value={formData.Nombre}
+    onChange={handleInputChange}
+    required
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
 
-          <label htmlFor="Duracion" className="block mb-2 text-sm font-medium text-gray-700">Duración</label>
-          <input
-            type="text"
-            name="Duracion"
-            placeholder="Duración"
-            value={formData.Duracion}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+  {/* Descripción */}
+  <label htmlFor="Descripcion" className="block mb-2 text-sm font-medium text-gray-700">
+    Descripción
+  </label>
+  <input
+    type="text"
+    name="Descripcion"
+    placeholder="Descripción"
+    value={formData.Descripcion}
+    onChange={handleInputChange}
+    required
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
 
-          <label htmlFor="Horario" className="block mb-2 text-sm font-medium text-gray-700">Horario</label>
-          <input
-            type="text"
-            name="Horario"
-            placeholder="Horario"
-            value={formData.Horario}
-            onChange={handleInputChange}
-            required
-            className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+  {/* Duración (en meses) */}
+  <label htmlFor="Duracion" className="block mb-2 text-sm font-medium text-gray-700">
+    Duración (meses)
+  </label>
+  <input
+    type="number"
+    name="Duracion"
+    placeholder="Ej. 3"
+    min="1"
+    max="60"
+    value={formData.Duracion}
+    onChange={handleInputChange}
+    required
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
 
-                    {/* Campo de estado genérico */}
-                    <label>Estado:</label>
-            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={formData.Estado || ""} onChange={handleInputChange} required>
-                <option value="">Seleccione un estado</option>
-                {estados.map((estado) => (
-                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
-                        {estado.Nombre_Estado}
-                    </option>
-                ))}
-            </select>
+  {/* Hora de inicio */}
+  <label htmlFor="Hora_Inicio" className="block mb-2 text-sm font-medium text-gray-700">
+    Hora de Inicio (HH:MM)
+  </label>
+  <input
+    type="time"
+    name="Hora_Inicio"
+    value={formData.Hora_Inicio}
+    onChange={handleInputChange}
+    required
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
 
-<div className="flex justify-end">
-  {isEditing
-    ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
+  {/* Hora final */}
+  <label htmlFor="Hora_Final" className="block mb-2 text-sm font-medium text-gray-700">
+    Hora Final (HH:MM)
+  </label>
+  <input
+    type="time"
+    name="Hora_Final"
+    value={formData.Hora_Final}
+    onChange={handleInputChange}
+    required
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+
+  {/* Estado */}
+  <label>Estado:</label>
+  <select
+    className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    name="Estado"
+    value={formData.Estado || ""}
+    onChange={handleInputChange}
+    required
+  >
+    <option value="">Seleccione un estado</option>
+    {estados.map((estado) => (
+      <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
+        {estado.Nombre_Estado}
+      </option>
+    ))}
+  </select>
+
+  {/* Botones */}
+  <div className="flex justify-end">
+    {isEditing ? (
       permisos.Permiso_Actualizar === "1" && (
         <button
           type="submit"
@@ -523,7 +630,7 @@ if (!permisos) {
           Actualizar
         </button>
       )
-    : // Mostrar botón "Agregar" solo si tiene permisos de inserción
+    ) : (
       permisos.Permiso_Insertar === "1" && (
         <button
           type="submit"
@@ -531,22 +638,22 @@ if (!permisos) {
         >
           Agregar
         </button>
-      )}
+      )
+    )}
+    <button
+      type="button"
+      onClick={resetForm}
+      className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+    >
+      Cancelar
+    </button>
+  </div>
+</form>
+</ModalGenerico>
 
-  <button
-    type="button"
-    onClick={resetForm}
-    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-  >
-    Cancelar
-  </button>
-</div>
-
-        </form>
-</div>
 
       {/* Columna derecha: Tabla de modalidades */}
-      <div className="w-2/3">
+      <div className="w-3/3">
 
  {/* Barra de búsqueda y acciones utilizando el componente `SearchBar` */}
  <SearchBar
@@ -554,9 +661,12 @@ if (!permisos) {
     searchQuery={searchQuery}
     setSearchQuery={setSearchQuery}
     handleClearSearch={handleClearSearch}
-    onExport={exportToExcel} // Exportar sin parámetros
+    onAdd={() => {
+      resetForm();
+      showModal("modalAddRow");
+    }}
+    onExport={handleExportModalidades} // Exportar sin parámetros
   />
-
 <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
        onClose={() => closeModal("modalConfirmacion")}
@@ -569,126 +679,87 @@ if (!permisos) {
 />
 
 
- {/* Tabla de modalidades */}
- <table className="xls_style-excel-table">
+{/* Tabla de modalidades */}
+<table className="xls_style-excel-table">
   <thead className="bg-slate-200">
     <tr>
       <th className="py-4 px-6 text-left">Id Modalidad</th>
       <th className="py-4 px-20 text-left">Nombre</th>
       <th className="py-4 px-16 text-left">Descripción</th>
-      <th className="py-4 px-6 text-left">Duración</th>
-      <th className="py-4 px-16 text-left">Horario</th>
-      <th className="py-4 px-16 text-left">Estado</th> {/* Nueva columna para estado */}
+      <th className="py-4 px-6 text-left">Duración (meses)</th>
+      <th className="py-4 px-6 text-left">Hora de Inicio</th>
+      <th className="py-4 px-6 text-left">Hora Final</th>
+      <th className="py-4 px-16 text-left">Estado</th>
       <th className="py-4 px-6 text-center">Acciones</th>
     </tr>
   </thead>
   {permisos?.Permiso_Consultar === "1" && (
-  <tbody>
-    {currentModalidades.map((modalidad) => {
-      // Obtener la descripción del estado correspondiente
-      const estadoDescripcion = estados.find((estado) => estado.Codigo_Estado === modalidad.Estado)?.Nombre_Estado || "Desconocido";
+    <tbody>
+      {currentModalidades.map((modalidad) => {
+        const estadoDescripcion = estados.find(
+          (estado) => estado.Codigo_Estado === modalidad.Estado
+        )?.Nombre_Estado || "Desconocido";
 
-      return (
-        <tr key={modalidad.Id_Modalidad} className="border-b hover:bg-gray-100 transition duration-300">
-          <td className="py-4 px-6">{modalidad.Id_Modalidad}</td>
-          <td className="py-4 px-6"><strong>{modalidad.Nombre}</strong></td>
-          <td className="py-4 px-6">{modalidad.Descripcion}</td>
-          <td className="py-4 px-6">{modalidad.Duracion}</td>
-          <td className="py-4 px-6">{modalidad.Horario}</td>
-          <td className="py-4 px-6">{estadoDescripcion}</td> {/* Se muestra la descripción del estado */}
-          <td className="py-4 px-6 flex justify-center space-x-2">
-            {permisos.Permiso_Actualizar === "1" && (
-              <button 
-                onClick={() => handleEdit(modalidad)} 
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-              >
-                Editar
-              </button>
-            )}
-            {permisos.Permiso_Eliminar === "1" && (
-              <button 
-                onClick={() => {
-                  setFormData(modalidad);
-                  showModal("modalConfirmacion");
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-              >
-                X
-              </button>
-            )}
+        return (
+          <tr key={modalidad.Id_Modalidad} className="border-b hover:bg-gray-100 transition duration-300">
+            <td className="py-4 px-6">{modalidad.Id_Modalidad}</td>
+            <td className="py-4 px-6"><strong>{modalidad.Nombre}</strong></td>
+            <td className="py-4 px-6">{modalidad.Descripcion}</td>
+            <td className="py-4 px-6">{modalidad.Duracion}</td>
+            <td className="py-4 px-6">{modalidad.Hora_Inicio}</td>
+            <td className="py-4 px-6">{modalidad.Hora_Final}</td>
+            <td className="py-4 px-6">{estadoDescripcion}</td>
+            <td className="py-4 px-6 flex justify-center space-x-2">
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => handleEdit(modalidad)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
+                >
+                  Editar
+                </button>
+              )}
+              {permisos.Permiso_Eliminar === "1" && (
+                <button
+                  onClick={() => {
+                    setFormData(modalidad);
+                    showModal("modalConfirmacion");
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
+                >
+                  X
+                </button>
+              )}
+            </td>
+          </tr>
+        );
+      })}
+      {filteredModalidades.length === 0 && (
+        <tr>
+          <td colSpan="8" className="py-4 text-center text-gray-500">
+            ❌ No se encontraron modalidades con los criterios de búsqueda
           </td>
         </tr>
-       
-      );
-    })}
-    {filteredModalidades.length === 0  && (
-  <tr>
-    <td colSpan="7" className="py-4 text-center text-gray-500">
-      ❌ No se encontraron modalidades con los criterios de búsqueda
-    </td>
-  </tr>
-)}
-
-
-  </tbody>
+      )}
+    </tbody>
   )}
 </table>
 
 
         {/* Paginación */}
-        <div className="flex justify-between mt-4">
-        <div className="flex items-center mb-4">
-        <span className="mr-2 text-gray-700">Mostrar:</span>
-        <select
-          className="border border-gray-300 rounded-md px-2 py-1"
-          value={filteredModalidades.length}
-          onChange={(e) => {
-            setUsersPerPage(Number(e.target.value));
-            setCurrentPage(1); // Reinicia a la página 1 al cambiar cantidad
-          }}
-        >
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
+        <Pagination
+  currentPage={currentPage}
+  totalItems={filteredModalidades.length}
+  itemsPerPage={modalidadesPerPage}
+  setPage={setCurrentPage}
+  setItemsPerPage={setUsersPerPage}
+  prevPage={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+  nextPage={() =>
+    setCurrentPage((prev) =>
+      Math.min(prev + 1, Math.ceil(filteredModalidades.length / modalidadesPerPage))
+    )
+  }
+/>
 
-      </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={prevPage}
-            className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
-          >
-            Anterior
-          </button>
-
-          {/* Páginas */}
-    
-            {Array.from({ length: Math.ceil(modalidades.length / modalidadesPerPage) }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setPage(index + 1)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                  currentPage === index + 1
-                    ? 'bg-white-600 text-black shadow-lg scale-105'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-        
-
-          {/* Botón "Siguiente" */}
-          <button
-            onClick={nextPage}
-            className="bg-white-600 text-black px-4 py-2 rounded-lg shadow-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-black transition duration-200"
-          >
-            Siguiente
-          </button>
-          </div>
-        </div>
       </div>
     </div>
   );
