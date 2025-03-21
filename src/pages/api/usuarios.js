@@ -98,6 +98,16 @@ const usuarios = await sequelize.query(
         if (existingUser.length > 0) {
           return res.status(400).json({ error: 'El nombre de usuario ya existe' });
         }
+
+            // Verificar si el correo ya existe
+    const existingEmail = await sequelize.query(
+      'SELECT * FROM tbl_usuario WHERE Correo = ?',
+      { replacements: [Correo], type: QueryTypes.SELECT }
+    );
+
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+    }
   
         // INSERT del nuevo usuario
         await sequelize.query(

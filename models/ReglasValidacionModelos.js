@@ -250,3 +250,17 @@ export const reglasValidacionRoles = {
 
   Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };
+
+export const reglasValidacionUsuario = {
+  Usuario: { ...reglasGenerales.NombreUnico(3, 60), requerido: true }, // ✅ Solo mayúsculas y guion bajo
+  Nombre_Usuario: { ...reglasGenerales.Descripciones(3, 45), requerido: true }, // ✅ Texto libre con límite
+  Correo: { ...reglasGenerales.Correo(3, 45), requerido: true }, // ✅ Texto libre con límite
+
+  Creado_Por: { tipo: "int", requerido: true }, // ✅ ID del usuario que crea el rol
+  Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true }, // ✅ Fecha en formato YYYY-MM-DD
+
+  //Modificado_Por: { tipo: "int", requerido: false }, // ✅ Puede ser nulo si no se ha modificado
+  //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false }, // ✅ Puede ser nulo si no se ha modificado
+
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
+};

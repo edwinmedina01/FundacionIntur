@@ -160,8 +160,8 @@ Duracion: (min = 1, max = 60) => ({
                 test: (valor) => !/^([A-Za-z])\1+$/.test(valor) 
             },
             { 
-                label: "Debe ser una oración con sentido (mínimo 3 palabras).", 
-                test: (valor) => valor.split(/\s+/).length >= 3 
+                label: "Debe ser una oración con sentido (mínimo 1 palabras).", 
+                test: (valor) => valor.split(/\s+/).length >= 1 
             }
         ]
     }),

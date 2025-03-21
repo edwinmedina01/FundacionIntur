@@ -5,7 +5,8 @@ import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import SearchBar from "../../components/basicos/SearchBar"; 
+import Pagination from "../../components/basicos/Pagination"; 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
 
@@ -15,7 +16,7 @@ import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
 import { exportToExcel } from "../../utils/exportToExcel"; // Importar la función
-
+import { BuildingOfficeIcon } from "@heroicons/react/24/solid";
 const MunicipioManagement = () => {
     const [estados, setEstados] = useState([]);
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
@@ -462,22 +463,14 @@ if (!permisos) {
 
       {/* Columna derecha: Tabla de municipios */}
       <div className="w-full max-w-3xl mx-auto">
-      <button
-          onClick={exportMunicipios}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
-        >
-          Exportar a Excel
-        </button>
-        <div className="mb-4 flex justify-between items-center">
-          <input
-            type="text"
-            placeholder="Buscar por nombre"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="p-2 mb-4 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          
-        </div>
+      <SearchBar 
+  title="Listado de Municipios" 
+  
+  searchQuery={{ general: searchQuery }} 
+  setSearchQuery={(newQuery) => setSearchQuery(newQuery.general)} 
+  handleClearSearch={() => setSearchQuery("")} 
+  onExport={exportMunicipios} 
+/>
 
         <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
@@ -546,22 +539,15 @@ if (!permisos) {
 </table>
 
 
-        {/* Paginación */}
-        <div className="mt-4 flex justify-between">
-          <button onClick={prevPage} className="px-4 py-2 bg-gray-300 rounded-lg">Anterior</button>
-          <div className="flex space-x-2">
-            {Array.from({ length: Math.ceil(filteredMunicipios.length / municipiosPerPage) }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => setPage(i + 1)}
-                className={`px-2 py-2 ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'} rounded-lg`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          <button onClick={nextPage} className="px-4 py-2 bg-gray-300 rounded-lg">Siguiente</button>
-        </div>
+<Pagination
+  currentPage={currentPage}
+  totalItems={filteredMunicipios.length}
+  itemsPerPage={municipiosPerPage}
+  setPage={setPage}
+  prevPage={prevPage}
+  nextPage={nextPage}
+/>
+
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { EyeIcon, EyeSlashIcon,MagnifyingGlassIcon  } from "@heroicons/react/24/outline"; 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
-
+import SearchBar from "../../components/basicos/SearchBar"; 
 import { validarFormulario } from "../../utils/validaciones";
 import { reglasValidacionModalidad } from "../../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
@@ -547,35 +547,15 @@ if (!permisos) {
 
       {/* Columna derecha: Tabla de modalidades */}
       <div className="w-2/3">
-        <button
-          onClick={exportToExcel}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
-        >
-          Exportar a Excel
-        </button>
-   {/* Barra de búsqueda */}
-   <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
-    <input
-  type="text"
-  value={searchQuery.general}
-  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
-  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-  placeholder="Buscar por nombre o correo"
-/>
 
-      {/* Botón para limpiar búsqueda */}
-  {searchQuery.general && (
-    <button
-      onClick={handleClearSearch}
-      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
-    >
-      ❌ 
-    </button>
-    
-  )
-  }
-  </div>
+ {/* Barra de búsqueda y acciones utilizando el componente `SearchBar` */}
+ <SearchBar
+    title="Listado de Modalidades"
+    searchQuery={searchQuery}
+    setSearchQuery={setSearchQuery}
+    handleClearSearch={handleClearSearch}
+    onExport={exportToExcel} // Exportar sin parámetros
+  />
 
 <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}

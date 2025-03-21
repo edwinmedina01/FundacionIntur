@@ -12,7 +12,13 @@ import ExcelJS from "exceljs";
 import { validateNombre, validateUsername, validateEmail } from "../utils/ValidadorCampos";
 import { deepSearch } from "../utils/deepSearch";
 import ModalConfirmacion from "../utils/ModalConfirmacion"; 
+import SearchBar from "../components/basicos/SearchBar"; 
+import Pagination from "../components/basicos/Pagination"; 
 import { saveAs } from "file-saver";
+import { validarFormulario } from "../utils/validaciones";
+import { exportToExcel } from "../utils/exportToExcel";
+import { reglasValidacionUsuario } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
+
 import {
   MagnifyingGlassIcon,
   ShieldExclamationIcon, TrashIcon, PencilSquareIcon , ArrowDownCircleIcon, UserPlusIcon
@@ -32,7 +38,7 @@ const UsersManagement = () => {
   const [searchQuery, setSearchQuery] = useState({
     general: "",
     Usuario: "",
-    Estado: "",
+    Id_EstadoUsuario: "",
     Created: "",
   });
   
@@ -199,6 +205,10 @@ const handleResetPassword = async (item) => {
     fetchUserStates();
     fetchPermisos();
   }, [user]);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reinicia la página cuando se actualiza el filtro
+  }, [searchQuery]);
 // -------- PERMISOS -------- //
 const fetchPermisos = async () => {
   try {
@@ -388,6 +398,13 @@ const fetchRoles = async () => {
 
 const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const errores = validarFormulario(formData, reglasValidacionUsuario);
+
+    if (errores.length > 0) {
+      toast.error("⚠️ Corrige los siguientes errores:\n" + errores.join("\n"));
+      return;
+    }
 
     try {
         const currentDate = new Date().toISOString();
@@ -929,7 +946,7 @@ const exportToExcelv3 = async () => {
   saveAs(blob, "Usuarios.xlsx");
 };
 
-const exportToExcel = async () => {
+const exportToExcelold = async () => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Usuarios");
 
@@ -1032,6 +1049,36 @@ const exportToExcel = async () => {
   saveAs(blob, "Usuarios.xlsx");
 };
 
+const handleExportUsuarios = async () => {
+  const headers = [
+    { header: "ID", key: "Id_Usuario", width: 10 },
+    { header: "Usuario", key: "Usuario", width: 15 },
+    { header: "Nombre", key: "Nombre_Usuario", width: 30 },
+    { header: "Correo", key: "Correo", width: 40 },
+    { header: "Rol", key: "Rol", width: 20 },
+    { header: "Estado", key: "Estado", width: 15 },
+    // ...otros campos
+  ];
+
+  const data = filteredUsers.map(user => ({
+    Id_Usuario: user.Id_Usuario,
+    Usuario: user.Usuario,
+    Nombre_Usuario: user.Nombre_Usuario,
+    Correo: user.Correo,
+    Rol: getRoleNameById(user.Id_Rol),
+    Estado: getUserStateNameById(user.Id_EstadoUsuario),
+    // ...otros campos
+  }));
+
+  await exportToExcel({
+    fileName: "Usuarios.xlsx",
+    title: "Reporte de Usuarios",
+    headers,
+    data,
+    searchQuery,
+  });
+};
+
   
 // Renderizado
 if (!user) {
@@ -1069,83 +1116,52 @@ if (!permisos) {
 
       {/* Columna derecha: Tabla de Usuarios */}
       <div className="w-3/3">
-      <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
-  {/* Barra de búsqueda */}
-  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
-    <input
-  type="text"
-  value={searchQuery.general}
-  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
-  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-  placeholder="Buscar por nombre o correo"
-/>
 
-      {/* Botón para limpiar búsqueda */}
-  {searchQuery.general && (
-    <button
-      onClick={handleClearSearch}
-      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
-    >
-      ❌ 
-    </button>
-    
-  )
-  }
-  </div>
+      <SearchBar
+        title="Listado de Usuarios"
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleClearSearch={handleClearSearch}
+        onAdd={() => {
+          setShowModalUsuario(true);
+          resetForm();
+        }}
+        // Usa el mismo evento que tenías antes
+        onExport={handleExportUsuarios} // Usa el mismo método sin parámetros
+      />
+{/* Barra de búsqueda y botones */}
 
-  {/* Título de la sección */}
-  <p className="text-3xl font-bold text-blue-700">📋 Listado de Usuarios</p>
-
-  {/* Botones de acciones */}
-  <div className="flex gap-x-2">
-
-    {/* Botón para abrir el modal de agregar usuario */}
-<button
-  onClick={() => setShowModalUsuario(true)}
-  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
->
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar
-</button>
-    
-    <button
-      onClick={exportToExcel}
-      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
-    >
-      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
-    </button>
-
-    <button
-      onClick={() => router.push("/permisos")}
-      className="flex items-center bg-cyan-900 text-white px-4 py-2 rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-    >
-      <EyeIcon className="h-5 w-5 mr-2" /> Permisos
-    </button>
-  </div>
-</div>
 
         <table className="xls_style-excel-table">
           <thead className="bg-slate-200">
             <tr>
-              <th className="py-4 px-6 text-left">ID</th>
+              <th className="py-4 px-6 text-left">Item</th>
               <th className="py-4 px-6 text-left">Usuario</th>
+              <th className="py-4 px-6 text-left">ID</th>
               <th className="py-4 px-6 text-left">Nombre</th>
               <th className="py-4 px-6 text-left">Correo</th>
               <th className="py-4 px-6 text-left">Rol</th>
               <th className="py-4 px-6 text-left">
     Estado
     <select
-        className="ml p-1 border border-gray-300 rounded"
-        value={searchQuery.Estado}
-        onChange={(e) => setSearchQuery({ ...searchQuery, EstadoDisplay: e.target.value })}
-    >
-        <option value="">Todos</option>
-        {userStates.map((state) => (
-            <option key={state.Id_EstadoUsuario} value={state.Descripcion}>
-                {state.Descripcion}
-            </option>
-        ))}
-    </select>
+    className="ml p-1 border border-gray-300 rounded"
+    value={searchQuery.Id_EstadoUsuario ?? ""}
+    onChange={(e) =>
+        setSearchQuery({
+            ...searchQuery,
+            Id_EstadoUsuario: e.target.value === "" ? null : Number(e.target.value), // Asegurar null en "Todos"
+        })
+    }
+>
+    <option value="">Todos</option>
+    {userStates.map((state) => (
+        <option key={state.Id_EstadoUsuario} value={state.Id_EstadoUsuario}>
+            {state.Descripcion}
+        </option>
+    ))}
+</select>
+
+
 </th>
 
               <th className="py-4 px-6 text-center">Acciones</th>
@@ -1155,13 +1171,15 @@ if (!permisos) {
           <tbody>
             {filteredUsers.length>0?(
               filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
-              .map((user) => (
+              .map((user,index) => (
                 <React.Fragment key={user.Id_Usuario}>
                   <tr className="hover:bg-gray-100">
-                    <td className="py-4 px-6">{user.Id_Usuario}</td>
+                  <td className="py-4 px-6">{indexOfFirstUser + index + 1}</td> {/* Índice dinámico */}
+              
                     <td className="border-b border-gray-200 p-2">
                       {user.Usuario}
                     </td>
+                    <td className="py-4 px-6">{user.Id_Usuario }</td>
                     <td className="border-b border-gray-200 p-2">
                       {user.Nombre_Usuario}
                     </td>
@@ -1270,77 +1288,19 @@ if (!permisos) {
           </tbody>)}
         </table>
         {/* Paginación */}
-        <div className="flex justify-between items-center mt-4">
-
-
-
-        <div className="flex items-center mb-4">
-        <span className="mr-2 text-gray-700">Mostrar:</span>
-        <select
-          className="border border-gray-300 rounded-md px-2 py-1"
-          value={usersPerPage}
-          onChange={(e) => {
-            setUsersPerPage(Number(e.target.value));
-            setCurrentPage(1); // Reinicia a la página 1 al cambiar cantidad
-          }}
-        >
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-
-      </div>
- 
-
-
-          {/* Páginas */}
-          <div className="flex space-x-2">
-                     {/* Botón "Anterior" */}
-          <button
-            onClick={prevPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === 1
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-            disabled={currentPage === 1}
-          >
-            Anterior
-          </button>
-            {Array.from(
-              { length: Math.ceil(filteredUsers.length / usersPerPage) },
-              (_, index) => (
-                <button
-                  key={index + 1}
-                  onClick={() => setPage(index + 1)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                    currentPage === index + 1
-                      ? "bg-white-600 text-black shadow-lg scale-105"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              )
-            )}
-            
-          {/* Botón "Siguiente" */}
-          <button
-            onClick={nextPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === Math.ceil(users.length / usersPerPage)
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-            disabled={currentPage === Math.ceil(users.length / usersPerPage)}
-          >
-            Siguiente
-          </button>
-          </div>
-
-        </div>
+        <Pagination
+  currentPage={currentPage}
+  totalItems={filteredUsers.length}
+  itemsPerPage={usersPerPage}
+  setPage={setCurrentPage}
+  setItemsPerPage={setUsersPerPage}
+  prevPage={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+  nextPage={() =>
+    setCurrentPage((prev) =>
+      Math.min(prev + 1, Math.ceil(filteredUsers.length / usersPerPage))
+    )
+  }
+/>
       </div>
 
 
@@ -1470,7 +1430,7 @@ if (!permisos) {
 
         {/* Selección de Estado */}
         <label htmlFor="Id_EstadoUsuario" className="block mb-2 text-sm font-medium text-gray-700">
-          Estado
+        
         </label>
         <select
           name="Id_EstadoUsuario"
