@@ -16,6 +16,8 @@ import { validarFormulario } from "../utils/validaciones";
 import { reglasValidacionRoles } from "../../models/ReglasValidacionModelos"; // Importamos las reglas del modelo
 import { deepSearch } from '../utils/deepSearch';
 import { exportToExcel  } from '../utils/exportToExcel';
+import SearchBar from "./basicos/SearchBar"; 
+import Pagination from "../components/basicos/Pagination"; 
 
 const RolesManagement = () => {
 const router = useRouter();
@@ -36,8 +38,8 @@ const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
  const [search, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [rolesPerPage] = useState(5);
- 
+
+   const [rolesPerPage, setRolesPerPage] = useState(10); // Valor inicial
   useEffect(() => {
     fetchRoles();
     fetchPermisos();
@@ -149,6 +151,8 @@ const handleSubmit = async (e) => {
 
         // Mostrar el mensaje de error si existe en la respuesta
         toast.error('Error: ' + (errorData.error || 'Ocurrió un error desconocido'));
+
+        
         return;
     }
         toast.success('Rol actualizado exitosamente',
@@ -178,7 +182,21 @@ const handleSubmit = async (e) => {
         });
 
         if (!response.ok) {
-          throw new Error('Error al crear el rol');
+          console.log(response)
+        // Intentar leer el JSON de la respuesta del servidor
+      const errorData = await response.json(); 
+      
+      // Si el servidor devuelve un error con un código diferente a 200
+      if (response.status === 404) {
+        // Error específico para rol no encontrado
+        toast.error('Error: ' + (errorData.error || 'Rol no encontrado'));
+      } else if (response.status === 400) {
+        // Error para rol duplicado
+        toast.error('Error: ' + (errorData.error || 'El nombre del rol ya existe'));
+      } else {
+        toast.error('Error: ' + (errorData.error || 'Ocurrió un error desconocido'));
+      }
+      return;
         }
 
         toast.success('Rol agregado exitosamente',
@@ -205,7 +223,9 @@ const handleSubmit = async (e) => {
     } catch (error) {
      // toast.error('Error al guardar el rol:', error);
      console.log(error)
-        toast.error('Error: '+ error.response?.data?.message);
+         // Captura cualquier otro error no relacionado con el status del fetch
+  
+  toast.error('Error al guardar el rol: ' + error.message);
     }
   };
 
@@ -486,62 +506,17 @@ if (!permisos) {
       <div>
  {/*Barra de busqueda */}
 
-
- <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
-  {/* Barra de búsqueda */}
-   <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
-    <input
-  type="text"
-  value={search.general}
-  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
-  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-  placeholder="Buscar por nombre o correo"
+ <SearchBar
+  title="Listado de Roles"
+  searchQuery={search}
+  setSearchQuery={setSearchQuery}
+  handleClearSearch={handleClearSearch}
+  onAdd={() => {
+    resetForm();
+    showModal("modalAddRol");
+  }}
+  onExport={handleExport} // Exportar sin parámetros
 />
-
-      {/* Botón para limpiar búsqueda */}
-  {search.general && (
-    <button
-      onClick={handleClearSearch}
-      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
-    >
-      ❌ 
-    </button>
-    
-  )
-  }
-  </div>
-
-  {/* Título de la sección */}
-  <p className="text-3xl font-bold text-blue-700">📋 Roles</p>
-
-  {/* Botones de acciones */}
-  <div className="flex gap-x-2">
-
-    {/* Botón para abrir el modal de agregar usuario */}
-<button
-  onClick={() => showModal("modalAddRol")}
-  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
->
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Rol
-</button>
-    
-    <button
-      onClick={handleExport}
-      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
-    >
-      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
-    </button>
-
-    <button
-    onClick={() => router.push('/permisos')}
-    className="bg-cyan-900 text-white px-3 py-1 rounded hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-    ><strong>
-    Asignar Permisos
-  </strong></button>
-  </div>
-  </div>
-
 
   <ModalConfirmacion
   isOpen={modals["modalConfirmacion"]}
@@ -557,7 +532,7 @@ if (!permisos) {
 
 
 <table className="xls_style-excel-table">
-          <thead className="">
+<thead className="bg-slate-200">
             <tr>
               <th className>Id Rol</th>
               <th className="py-4 px-6 text-left">Rol</th>
@@ -607,50 +582,21 @@ if (!permisos) {
         </table>
         
 {/* Paginación */}
-<div className="flex justify-between items-center mt-4">
-  {/* Botón "Anterior" */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === 1
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Anterior
-  </button>
 
-  {/* Páginas */}
-  <div className="flex space-x-2">
-    {Array.from({ length: totalPages }, (_, index) => (
-      <button
-        key={index + 1}
-        onClick={() => paginate(index + 1)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-          currentPage === index + 1
-            ? 'bg-white-600 text-black shadow-lg scale-105'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
-        }`}
-      >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+<Pagination
+  currentPage={currentPage}
+  totalItems={filteredRoles.length}
+  itemsPerPage={rolesPerPage}
+  setPage={setCurrentPage} // Actualiza el número de página
+  setItemsPerPage={setRolesPerPage} // Cambia la cantidad de elementos por página
+  prevPage={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} // Navega a la página anterior, sin que el número de página sea menor a 1
+  nextPage={() =>
+    setCurrentPage((prev) =>
+      Math.min(prev + 1, Math.ceil(filteredRoles.length / rolesPerPage)) // Navega a la página siguiente, sin que exceda el total de páginas
+    )
+  }
+/>
 
-  {/* Botón "Siguiente" */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === totalPages
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Siguiente
-  </button>
-</div>
 
       </div>
     </div>

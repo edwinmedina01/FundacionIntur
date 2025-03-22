@@ -24,10 +24,24 @@ export default async function handler(req, res) {
     // 🔹 Obtener Roles (SIN "SUPERUSUARIO")
     if (req.method === 'GET') {
       try {
-        const roles = await sequelize.query(
+        const roles1 = await sequelize.query(
           `SELECT * FROM tbl_roles WHERE Rol <> ?`, 
           { replacements: [ROL_SUPERUSUARIO], type: QueryTypes.SELECT }
         );
+
+        const roles = await sequelize.query(
+          `SELECT r.*, e.Nombre_Estado AS EstadoDisplay
+           FROM tbl_roles r
+           INNER JOIN tbl_diccionario_estados e 
+             ON r.Estado = e.Codigo_Estado 
+           WHERE e.Tabla_Referencia = 'GENÉRICO' 
+             AND r.Rol <> ?`, 
+          { 
+            replacements: [ROL_SUPERUSUARIO], 
+            type: QueryTypes.SELECT 
+          }
+        );
+        
         return res.status(200).json(roles);
       } catch (error) {
         console.error('Error al obtener los roles:', error);
@@ -48,6 +62,19 @@ export default async function handler(req, res) {
       if (req.method === 'POST') {
         const { Descripcion, Estado, Creado_Por } = req.body;
         const fechaCreacion = new Date().toISOString().split("T")[0];
+
+
+        const existingRole = await sequelize.query(
+          `SELECT * FROM tbl_roles WHERE Rol = ? AND Id_Rol <> ?`,
+          {
+            replacements: [Rol, Id_Rol],
+            type: QueryTypes.SELECT,
+          }
+        );
+      
+        if (existingRole.length > 0) {
+          return res.status(400).json({ error: 'El nombre del rol ya existe' });
+        }
 
         await sequelize.query(
           `INSERT INTO tbl_roles (Rol, Descripcion, Estado, Creado_Por, Fecha_Creacion) VALUES (?, ?, ?, ?, ?)`, 

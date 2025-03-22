@@ -16,6 +16,10 @@ import { reglasValidacionPermisos } from "../../models/Permiso"; // Importamos l
 import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
 import { obtenerEstados } from "../utils/api"; // Importar la función
 import { exportToExcel  } from '../utils/exportToExcel';
+import Pagination from "../components/basicos/Pagination"; 
+import SearchBar from "../components/basicos/SearchBar"; 
+import { deepSearch  } from '../utils/deepSearch';
+
 
 
 const PermissionsManagement = () => {
@@ -48,8 +52,16 @@ const PermissionsManagement = () => {
   
  // Paginación
  const [currentPage, setCurrentPage] = useState(1);
- const [perPage] = useState(8); // Número de elementos por página
- const [searchTerm, setSearchTerm] = useState(''); // Búsqueda
+
+    const [perPage, setPermissionsPerPage] = useState(10); // Valor inicial
+
+   const [searchTerm, setSearchTerm] = useState({
+     general: "",
+     Usuario: "",
+     Id_EstadoUsuario: "",
+     Created: "",
+   });
+   
 
   const cargarEstados = useCallback(async () => {
   //  setLoading(true);
@@ -157,9 +169,9 @@ const fetchPermisos = async () => {
     setFormData({ ...formData, [name]: checked });
   };
 
+
 const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
+  setSearchQuery({ general: "", Usuario: "", Estado: "", Created: "" });  setCurrentPage(1); // Reiniciar a la primera página
 }; 
 
 const handleSubmit = async (e) => {
@@ -289,18 +301,19 @@ const handleSubmit = async (e) => {
   }, {});
 
 // Paginación lógica con filtrado por rol y objeto
-const filteredPermissions = permissions.filter(permission => {
-  // Obtén el nombre del rol usando el Id_Rol y verifica si es una cadena antes de usar toLowerCase()
-  const roleName = roleMap[permission.Id_Rol] || '';  // Obtén el nombre del rol
-  const roleMatches = roleName && roleName.toLowerCase().includes(searchTerm.toLowerCase());
+// const filteredPermissionsold = permissions.filter(permission => {
+//   // Obtén el nombre del rol usando el Id_Rol y verifica si es una cadena antes de usar toLowerCase()
+//   const roleName = roleMap[permission.Id_Rol] || '';  // Obtén el nombre del rol
+//   const roleMatches = roleName && roleName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // Obtén el nombre del objeto usando el Id_Objeto y verifica si es una cadena antes de usar toLowerCase()
-  const objectName = objectMap[permission.Id_Objeto] || '';  // Obtén el nombre del objeto
-  const objectMatches = objectName && objectName.toLowerCase().includes(searchTerm.toLowerCase());
+//   // Obtén el nombre del objeto usando el Id_Objeto y verifica si es una cadena antes de usar toLowerCase()
+//   const objectName = objectMap[permission.Id_Objeto] || '';  // Obtén el nombre del objeto
+//   const objectMatches = objectName && objectName.toLowerCase().includes(searchTerm.toLowerCase());
 
-  return roleMatches || objectMatches;
-});
-
+//   return roleMatches || objectMatches;
+// });
+ 
+    const filteredPermissions = permissions.filter((user) => deepSearch(user, searchTerm, 0, 3));
 
 
 const totalPages = Math.ceil(filteredPermissions.length / perPage);
@@ -560,46 +573,20 @@ if (!permisos) {
 
 
 
- <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
+
   {/* Barra de búsqueda */}
-  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+  <SearchBar
+  title="Listado de Permisos" // Título que aparecerá en la barra de búsqueda
+  searchQuery={searchTerm} // El estado actual de la búsqueda
+  setSearchQuery={setSearchTerm} // Función para actualizar el estado de la búsqueda
+  handleClearSearch={handleClearSearch} // Función para limpiar la búsqueda
+  onAdd={() => {
+    resetForm(); // Resetear el formulario al agregar un nuevo rol
+    showModal("modalAddPermiso");  // Mostrar el modal para agregar un nuevo rol
+  }}
+  onExport={handleExportPermissions} // Función para exportar la lista de roles
+/>
 
-
-
-<input
-      type="text"
-      value={searchTerm}
-      onChange={handleSearch}
-      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-   placeholder="Buscar..."
-    />
-  </div>
-
-  {/* Título de la sección */}
-  <p className="text-3xl font-bold text-blue-700">📋 Permisos</p>
-
-  {/* Botones de acciones */}
-  <div className="flex gap-x-2">
-
-    {/* Botón para abrir el modal de agregar usuario */}
-<button
-  onClick={() => showModal("modalAddPermiso")}
-  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
->
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Permiso
-</button>
-    
-    <button
-      onClick={handleExportPermissions}
-      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
-    >
-      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
-    </button>
-
-
-  </div>
-  </div>
 
 
         <ModalConfirmacion
@@ -681,50 +668,26 @@ if (!permisos) {
 </table>
 
         {/* Paginación */}
-        <div className="flex justify-between items-center mt-4">
-          {/* Botón "Anterior" */}
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === 1
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-          >
-            Anterior
-          </button>
+       {/* Paginación para Permisos */}
+<Pagination
+  currentPage={currentPage}
+  totalItems={filteredPermissions.length} // Total de permisos filtrados
+  itemsPerPage={perPage} // Cantidad de permisos por página
+  setPage={setCurrentPage} // Función para actualizar el número de página
+  setItemsPerPage={setPermissionsPerPage} // Función para actualizar la cantidad de permisos por página
+  prevPage={() =>
+    setCurrentPage((prev) => Math.max(prev - 1, 1)) // Navega a la página anterior, asegurándose que no sea menor a 1
+  }
+  nextPage={() =>
+    setCurrentPage((prev) =>
+      Math.min(
+        prev + 1,
+        Math.ceil(filteredPermissions.length / perPage)
+      ) // Navega a la página siguiente, asegurándose que no se exceda el total de páginas
+    )
+  }
+/>
 
-          {/* Páginas */}
-          <div className="flex space-x-2">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => paginate(index + 1)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                  currentPage === index + 1
-                    ? "bg-white-600 text-black shadow-lg scale-105"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-
-          {/* Botón "Siguiente" */}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === totalPages
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-          >
-            Siguiente
-          </button>
-        </div>
       </div>
     </div>
   );
