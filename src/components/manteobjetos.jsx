@@ -1,402 +1,214 @@
-import React, { useState, useEffect,useContext} from 'react'; //agregar el useContex
-import axios from 'axios';
+import React, { useState, useEffect, useContext, useCallback } from "react";
+import axios from "axios";
+import AuthContext from "../context/AuthContext";
+import { ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-import AuthContext from '../context/AuthContext'; //llamado del authcontext para extraer info de usuario logeado
-import { ShieldExclamationIcon,MagnifyingGlassIcon,UserPlusIcon,ArrowDownCircleIcon,PencilSquareIcon  } from '@heroicons/react/24/outline';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
-import ModalGenerico from '../utils/ModalGenerico';
-import ModalConfirmacion from '../utils/ModalConfirmacion';
-import useModal from "../hooks/useModal"; 
+import SearchBar from "../components/basicos/SearchBar";
+import Pagination from "../components/basicos/Pagination";
+import useModal from "../hooks/useModal";
+import ModalGenerico from "../utils/ModalGenerico";
+import ModalConfirmacion from "../utils/ModalConfirmacion";
 import { validarFormulario } from "../utils/validaciones";
-import { reglasValidacion } from "../../models/ObjetoDto"; // Importamos las reglas del modelo
-import { exportToExcel } from '../utils/exportToExcel';
+import { reglasValidacion } from "../../models/ObjetoDto";
+import { exportToExcel } from "../utils/exportToExcel";
+import { deepSearch } from "../utils/deepSearch";
 
 const ManejoObjetos = () => {
-  const { user } = useContext(AuthContext); // Usuario logueado
-  const [permisos, setPermisos] = useState(null); //obtener permiso
-  const [error, setError] = useState(null); //mostrar error de permiso
-  const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
+  const { user } = useContext(AuthContext);
+  const [permisos, setPermisos] = useState(null);
+  const [error, setError] = useState(null);
+  const [sinPermisos, setSinPermisos] = useState(false);
+
+  const { modals, showModal, closeModal } = useModal();
+
   const [objetos, setObjetos] = useState([]);
   const [formData, setFormData] = useState({
-    Id_Objeto: '',
-    Objeto: '',
-    Descripcion: '',
-    Tipo_Objeto: '',
-    Estado: '', // Estado predeterminado a activo
+    Id_Objeto: "",
+    Objeto: "",
+    Descripcion: "",
+    Tipo_Objeto: "",
+    Estado: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState({ general: "" });
 
- // Paginación
- const [currentPage, setCurrentPage] = useState(1);
- const [perPage] = useState(8); // Número de elementos por página
- const [searchTerm, setSearchTerm] = useState(''); // Búsqueda
- const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const filteredObjetos = objetos.filter((obj) => deepSearch(obj, searchQuery));
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentObjetos = filteredObjetos.slice(indexOfFirst, indexOfLast);
+
+  const handleClearSearch = () => {
+    setSearchQuery({ general: "" });
+    setCurrentPage(1);
+  };
+
+  const fetchObjetos = async () => {
+    try {
+      const res = await axios.get("/api/objetos");
+      setObjetos(res.data);
+    } catch (error) {
+      toast.error("Error al obtener los objetos");
+    }
+  };
+
+  const fetchPermisos = async () => {
+    try {
+      if (user) {
+        const res = await axios.post("/api/api_permiso", {
+          idRol: user.rol,
+          idObjeto: 3,
+        });
+        const permisosData = res.data;
+        if (
+          permisosData.Permiso_Insertar !== "1" &&
+          permisosData.Permiso_Actualizar !== "1" &&
+          permisosData.Permiso_Eliminar !== "1" &&
+          permisosData.Permiso_Consultar !== "1"
+        ) {
+          setSinPermisos(true);
+        } else {
+          setPermisos(permisosData);
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Error al obtener permisos");
+    }
+  };
+
   useEffect(() => {
     fetchObjetos();
     fetchPermisos();
   }, [user]);
 
- // Filtros por búsqueda
- const filteredObjetos = objetos.filter(objeto =>
-  objeto.Objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  objeto.Descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-);
-
-// Paginación
-const indexOfLastObjeto = currentPage * perPage;
-const indexOfFirstObjeto = indexOfLastObjeto - perPage;
-const currentObjetos = filteredObjetos.slice(indexOfFirstObjeto, indexOfLastObjeto);
-
-const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-const totalPages = Math.ceil(filteredObjetos.length / perPage);
-
-
-
-const exportToExcelObjetosv1 = async () => {
-  // 1️⃣ Crear un nuevo libro y hoja de Excel
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Objetos");
-  console.log("filteredObjetos")
-  console.log(filteredObjetos)
-
-  // 2️⃣ Definir las columnas y encabezados
-  worksheet.columns = [
-    { header: "ID", key: "Id_Objeto", width: 10 },
-    { header: "Nombre", key: "Nombre", width: 30 },
-    { header: "Descripción", key: "Descripcion", width: 40 },
-    { header: "Estado", key: "Estado", width: 15 },
-  ];
-
-  // 3️⃣ Agregar los datos a la hoja de cálculo
-  filteredObjetos.forEach((objeto) => {
-    worksheet.addRow({
-      Id_Objeto: objeto.Id_Objeto,
-      Nombre: objeto.Objeto,
-      Descripcion: objeto.Descripcion,
-      Estado: objeto.Estado === "1" ? "Activo" : "Inactivo",
-    });
-  });
-
-  // 4️⃣ Aplicar estilos a los encabezados
-  worksheet.getRow(1).eachCell((cell) => {
-    cell.font = { bold: true };
-    cell.alignment = { horizontal: "center" };
-  });
-
-  // 5️⃣ Generar el archivo y descargarlo
-  const buffer = await workbook.xlsx.writeBuffer();
-  const fileBlob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-
-  saveAs(fileBlob, "objetos.xlsx");
-};
-
-
-
-const exportToExcelObjetos = async () => {
-    const headers = [
-        { header: "ID", key: "Id_Objeto", width: 10 },
-        { header: "Nombre", key: "Nombre", width: 30 },
-        { header: "Descripción", key: "Descripcion", width: 40 },
-        { header: "Estado", key: "Estado", width: 15 },
-    ];
-
-    const data = filteredObjetos.map((objeto) => ({
-        Id_Objeto: objeto.Id_Objeto,
-        Nombre: objeto.Objeto,
-        Descripcion: objeto.Descripcion,
-        Estado: objeto.Estado === "1" ? "Activo" : "Inactivo",
-    }));
-
-    await exportToExcel({
-        fileName: "Objetos.xlsx",
-        title: "Reporte de Objetos",
-        headers,
-        data,
-        searchTerm, // Se mantiene para mostrar los filtros utilizados en la exportación
-    });
-};
-
-
-// Exportar a Excel
-// const exportToExcel = () => {
-//   const ws = XLSX.utils.json_to_sheet(filteredObjetos);
-//   const wb = XLSX.utils.book_new();
-//   XLSX.utils.book_append_sheet(wb, ws, 'Objetos');
-//   XLSX.writeFile(wb, 'objetos.xlsx');
-// };
-// Obtener permisos
-const fetchPermisos = async () => {
-  try {
-    if (user) {
-      const idObjeto = 3; // ID del objeto relacionado con esta página
-      const response = await axios.post('/api/api_permiso', {
-        idRol: user.rol,
-        idObjeto,
-      });
-
-      const permisosData = response.data;
-
-      // Validar si no hay permisos habilitados
-      if (
-        permisosData.Permiso_Insertar !== '1' &&
-        permisosData.Permiso_Actualizar !== '1' &&
-        permisosData.Permiso_Eliminar !== '1' &&
-        permisosData.Permiso_Consultar !== '1'
-      ) {
-        setSinPermisos(true);
-      } else {
-        setPermisos(permisosData);
-      }
-    }
-  } catch (err) {
-    setError(err.response?.data?.error || 'Error al obtener permisos');
-  }
-};
-
-  const fetchObjetos = async () => {
-    try {
-      const response = await axios.get('/api/objetos'); // Endpoint para obtener objetos
-      setObjetos(response.data);
-    } catch (error) {
-      console.error('Error al obtener los objetos:', error);
-    }
-  };
-
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const errores = validarFormulario(formData, reglasValidacion);
+    if (errores.length > 0) return;
+
     try {
-      const requestData = {
-        ...formData,
-      };
+      const response = isEditing
+        ? await axios.put("/api/objetos", formData)
+        : await axios.post("/api/objetos", formData);
 
-
-      const errores = validarFormulario(formData, reglasValidacion);
-
-      if (errores.length > 0) {
-     
-      //toast.error(errores.join("\n"), error);
-        return;
-      }
-    
-      
-
-      // const response = await fetch('/api/objetos', {
-      //   method: isEditing ? 'PUT' : 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(requestData),
-      // });
-let response;
-
-if(isEditing){
-       response = await axios.put('/api/objetos',requestData);}
-       else{
-
-        response = await axios.post('/api/objetos', requestData);
-       }
-    
-
-    //   if (!response.ok) {
-    //  //   throw new Error(`Error al ${isEditing ? 'actualizar' : 'crear'} el objeto`);
-    //  console.log(response);
-    //  toast.error('Error al guardar el objeto:', response);
-    //   }
-
-      toast.success(`Objeto ${isEditing ? 'actualizado' : 'agregado'} exitosamente`,
-        {
-          style: {
-            backgroundColor: '#e6ffed', // Fondo verde suave
-            color: '#2e7d32', // Texto verde oscuro
-            fontWeight: 'bold',
-            border: '1px solid #a5d6a7', // Borde verde claro
-            padding: '16px',
-            borderRadius: '12px',
-          },
-          position: 'top-right', // Posición en la esquina superior derecha
-          autoClose: 5000, // Cierra automáticamente en 5 segundos
-          hideProgressBar: true, // Ocultar barra de progreso
-        }
-      );
-
-      closeModal("modalAddObjeto")
-      
-
+      toast.success(`Objeto ${isEditing ? "actualizado" : "agregado"} exitosamente`);
       fetchObjetos();
+      closeModal("modalAddObjeto");
       resetForm();
     } catch (error) {
-      console.log(error)
-      toast.error('Error: '+ error.response?.data?.message);
+      toast.error("Error: " + error.response?.data?.message);
     }
   };
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Resetear a la primera página cuando se hace búsqueda
-  };
-  const handleEdit = (objeto) => {
-    setFormData({
-      Id_Objeto: objeto.Id_Objeto,
-      Objeto: objeto.Objeto,
-      Descripcion: objeto.Descripcion,
-      Tipo_Objeto: objeto.Tipo_Objeto,
-      Estado: objeto.Estado,
-    });
+
+  const handleEdit = (objeto,edit) => {
+    setFormData(objeto);
     setIsEditing(true);
+    if (edit){
+      showModal("modalAddObjeto");
+    }
+  
   };
 
   const handleDelete = async (Id_Objeto) => {
     try {
-      const response = await fetch('/api/objetos', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ Id_Objeto }),
+      await axios.delete("/api/objetos", {
+        data: { Id_Objeto },
       });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el objeto');
-      }
-
-
+      toast.error("Objeto eliminado exitosamente");
       fetchObjetos();
-      resetForm();
-   
-      toast.error('Objeto eliminado exitosamente', {
-        style: {
-          backgroundColor: '#ffebee', // Fondo suave rojo
-          color: '#d32f2f', // Texto rojo oscuro
-          fontWeight: 'bold',
-          border: '1px solid #f5c6cb',
-          padding: '16px',
-          borderRadius: '12px',
-        },
-        position: 'bottom-right',
-        autoClose: 5000,
-        hideProgressBar: true,
-      });
-      closeModal("modalConfirmacion")
+      closeModal("modalConfirmacion");
     } catch (error) {
-      toast.error('Error al eliminar el objeto:', error);
+      toast.error("Error al eliminar el objeto");
     }
+  };
+
+  const handleExport = async () => {
+    const headers = [
+      { header: "ID", key: "Id_Objeto", width: 10 },
+      { header: "Nombre", key: "Objeto", width: 30 },
+      { header: "Descripción", key: "Descripcion", width: 40 },
+      { header: "Tipo", key: "Tipo_Objeto", width: 20 },
+      { header: "Estado", key: "Estado", width: 15 },
+    ];
+
+    const data = filteredObjetos.map((obj) => ({
+      Id_Objeto: obj.Id_Objeto,
+      Objeto: obj.Objeto,
+      Descripcion: obj.Descripcion,
+      Tipo_Objeto: obj.Tipo_Objeto,
+      Estado: obj.Estado === "1" ? "Activo" : "Inactivo",
+    }));
+
+    await exportToExcel({
+      fileName: "Objetos.xlsx",
+      title: "Reporte de Objetos",
+      headers,
+      data,
+      searchQuery,
+    });
   };
 
   const resetForm = () => {
     setFormData({
-      Id_Objeto: '',
-      Objeto: '',
-      Descripcion: '',
-      Tipo_Objeto: '',
-      Estado: '', // Reiniciar el estado a activo
+      Id_Objeto: "",
+      Objeto: "",
+      Descripcion: "",
+      Tipo_Objeto: "",
+      Estado: "",
     });
     setIsEditing(false);
   };
-// Renderizado
-if (!user) {
-  return <p>Cargando usuario...</p>;
-}
 
-if (error) {
-  return <p>{error}</p>;
-}
-
-if (sinPermisos) {
-  return         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
-  <ShieldExclamationIcon className="h-12 w-12 mr-4" />
-  <div>
-    <h3 className="font-bold text-lg">
-      Sin permisos para Acceder a la Pantalla de Objetos
-    </h3>
-    <p>No tienes permisos para Acceder a la información.</p>
-  </div>
-</div>
-}
-
-if (!permisos) {
-  return <p>Cargando permisos...</p>;
-}
+  if (!user) return <p>Cargando usuario...</p>;
+  if (error) return <p>{error}</p>;
+  if (sinPermisos)
+    return (
+      <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
+        <ShieldExclamationIcon className="h-12 w-12 mr-4" />
+        <div>
+          <h3 className="font-bold text-lg">
+            Sin permisos para Acceder a la Pantalla de Objetos
+          </h3>
+          <p>No tienes permisos para Acceder a la información.</p>
+        </div>
+      </div>
+    );
+  if (!permisos) return <p>Cargando permisos...</p>;
 
   return (
     <div>
- 
-  <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
-  {/* Barra de búsqueda */}
-  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
+      <SearchBar
+        title="Listado de Objetos"
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleClearSearch={handleClearSearch}
+        onAdd={() => {
+          resetForm();
+          showModal("modalAddObjeto");
+        }}
+        onExport={handleExport}
+      />
 
+      <ModalConfirmacion
+        isOpen={modals["modalConfirmacion"]}
+        onClose={() => closeModal("modalConfirmacion")}
+        onConfirm={() => handleDelete(formData?.Id_Objeto)}
+        titulo="❌ Confirmar Eliminación"
+        mensaje="¿Estás seguro de que deseas eliminar a"
+        entidad={formData?.Objeto}
+        confirmText="Eliminar"
+        confirmColor="bg-red-600 hover:bg-red-700"
+      />
 
-
-<input
-      type="text"
-      value={searchTerm}
-      onChange={handleSearch}
-      className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-      placeholder="Buscar por nombre o correo"
-    />
-  </div>
-
-  {/* Título de la sección */}
-  <p className="text-3xl font-bold text-blue-700">📋 Listado de Objetos</p>
-
-  {/* Botones de acciones */}
-  <div className="flex gap-x-2">
-
-    {/* Botón para abrir el modal de agregar usuario */}
-<button
-  onClick={() => showModal("modalAddObjeto")}
-  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
->
-  <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar Objeto
-</button>
-    
-    <button
-      onClick={exportToExcelObjetos}
-      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
-    >
-      <ArrowDownCircleIcon className="h-5 w-5 mr-2" /> Exportar
-    </button>
-
-
-  </div>
-  </div>
-
- 
-
-
-
- 
-  <ModalConfirmacion
-  isOpen={modals["modalConfirmacion"]}
-       onClose={() => closeModal("modalConfirmacion")}
-  onConfirm={() => handleDelete(formData?.Id_Objeto)}
-  titulo="❌ Confirmar Eliminación"
-  mensaje="¿Estás seguro de que deseas eliminar a"
-  entidad={formData?.Objeto}
-  confirmText="Eliminar"
-  confirmColor="bg-red-600 hover:bg-red-700"
-/>
-
-
-        
- 
- 
-  <table className="xls_style-excel-table">
+<table className="xls_style-excel-table">
           <thead className="bg-slate-200">
             <tr>
               <th className="">Id Objeto</th>
@@ -425,7 +237,7 @@ if (!permisos) {
                   {permisos.Permiso_Actualizar === "1" && (
                     <button
                     onClick={() => {
-                      handleEdit(objeto);
+                      handleEdit(objeto,true);
                       showModal("modalAddObjeto")
                     }}
                     
@@ -451,62 +263,27 @@ if (!permisos) {
             ))}
           </tbody>)}
         </table>
-        {/* Paginación */}
-        <div className="flex justify-between items-center mt-4">
-          {/* Botón "Anterior" */}
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === 1
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-          >
-            Anterior
-          </button>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredObjetos.length}
+        itemsPerPage={itemsPerPage}
+        setPage={setCurrentPage}
+        setItemsPerPage={setItemsPerPage}
+        prevPage={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        nextPage={() =>
+          setCurrentPage((prev) =>
+            Math.min(prev + 1, Math.ceil(filteredObjetos.length / itemsPerPage))
+          )
+        }
+      />
 
-          {/* Páginas */}
-          <div className="flex space-x-2">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => paginate(index + 1)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                  currentPage === index + 1
-                    ? "bg-white-600 text-black shadow-lg scale-105"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-
-          {/* Botón "Siguiente" */}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-              currentPage === totalPages
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-            }`}
-          >
-            Siguiente
-          </button>
-        </div>
-  
-        <ModalGenerico
+      <ModalGenerico
         id="modalAddObjeto"
         isOpen={modals["modalAddObjeto"]}
         onClose={() => closeModal("modalAddObjeto")}
-        titulo=  {isEditing ? "Editar Objeto" : "Agregar Objeto"}
+        titulo={isEditing ? "Editar Objeto" : "Agregar Objeto"}
       >
-             {/* Columna izquierda: Formulario */}
-      <div className="w-3/3 bg-white p-6 rounded-lg shadow-md items-center">
- 
-        <form onSubmit={handleSubmit}>
+     <form onSubmit={handleSubmit}>
           {/* Input de Objeto */}
           <label className="block mb-2 text-sm font-medium text-gray-700">
             Objeto
@@ -597,13 +374,8 @@ if (!permisos) {
           </div>
         </form>
 
-      </div>
-
       </ModalGenerico>
-      </div>
-
-      
-  
+    </div>
   );
 };
 
