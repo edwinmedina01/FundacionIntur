@@ -57,11 +57,12 @@ const PermissionsManagement = () => {
 
    const [searchTerm, setSearchTerm] = useState({
      general: "",
-     Usuario: "",
-     Id_EstadoUsuario: "",
-     Created: "",
+ 
    });
    
+  useEffect(() => {
+    setCurrentPage(1); // Reinicia la página cuando se actualiza el filtro
+  }, [searchTerm]);
 
   const cargarEstados = useCallback(async () => {
   //  setLoading(true);
@@ -111,10 +112,20 @@ const fetchPermisos = async () => {
     setError(err.response?.data?.error || 'Error al obtener permisos');
   }
 };
-  const handleSearch = (e) => {
+  const handleSearchold = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Resetear a la primera página cuando se hace búsqueda
   };
+
+  const handleSearch = (e) => {
+    const { name, value } = e.target;
+    setSearchTerm((prev) => ({
+      ...prev,
+      [name]: value, // Actualiza el estado con el nombre del filtro
+    }));
+    setCurrentPage(1); // Resetear a la primera página cuando se hace búsqueda
+  };
+  
 
   const fetchPermissions = async () => {
     try {
@@ -170,10 +181,16 @@ const fetchPermisos = async () => {
   };
 
 
-const handleClearSearch = () => {
-  setSearchQuery({ general: "", Usuario: "", Estado: "", Created: "" });  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
+  const handleClearSearch = () => {
+    setSearchTerm({
+      general: "",
+      Usuario: "",
+      Id_EstadoUsuario: "",
+      Created: "",
+    });
+    setCurrentPage(1); // Reiniciar a la primera página
+  };
+  
 const handleSubmit = async (e) => {
   e.preventDefault();
    formData.Creado_Por=user.id;
@@ -301,20 +318,35 @@ const handleSubmit = async (e) => {
   }, {});
 
 // Paginación lógica con filtrado por rol y objeto
-// const filteredPermissionsold = permissions.filter(permission => {
-//   // Obtén el nombre del rol usando el Id_Rol y verifica si es una cadena antes de usar toLowerCase()
-//   const roleName = roleMap[permission.Id_Rol] || '';  // Obtén el nombre del rol
-//   const roleMatches = roleName && roleName.toLowerCase().includes(searchTerm.toLowerCase());
+const filteredPermissions = permissions.filter(permission => {
+  // Obtén el nombre del rol usando el Id_Rol y verifica si es una cadena antes de usar toLowerCase()
+  const roleName = roleMap[permission.Id_Rol] || '';  // Obtén el nombre del rol
+  const roleMatches = roleName && roleName.toLowerCase().includes(searchTerm.general.toLowerCase());
 
-//   // Obtén el nombre del objeto usando el Id_Objeto y verifica si es una cadena antes de usar toLowerCase()
-//   const objectName = objectMap[permission.Id_Objeto] || '';  // Obtén el nombre del objeto
-//   const objectMatches = objectName && objectName.toLowerCase().includes(searchTerm.toLowerCase());
+  // Obtén el nombre del objeto usando el Id_Objeto y verifica si es una cadena antes de usar toLowerCase()
+  const objectName = objectMap[permission.Id_Objeto] || '';  // Obtén el nombre del objeto
+  const objectMatches = objectName && objectName.toLowerCase().includes(searchTerm.general.toLowerCase());
 
-//   return roleMatches || objectMatches;
-// });
+ // Verificar también si el término de búsqueda coincide con los valores booleanos
+ const permisoConsultar = permission.Permiso_Consultar === "1" ? "Sí" : "No";
+ const permisoInsertar = permission.Permiso_Insertar === "1" ? "Sí" : "No";
+ const permisoActualizar = permission.Permiso_Actualizar === "1" ? "Sí" : "No";
+ const permisoEliminar = permission.Permiso_Eliminar === "1" ? "Sí" : "No";
+
+ // Si el término de búsqueda es "Sí" o "No" y coincide con alguno de los permisos
+ const booleanMatches = [permisoConsultar, permisoInsertar, permisoActualizar, permisoEliminar].some(val =>
+   val.toLowerCase().includes(searchTerm.general.toLowerCase())
+ );
+
+  return roleMatches || objectMatches || booleanMatches;
+});
  
-    const filteredPermissions = permissions.filter((user) => deepSearch(user, searchTerm, 0, 3));
-
+  //  const filteredPermissions = permissions.filter((user) => deepSearch(user, searchTerm, 0, 3));
+  
+  const filteredPermissions2 = permissions.filter((permission) => {
+    return deepSearch(permission, searchTerm, 0, 3); // Filtra los permisos con base en los términos de búsqueda
+  });
+  
 
 const totalPages = Math.ceil(filteredPermissions.length / perPage);
 const currentPermissions = filteredPermissions.slice((currentPage - 1) * perPage, currentPage * perPage);
@@ -404,9 +436,10 @@ const handleExportPermissions = async () => {
         { header: "Insertar", key: "Permiso_Insertar", width: 15 },
         { header: "Actualizar", key: "Permiso_Actualizar", width: 15 },
         { header: "Eliminar", key: "Permiso_Eliminar", width: 15 },
+        { header: "Estado", key: "Estado", width: 15 },
     ];
 
-    const data = permissions.map((permission) => ({
+    const data = filteredPermissions.map((permission) => ({
         Id_Rol: permission.Id_Rol,
         Rol: roleMap[permission.Id_Rol] || "Desconocido",
         Id_Objeto: permission.Id_Objeto,
@@ -415,6 +448,7 @@ const handleExportPermissions = async () => {
         Permiso_Insertar: permission.Permiso_Insertar === "1" ? "Sí" : "No",
         Permiso_Actualizar: permission.Permiso_Actualizar === "1" ? "Sí" : "No",
         Permiso_Eliminar: permission.Permiso_Eliminar === "1" ? "Sí" : "No",
+        Estado: permission.Estado === 1 ? "Activo" : "Inactivo",
     }));
 
     await exportToExcel({
