@@ -1,13 +1,21 @@
 export const reglasGenerales = {
-    // ✅ Solo números enteros positivos
     SoloNumeros: (min = 1, max = Infinity) => ({
         tipo: "int",
         validaciones: [
-            { label: "Debe contener solo números.", test: (valor) => /^[0-9]+$/.test(valor) },
-            { label: `Debe tener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max }
+          {
+            label: "Debe contener solo números enteros.",
+            test: (valor) => /^[0-9]+$/.test(String(valor))
+          },
+          {
+            label: `Debe estar entre ${min} y ${max}.`,
+            test: (valor) => {
+              const num = parseInt(valor);
+              return !isNaN(num) && num >= min && num <= max;
+            }
+          }
         ]
-    }),
-
+      }),
+      
     Horario: (min = 10, max = 20) => ({
         tipo: "string",
         validaciones: [
@@ -129,18 +137,59 @@ Duracion: (min = 1, max = 60) => ({
     
     
 
-    NombreCompuesto: (min = 10, max = 300) => ({
-        tipo: "string",
-        validaciones: [
-            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
-            { label: "Solo se permiten letras, números en contexto y espacios.", test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor) },
-            { label: "Debe contener al menos una vocal.", test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor) },
-            { label: "No puede tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
-            { label: "Cada palabra debe tener al menos una vocal o ser una sigla reconocida.", test: (valor) => valor.split(" ").every(palabra => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)) },
-            { label: "No puede ser una única letra repetida muchas veces.", test: (valor) => !/^([A-Za-z])\1+$/.test(valor) },
-            { label: "Debe ser una oración con sentido (mínimo 2 palabras).", test: (valor) => valor.split(" ").length >= 2 }
-        ]
-    }),
+NombreCompuesto: (min = 10, max = 300) => ({
+    tipo: "string",
+    validaciones: [
+      {
+        label: `Debe contener entre ${min} y ${max} caracteres.`,
+        test: (valor) =>
+          typeof valor === "string" &&
+          valor.trim().length >= min &&
+          valor.trim().length <= max,
+      },
+      {
+        label: "Solo se permiten letras, números y espacios.",
+        test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor),
+      },
+      {
+        label: "Debe contener al menos una vocal.",
+        test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor),
+      },
+      {
+        label: "No puede tener más de un espacio consecutivo.",
+        test: (valor) => !/\s{2,}/.test(valor),
+      },
+      {
+        label: "Cada palabra debe contener al menos una vocal o ser una sigla (ej. ONU, UTH).",
+        test: (valor) =>
+          valor
+            .trim()
+            .split(" ")
+            .every(
+              (palabra) =>
+                /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)
+            ),
+      },
+      {
+        label: "No puede ser una única letra repetida muchas veces.",
+        test: (valor) => !/^([A-Za-z])\1{2,}$/.test(valor),
+      },
+      {
+        label: "No debe tener patrones repetitivos como 'ababab', 'aabbaabb', o repeticiones exageradas.",
+        test: (valor) => {
+          const palabras = valor.trim().split(/\s+/);
+          return !palabras.some((palabra) => {
+            const repetido = /^(.+)\1{1,}$/i.test(palabra); // ababab, areareare
+            const tripleLetra = /(.)\1{2,}/.test(palabra); // aaaa, eee
+            const alternancia = /^(..+)\1{1,}$/.test(palabra); // abab, cdcd
+            return repetido || tripleLetra || alternancia;
+          });
+        },
+      },
+    ],
+  }),
+  
+  
     Descripciones: (min = 10, max = 300) => ({
         tipo: "string",
         validaciones: [
@@ -196,10 +245,17 @@ Duracion: (min = 1, max = 60) => ({
     TextoLibre: (min = 1, max = Infinity) => ({
         tipo: "string",
         validaciones: [
-            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
-            { label: "Solo se permiten letras mayúsculas y espacios.", test: (valor) => /^[A-ZÁÉÍÓÚÑ\s]+$/.test(valor) }
+          {
+            label: `Debe contener entre ${min} y ${max} caracteres.`,
+            test: (valor) => typeof valor === "string" && valor.length >= min && valor.length <= max
+          },
+          {
+            label: "Solo se permiten letras, números, espacios y caracteres como # y guiones.",
+            test: (valor) => /^[A-ZÁÉÍÓÚÜÑa-záéíóúüñ0-9\s#\-]+$/.test(valor)
+          }
         ]
-    }),
+      }),
+      
     AppKeyGeneral: (min = 3, max = 80) => ({
         tipo: "string",
         validaciones: [
@@ -329,7 +385,51 @@ Duracion: (min = 1, max = 60) => ({
             { label: "Debe ser un número de teléfono válido con entre 7 y 15 dígitos.", test: (valor) => /^\+?[0-9]{7,15}$/.test(valor) }
         ]
     }),
+    NombreConAbreviatura: (min = 3, max = 60) => ({
+        tipo: "string",
+        validaciones: [
+          {
+            label: `Debe contener entre ${min} y ${max} caracteres.`,
+            test: (valor) =>
+              typeof valor === "string" &&
+              valor.trim().length >= min &&
+              valor.trim().length <= max,
+          },
+          {
+            label: "Debe ser un nombre válido con letras, números, abreviaturas, guiones, puntos o #.",
+            test: (valor) =>
+              /^[A-ZÁÉÍÓÚÜÑa-záéíóúüñ0-9\s\-#\.]+$/.test(valor),
+          },
+          {
+            label: "No debe contener caracteres especiales como @, %, $, &, etc.",
+            test: (valor) =>
+              !/[@%$&]/.test(valor),
+          }
+        ]
+      }),
+      
 
+    NombreCompuestoConNumero: (min = 3, max = 60) => ({
+        tipo: "string",
+        validaciones: [
+          {
+            label: `Debe contener entre ${min} y ${max} caracteres.`,
+            test: (valor) =>
+              typeof valor === "string" && valor.length >= min && valor.length <= max,
+          },
+          {
+            label: "Debe contener letras y puede tener números, pero con separación (espacio, guión o #).",
+            test: (valor) =>
+              /^[A-ZÁÉÍÓÚÜÑa-záéíóúüñ]+([ \-#]+[0-9A-ZÁÉÍÓÚÜÑa-záéíóúüñ]+)+$/.test(valor),
+          },
+          {
+            label: "No debe contener caracteres especiales no permitidos como @, %, $, etc.",
+            test: (valor) =>
+              /^[A-ZÁÉÍÓÚÜÑa-záéíóúüñ0-9\s\-#]+$/.test(valor),
+          },
+        ],
+      }),
+      
     DescripcionGrado: (min = 5, max = 80) => ({
         tipo: "string",
         validaciones: [

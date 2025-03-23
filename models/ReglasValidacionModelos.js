@@ -151,7 +151,7 @@ export const reglasValidacionMunicipio = {
 };
 
 export const reglasValidacionInstituto = {
-  Nombre_Instituto: { ...reglasGenerales.Descripciones(10, 75), requerido: true },
+  Nombre_Instituto: { ...reglasGenerales.NombreConAbreviatura(10, 75), requerido: true },
   Direccion: { ...reglasGenerales.Direccion(10, 75), requerido: true },
   
   Telefono: { ...reglasGenerales.Telefono(), requerido: true },
@@ -165,7 +165,7 @@ export const reglasValidacionInstituto = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionMatricula = {
@@ -195,11 +195,11 @@ export const reglasValidacionDepartamento = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionSeccion = {
-  Nombre_Seccion: { ...reglasGenerales.DescripcionGrado(3, 75), requerido: true },
+  Nombre_Seccion: { ...reglasGenerales.NombreCompuestoConNumero(3, 75), requerido: true },
   Id_Grado: { tipo: "int", requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
@@ -208,13 +208,13 @@ export const reglasValidacionSeccion = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+ // Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 export const reglasValidacionArea = {
   Nombre_Area: { ...reglasGenerales.NombreCompuesto(5, 80), requerido: true },
   Tipo_Area: { ...reglasGenerales.DescripcionGrado(3, 50), requerido: true },
-  Responsable_Area: { ...reglasGenerales.NombreCompuesto(3, 75), requerido: true },
+  Responsable_Area: { ...reglasGenerales.NombreConAbreviatura(3, 75), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
@@ -222,11 +222,11 @@ export const reglasValidacionArea = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
-export const reglasValidacionGrado = {
-  Nombre: { ...reglasGenerales.NombreGrado(2, 10), requerido: true }, 
+export const reglasValidacionGradoOld = {
+  Nombre: { ...reglasGenerales.NombreRolMayusculas(2, 10), requerido: true }, 
   Descripcion: { ...reglasGenerales.DescripcionGrado(5, 80), requerido: true },
   Nivel_Academico: { ...reglasGenerales.TextoLibre(3, 60), requerido: true },
   Duracion: { ...reglasGenerales.DuracionAnios(1, 60), requerido: true },
@@ -240,6 +240,48 @@ export const reglasValidacionGrado = {
 
   //Estado: { ...reglasGenerales.EstadoGeneral(), requerido: true }
 };
+export const reglasValidacionGrado = {
+  Nombre: {
+    ...reglasGenerales.TextoLibre(2, 20), // Ej: "7mo", "Diurna"
+    requerido: true,
+  },
+
+  Descripcion: {
+    ...reglasGenerales.TextoLibre(5, 80), // Ej: "GRADO #7", "Profesor Prueba"
+    requerido: true,
+  },
+
+  Nivel_Academico: {
+    ...reglasGenerales.TextoLibre(5, 60), // Ej: "PRIMARIA", "SEGUNDO DE CARRERA"
+    requerido: true,
+  },
+
+  Duracion: {
+    ...reglasGenerales.SoloNumeros(1, 12), // Ej: "4 años", "12 meses", "1 Año"
+    requerido: true,
+  },
+
+  Cantidad_Materias: {
+    ...reglasGenerales.SoloNumeros(1, 50), // Ej: 2, 10, 30
+    requerido: true,
+  },
+
+  // Estado: {
+  //   ...reglasGenerales.EstadoGeneral(), // "Activo", "Inactivo"
+  //   requerido: true,
+  // },
+
+  Creado_Por: {
+    tipo: "int",
+    requerido: true,
+  },
+
+  Modificado_Por: {
+    tipo: "int",
+    requerido: false,
+  },
+};
+
 
 
   export const reglasValidacionBeneficio = {
