@@ -13,6 +13,7 @@ import "react-step-progress-bar/styles.css";
 
 import ModalGenerico from '../../utils/ModalGenerico';
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
+import RelacionForm from '../../components/basicos/RelacionForm';
 import useModal from "../../hooks/useModal";
 import { obtenerEstados } from "../../utils/api"; // Importar la función
 
@@ -21,19 +22,23 @@ import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRe
 const EstudiantesCrud = () => {
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [estados, setEstados] = useState([]);
-  const [modals, setModals] = useState({
-    modalConfirmacion: false,
-    modalEliminarTutor: false,
-    modalEliminarBenefactor: false,
-  });
+  // const [modals, setModals] = useState({
+  //   modalConfirmacion: false,
+  //   modalEliminarTutor: false,
+  //   modalEliminarBenefactor: false,
+  // });
   const [isEditing, setIsEditing] = useState(false);
   const openModal = (modalKey) => {
     setModals(prev => ({ ...prev, [modalKey]: true }));
   };
   
-  const closeModal = (modalKey) => {
-    setModals(prev => ({ ...prev, [modalKey]: false }));
-  };
+  //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+
+  
+  // const closeModal = (modalKey) => {
+  //   setModals(prev => ({ ...prev, [modalKey]: false }));
+  // };
 
   const resetForm = () => {
     setGraduacion({ 
@@ -1136,7 +1141,7 @@ if (!permisos) {
 
          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg mb-10">
   {/* Pestañas */}
-  <div className="flex border-b-2">
+  {/* <div className="flex border-b-2">
     <button
       type="button"
       onClick={() => handleTabChange(1)}
@@ -1173,600 +1178,354 @@ if (!permisos) {
     >
       Graduación
     </button>
-  </div>
+  </div> */}
 
   {/* Sección Estudiante */}
-  {activeTab === 1 && (
-    <div className="space-y-6">
-  {/* Datos Personales */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800">Datos del Estudiante</h2>
+{/* Sección Estudiante */}
+{activeTab === 1 && (
+  <div className="space-y-6">
+    <h2 className="text-lg font-semibold text-gray-800">Datos del Estudiante</h2>
 
+    <table className="w-full border border-gray-300 text-sm">
+      <tbody>
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Primer Nombre</td>
+          <td className="border p-2">
+            <input id="Primer_Nombre" type="text" name="Primer_Nombre" placeholder="Primer Nombre" value={personaData.Primer_Nombre} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Primer Apellido</td>
+          <td className="border p-2">
+            <input id="Primer_Apellido" type="text" name="Primer_Apellido" placeholder="Primer Apellido" value={personaData.Primer_Apellido} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+        </tr>
 
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Segundo Nombre</td>
+          <td className="border p-2">
+            <input id="Segundo_Nombre" type="text" name="Segundo_Nombre" placeholder="Segundo Nombre" value={personaData.Segundo_Nombre} onChange={handlePersonaInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Segundo Apellido</td>
+          <td className="border p-2">
+            <input id="Segundo_Apellido" type="text" name="Segundo_Apellido" placeholder="Segundo Apellido" value={personaData.Segundo_Apellido} onChange={handlePersonaInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+        </tr>
 
-      {/* Primer Nombre */}
-      <div className="flex flex-col">
-        <label htmlFor="Primer_Nombre" className="text-gray-700">Primer Nombre</label>
-        <input
-          id="Primer_Nombre"
-          type="text"
-          name="Primer_Nombre"
-          placeholder="Primer Nombre"
-          value={personaData.Primer_Nombre}
-          onChange={handlePersonaInputChange}
-          required
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-
-      {/* Segundo Nombre */}
-      <div className="flex flex-col">
-        <label htmlFor="Segundo_Nombre" className="text-gray-700">Segundo Nombre</label>
-        <input
-          id="Segundo_Nombre"
-          type="text"
-          name="Segundo_Nombre"
-          placeholder="Segundo Nombre"
-          value={personaData.Segundo_Nombre}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-                  {/* Número de Identidad */}
-                  <div className="flex flex-col">
-        <label htmlFor="Identidad" className="text-gray-700">Número de Identidad</label>
-        <input
-          id="Identidad"
-          type="text"
-          name="Identidad"
-          placeholder="Número de Identidad"
-          value={personaData.Identidad}
-          onChange={handlePersonaInputChange}
-          required
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-
-      {/* Fecha de Nacimiento */}
-      <div className="flex flex-col">
-        <label htmlFor="Fecha_Nacimiento" className="text-gray-700">Fecha de Nacimiento</label>
-        <input
-          id="Fecha_Nacimiento"
-          type="date"
-          name="Fecha_Nacimiento"
-          placeholder="Fecha de Nacimiento"
-          value={personaData.Fecha_Nacimiento}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-
-      {/* Departamento */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Departamento" className="text-gray-700">Departamento</label>
-        <select
-          id="Id_Departamento"
-          name="Id_Departamento"
-          value={personaData.Id_Departamento}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Seleccione un Departamento</option>
-          {departamentos.map((departamento) => (
-            <option key={departamento.Id_Departamento} value={departamento.Id_Departamento}>
-              {departamento.Nombre_Departamento}
-            </option>
-          ))}
-        </select>
-      </div>
-
-                 {/* Número de Direccion */}
-                 <div className="flex flex-col">
-        <label htmlFor="Direccion " className="text-gray-700">Dirección</label>
-        <input
-          id="Direccion"
-          type="text"
-          name="Direccion"
-          placeholder="Direccion"
-          value={personaData.Direccion}
-          onChange={handlePersonaInputChange}
-          required
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-
-
-
-
-{/* Área */}
-<div className="flex flex-col">
-        <label htmlFor="Id_Area" className="text-gray-700">Área</label>
-        <select
-          id="Id_Area"
-          name="Id_Area"
-          value={estudianteData.Id_Area}
-          onChange={handleEstudianteInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Selecciona un Área</option>
-          {areas.map((area) => (
-            <option key={area.Id_Area} value={area.Id_Area}>{area.Nombre_Area}</option>
-          ))}
-        </select>
-      </div>
-      <div className="flex flex-col">
-  <label htmlFor="Lugar_Nacimiento" className="text-gray-700">Lugar de Nacimiento</label>
-  <input
-    type="text"
-    id="Lugar_Nacimiento"
-    name="Lugar_Nacimiento"
-    value={personaData.Lugar_Nacimiento} // Estado vinculado
-    onChange={(e) =>
-      setPersonaData({
-        ...personaData,
-        [e.target.name]: e.target.value,
-      })
-    } // Manejador para actualizar el estado
-    className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-    placeholder="Ingresa el lugar de nacimiento"
-    required
-  />
-                 {/* Campo de estado genérico
-                 <label>Estado:</label>
-            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={personaData.Estado || ""} onChange={handleEstudianteInputChange} required>
-                <option value="">Seleccione un estado</option>
-                {estados.map((estado) => (
-                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
-                        {estado.Nombre_Estado}
-                    </option>
-                ))}
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Número de Identidad</td>
+          <td className="border p-2">
+            <input id="Identidad" type="text" name="Identidad" placeholder="Número de Identidad" value={personaData.Identidad} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Sexo</td>
+          <td className="border p-2">
+            <select id="Sexo" name="Sexo" value={personaData.Sexo} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300">
+              <option value="">Seleccione un sexo</option>
+              {sexos.map((sexo) => (
+                <option key={sexo.id} value={sexo.id}>{sexo.descripcion}</option>
+              ))}
             </select>
-   */}
-</div>
+          </td>
+        </tr>
 
-      
-    </div>
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Fecha de Nacimiento</td>
+          <td className="border p-2">
+            <input id="Fecha_Nacimiento" type="date" name="Fecha_Nacimiento" value={personaData.Fecha_Nacimiento} onChange={handlePersonaInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Lugar de Nacimiento</td>
+          <td className="border p-2">
+            <input id="Lugar_Nacimiento" type="text" name="Lugar_Nacimiento" value={personaData.Lugar_Nacimiento} onChange={(e) => setPersonaData({ ...personaData, [e.target.name]: e.target.value })} placeholder="Lugar de nacimiento" className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required />
+          </td>
+        </tr>
 
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800">Beneficio, Área e Instituto</h2>
-      {/* Primer Apellido */}
-      <div className="flex flex-col">
-        <label htmlFor="Primer_Apellido" className="text-gray-700">Primer Apellido</label>
-        <input
-          id="Primer_Apellido"
-          type="text"
-          name="Primer_Apellido"
-          placeholder="Primer Apellido"
-          value={personaData.Primer_Apellido}
-          onChange={handlePersonaInputChange}
-          required
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Departamento</td>
+          <td className="border p-2">
+            <select id="Id_Departamento" name="Id_Departamento" value={personaData.Id_Departamento} onChange={handlePersonaInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required>
+              <option value="">Seleccione un Departamento</option>
+              {departamentos.map((departamento) => (
+                <option key={departamento.Id_Departamento} value={departamento.Id_Departamento}>{departamento.Nombre_Departamento}</option>
+              ))}
+            </select>
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Municipio</td>
+          <td className="border p-2">
+            <select id="Id_Municipio" name="Id_Municipio" value={personaData.Id_Municipio} onChange={handlePersonaInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required>
+              <option value="">Seleccione un Municipio</option>
+              {municipios.map((municipio) => (
+                <option key={municipio.Id_Municipio} value={municipio.Id_Municipio}>{municipio.Nombre_Municipio}</option>
+              ))}
+            </select>
+          </td>
+        </tr>
 
-      {/* Segundo Apellido */}
-      <div className="flex flex-col">
-        <label htmlFor="Segundo_Apellido" className="text-gray-700">Segundo Apellido</label>
-        <input
-          id="Segundo_Apellido"
-          type="text"
-          name="Segundo_Apellido"
-          placeholder="Segundo Apellido"
-          value={personaData.Segundo_Apellido}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>     {/* Sexo */}
-      <div className="flex flex-col">
-        <label htmlFor="Sexo" className="text-gray-700">Sexo</label>
-        <select
-          id="Sexo"
-          name="Sexo"
-          value={personaData.Sexo}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Seleccione un sexo</option>
-          {sexos.map((sexo) => (
-            <option key={sexo.id} value={sexo.id}>{sexo.descripcion}</option>
-          ))}
-        </select>
-      </div>
-            {/* Número de Telefono */}
-            <div className="flex flex-col">
-        <label htmlFor="Telefono" className="text-gray-700">Número de Telefono</label>
-        <input
-          id="Telefono"
-          type="text"
-          name="Telefono"
-          placeholder="Número de Telefono"
-          value={personaData.Telefono}
-          onChange={handlePersonaInputChange}
-          required
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-        />
-      </div>
-      
-      {/* Municipio */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Municipio" className="text-gray-700">Municipio</label>
-        <select
-          id="Id_Municipio"
-          name="Id_Municipio"
-          value={personaData.Id_Municipio}
-          onChange={handlePersonaInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Seleccione un Municipio</option>
-          {municipios.map((municipio) => (
-            <option key={municipio.Id_Municipio} value={municipio.Id_Municipio}>
-              {municipio.Nombre_Municipio}
-            </option>
-          ))}
-        </select>
-      </div>
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Dirección</td>
+          <td className="border p-2">
+            <input id="Direccion" type="text" name="Direccion" placeholder="Dirección" value={personaData.Direccion} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Teléfono</td>
+          <td className="border p-2">
+            <input id="Telefono" type="text" name="Telefono" placeholder="Teléfono" value={personaData.Telefono} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
+          </td>
+        </tr>
 
-      {/* Beneficio */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Beneficio" className="text-gray-700">Beneficio</label>
-        <select
-          id="Id_Beneficio"
-          name="Id_Beneficio"
-          value={estudianteData.Id_Beneficio}
-          onChange={handleEstudianteInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Selecciona un Beneficio</option>
-          {beneficios.map((beneficio) => (
-            <option key={beneficio.Id_Beneficio} value={beneficio.Id_Beneficio}>
-              {beneficio.Nombre_Beneficio}
-            </option>
-          ))}
-        </select>
-      </div>
-              {/* Estado */}
-              <div className="flex flex-col">
-                <label htmlFor="Estado" className="text-gray-700">
-                  Estado
-                </label>
-                <select
-                  id="Estado"
-                  name="Estado"
-                  value={personaData.Estado}
-                  onChange={handlePersonaInputChange}
-                  required
-                  className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-                >
-                  <option value="1">Activo</option>
-                  <option value="0">Inactivo</option>
-                </select>
-              </div>
-      
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Área</td>
+          <td className="border p-2">
+            <select id="Id_Area" name="Id_Area" value={estudianteData.Id_Area} onChange={handleEstudianteInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required>
+              <option value="">Selecciona un Área</option>
+              {areas.map((area) => (
+                <option key={area.Id_Area} value={area.Id_Area}>{area.Nombre_Area}</option>
+              ))}
+            </select>
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Instituto</td>
+          <td className="border p-2">
+            <select id="Id_Instituto" name="Id_Instituto" value={estudianteData.Id_Instituto} onChange={handleEstudianteInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required>
+              <option value="">Selecciona un Instituto</option>
+              {institutos.map((instituto) => (
+                <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>{instituto.Nombre_Instituto}</option>
+              ))}
+            </select>
+          </td>
+        </tr>
 
-      {/* Instituto */}
-      <div className="flex flex-col">
-        <label htmlFor="Id_Instituto" className="text-gray-700">Instituto</label>
-        <select
-          id="Id_Instituto"
-          name="Id_Instituto"
-          value={estudianteData.Id_Instituto}
-          onChange={handleEstudianteInputChange}
-          className="border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-300 mt-2"
-          required
-        >
-          <option value="">Selecciona un Instituto</option>
-          {institutos.map((instituto) => (
-            <option key={instituto.Id_Instituto} value={instituto.Id_Instituto}>
-              {instituto.Nombre_Instituto}
-            </option>
-          ))}
-        </select>
-      </div>
+        <tr>
+          <td className="border p-2 font-medium text-gray-700">Beneficio</td>
+          <td className="border p-2">
+            <select id="Id_Beneficio" name="Id_Beneficio" value={estudianteData.Id_Beneficio} onChange={handleEstudianteInputChange} className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" required>
+              <option value="">Selecciona un Beneficio</option>
+              {beneficios.map((beneficio) => (
+                <option key={beneficio.Id_Beneficio} value={beneficio.Id_Beneficio}>{beneficio.Nombre_Beneficio}</option>
+              ))}
+            </select>
+          </td>
+          <td className="border p-2 font-medium text-gray-700">Estado</td>
+          <td className="border p-2">
+            <select id="Estado" name="Estado" value={personaData.Estado} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300">
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
 
-
-    </div>
-  </div>
-
-
-  <br></br>
-          <div className="flex justify-between">
-          {editId
-              ? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
-                permisos.Permiso_Actualizar === "1" && (
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Actualizar
-                  </button>
-                )
-              : // Mostrar botón "Agregar" solo si tiene permisos de inserción
-                permisos.Permiso_Insertar === "1" && (
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Agregar
-                  </button>
-                )}
-
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Cancelar
-            </button>
-          </div>
-</div>
-
-
-  )}
-{/* Sección Tutor/Padre */}
-{activeTab === 2 && (
-  <div>
-<div>
-  <label className="block mb-2 text-sm font-medium text-gray-700">
-    Nombre Completo Estudiante
-  </label>
+    <div className="flex justify-between items-center mb-4">
+  <h2 className="text-2xl font-semibold text-gray-700">
+    <strong>Tutores</strong>
+  </h2>
   
-  <input
-    type="text"
-    name="NombreCompleto"
-    value={`
-      ${personaData.Primer_Nombre || "Sin Nombre"} 
-      ${personaData.Segundo_Nombre || ""} 
-      ${personaData.Primer_Apellido || ""} 
-      ${personaData.Segundo_Apellido || ""}`.trim()}
-    disabled
-    className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
-  />
-</div>
-
-
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-
-
-
-
-  <div className="flex flex-col">
-
-
-    
-    <label htmlFor="Identidad_Tutor" className="text-gray-700 font-medium">
-      Identidad
-    </label>
-    <input
-      id="Identidad_Tutor"
-      name="Identidad"  
-      placeholder="Número de Identidad"
-      value={personaDataRelacion.Identidad}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    />
-  </div>
-  <div className="flex flex-col">
-    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Nombre
-    </label>
-    <input
-      id="Primer_Nombre"
-      type="text"
-      name="Primer_Nombre"  
-      placeholder="Primer Nombre"
-      value={personaDataRelacion.Primer_Nombre}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    />
-  </div>
-  <div className="flex flex-col">
-    <label htmlFor="Nombre_Tutor" className="text-gray-700 font-medium">
-    Apellido
-    </label>
-    <input
-      id="Primer_Apellido"
-      type="text"
-      name="Primer_Apellido"  
-      placeholder="Primer Apellido"
-      value={personaDataRelacion.Primer_Apellido}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    />
-  </div>
-  <div className="flex flex-col">
-    <label htmlFor="Sexo_Tutor" className="text-gray-700 font-medium">
-      Sexo
-    </label>
-    <select
-      id="Sexo_Tutor"
-      name="Sexo"  
-      value={personaDataRelacion.Sexo}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    >
-      <option value="">Seleccione Sexo</option>
-      <option value="1">Masculino</option>
-      <option value="0">Femenino</option>
-    </select>
-  </div>
-  <div className="flex flex-col">
-    <label htmlFor="Direccion_Tutor" className="text-gray-700 font-medium">
-      Dirección
-    </label>
-    <input
-      id="Direccion_Tutor"
-      type="text"
-      name="Direccion"  
-      placeholder="Dirección del Tutor"
-      value={personaDataRelacion.Direccion}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    />
-  </div>
-  <div className="flex flex-col">
-
-                    {/* Campo de estado genérico */}
-                    <label>Estado:</label>
-            <select className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={personaDataRelacion.Estado} onChange={handleTutorInputChange} required>
-                <option value="">Seleccione un estado</option>
-                {estados.map((estado) => (
-                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
-                        {estado.Nombre_Estado}
-                    </option>
-                ))}
-            </select>
-
-  </div>
-  <div className="flex flex-col">
-    <label htmlFor="Telefono_Tutor" className="text-gray-700 font-medium">
-      Teléfono
-    </label>
-    <input
-      id="Telefono_Tutor"
-      type="text"
-      name="Telefono"  
-      placeholder="Teléfono del Tutor"
-      value={personaDataRelacion.Telefono}
-      onChange={handleTutorInputChange}
-      required
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2 transition duration-300"
-    />
-  </div>
-</div>
-<br></br>
-<div className="flex justify-end">
-  {personaDataRelacion.esNuevo ? (
-    // Mostrar botón "Registrar" si es nuevo y tiene permiso para insertar
-    permisos.Permiso_Insertar === "1" && (
-      <button
-        onClick={handlePersonaSubmit}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        Registrar
-      </button>
-    )
-  ) : (
-    // Mostrar botón "Actualizar" si no es nuevo y tiene permiso para actualizar
-    permisos.Permiso_Actualizar === "1" && (
-      <button
-        onClick={handlePersonaSubmit}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        Actualizar
-      </button>
-    )
-  )}
-
   <button
+    onClick={() => showModal("modalRelacion")}
     type="button"
-    onClick={handleCancelRelacion}
-    className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
   >
-    Cancelar
+    + Agregar Tutor
   </button>
+
+
+  <ModalGenerico
+  isOpen={modals["modalRelacion"]}
+  onClose={() => closeModal("modalRelacion")}
+  titulo="📌 Nueva Relación"
+  tamano="max-w-4xl"
+>
+  <RelacionForm
+    personaDataRelacion={personaDataRelacion}
+    handleInputChange={handleTutorInputChange}
+    handleSubmit={handlePersonaSubmit}
+    handleCancel={handleCancelRelacion}
+    estados={estados}
+    permisos={permisos}
+  />
+</ModalGenerico>
 </div>
 
-   {/* Tabla de Relaciones */}
-
-   <ModalConfirmacion
-  isOpen={modals["modalConfirmacion"]}
-  onClose={() => closeModal("modalConfirmacion")}
-  onConfirm={() => handleDelete(estudianteData?.Id_Estudiante)}
-  titulo="❌ Confirmar Eliminación"
-  mensaje="¿Estás seguro de que deseas eliminar a"
-  entidad={estudianteData?.Nombre_Completo}
-  confirmText="Eliminar"
-  confirmColor="bg-red-600 hover:bg-red-700"
-/>
 
 
+  <table className="xls_style-excel-table">
+    <thead className="bg-gray-100">
+      <tr>
+        <th className="">Identidad</th>
+        <th className="">Persona Relacionada</th>
+        <th className="">Estado</th>
+        <th className="">Observaciones</th>
+        <th className="">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {estudianteData.Relaciones?.length > 0 ? (
+        estudianteData.Relaciones
+          .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2)
+          .map((relacion) => {
+            const estado = estados.find(e => e.Codigo_Estado === relacion.Estado);
+            return (
+              <tr key={relacion.Id} className="hover:bg-gray-50 transition">
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Identidad}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
+                </td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  {estado ? estado.Nombre_Estado : "Desconocido"}
+                </td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Observaciones}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  <div className="flex justify-center gap-2">
+                    {permisos.Permiso_Actualizar === "1" && (
+                      <button
+                        onClick={() => handleEditTutor(relacion)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    {permisos.Permiso_Eliminar === "1" && (
+                      <button
+                        onClick={() => handleDeleteRelacion(relacion.Id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })
+      ) : (
+        <tr>
+          <td colSpan="5" className="px-4 py-4 text-center text-sm text-gray-500">
+            No hay tutores registrados.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
 
-   <div>
-        <center><h2 className="text-2xl font-semibold text-gray-700"><strong>Tutores</strong></h2></center>
-       
-       
-        <ModalConfirmacion
-  isOpen={modals["modalEliminarTutor"]}
-  onClose={() => closeModal("modalEliminarTutor")}
-  onConfirm={() => handleDeleteTutor(tutorData?.Id)}
-  titulo="❌ Eliminar Tutor"
-  mensaje="¿Estás seguro de eliminar al tutor?"
-  entidad={tutorData?.Nombre_Completo}
-  confirmText="Eliminar Tutor"
-  confirmColor="bg-orange-600 hover:bg-orange-700"
-/>
-<table className="min-w-full mt-4 border border-gray-300">
-  <thead>
-    <tr className="bg-gray-100">
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Persona Relacionada</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Observaciones</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
+  <h2 className="text-xl font-semibold text-gray-800 mb-4">Benefactores </h2>
+
+<table className="xls_style-excel-table">
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="">Identidad</th>
+      <th className="">Persona Relacionada</th>
+      <th className="">Estado</th>
+      <th className="">Observaciones</th>
+      <th className="">Acciones</th>
     </tr>
   </thead>
-
   <tbody>
     {estudianteData.Relaciones?.length > 0 ? (
       estudianteData.Relaciones
-        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
+        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3)
         .map((relacion) => {
-          // Buscar el estado correspondiente en el diccionario de estados
-          const estado = estados.find(e => e.Codigo_Estado === relacion.Estado );
-
+          const estado = estados.find(e => e.Codigo_Estado === relacion.Estado);
           return (
-            <tr key={relacion.Id} className="hover:bg-gray-50">
-              <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
-              <td className="border px-4 py-2">{relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}</td>
-              <td className="border px-4 py-2">{estado ? estado.Nombre_Estado : "Desconocido"}</td> {/* Estado con nombre correcto */}
-              <td className="border px-4 py-2">{relacion.Observaciones}</td>
-              <td className="border px-4 py-2 flex justify-center items-center space-x-2">
-                {permisos.Permiso_Actualizar === "1" && (
-                  <button
-                    onClick={() => handleEditTutor(relacion)}
-                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                  >
-                    <PencilSquareIcon className="h-6 w-6" />
-                  </button>
-                )}
-                {permisos.Permiso_Eliminar === "1" && (
-                  <button
-                    onClick={() => handleDeleteRelacion(relacion.Id)}
-                    className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-                  >
-                    <TrashIcon className="h-6 w-6" />
-                  </button>
-                )}
+            <tr key={relacion.Id} className="hover:bg-gray-50 transition">
+              <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Identidad}</td>
+              <td className="px-4 py-2 text-sm text-center border-b">
+                {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
+              </td>
+              <td className="px-4 py-2 text-sm text-center border-b">
+                {estado ? estado.Nombre_Estado : "Desconocido"}
+              </td>
+              <td className="px-4 py-2 text-sm text-center border-b">{relacion.Observaciones}</td>
+              <td className="px-4 py-2 text-sm text-center border-b">
+                <div className="flex justify-center gap-2">
+                  {permisos.Permiso_Actualizar === "1" && (
+                    <button
+                      onClick={() => handleEditTutor(relacion)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                  {permisos.Permiso_Eliminar === "1" && (
+                    <button
+                      onClick={() => handleDeleteRelacion(relacion.Id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           );
         })
     ) : (
       <tr>
-        <td colSpan="5" className="text-center border px-4 py-2">
-          No hay relaciones disponibles.
+        <td colSpan="5" className="px-4 py-4 text-center text-sm text-gray-500">
+          No hay tutores registrados.
         </td>
       </tr>
     )}
   </tbody>
 </table>
 
-      </div>
-</div>
+
+<h2 className="text-xl font-semibold text-gray-800 mb-4">Información de Graduación</h2>
+
+  <table className="xls_style-excel-table">
+    <thead className="bg-gray-100">
+      <tr>
+        <th className="">Año</th>
+        <th className="">Fecha de Inicio</th>
+        <th className="">Fecha de Finalización</th>
+        <th className="">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="text-center hover:bg-gray-50">
+        <td className="border px-4 py-2">{graduacion.Anio}</td>
+        <td className="border px-4 py-2">{graduacion.Fecha_Inicio}</td>
+        <td className="border px-4 py-2">{graduacion.Fecha_Final || "No finalizada"}</td>
+        <td className="border px-4 py-2">
+          {
+            estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido"
+          }
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+
+    <div className="flex justify-between mt-4">
+      {editId ? (
+        permisos.Permiso_Actualizar === "1" && (
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Actualizar
+          </button>
+        )
+      ) : (
+        permisos.Permiso_Insertar === "1" && (
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Agregar
+          </button>
+        )
+      )}
+
+      <button type="button" onClick={handleCancel} className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        Cancelar
+      </button>
+    </div>
+
+
+
+  </div>
+)}
+
+{/* Sección Tutor/Padre */}
+{activeTab === 2 && (
+<table>
+
+</table>
 
 )}
+
 
 {/* Sección Benefactor */}
 {activeTab === 3 && (
@@ -2155,59 +1914,6 @@ Cancelar
   confirmColor="bg-red-600 hover:bg-red-700"
 />
 
-<table className="xls_style-excel-table">
-  <thead>
-    <tr className="bg-gray-100">
-      <th>#</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Identidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Nombre</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Instituto</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Estado</th> {/* Nueva columna para estado */}
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-center">Acciones</th>
-    </tr>
-  </thead>
-  {permisos?.Permiso_Consultar === "1" && (
-    <tbody>
-      {filteredEstudiantes.map((estudiante, index) => {
-        // Buscar el estado correspondiente en el diccionario de estados
-        const estado = estados.find(e => e.Codigo_Estado === estudiante.Estado );
-
-        return (
-          <tr key={estudiante.Id_Estudiante}>
-            <td>{index + 1}</td>
-            <td>{estudiante.Persona.Identidad}</td>
-            <td>{`${estudiante.Persona.Primer_Nombre} ${estudiante.Persona.Primer_Apellido}`}</td>
-            <td>{estudiante.Instituto.Nombre_Instituto}</td>
-            <td>{estado ? estado.Nombre_Estado : "Desconocido"}</td> {/* Mostrar el estado por nombre */}
-
-            <td className="xls_center">
-              {permisos.Permiso_Actualizar === "1" && (
-                <button
-                  onClick={() => handleEdit(estudiante)}
-                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                </button>
-              )}
-
-              {permisos.Permiso_Eliminar === "1" && (
-                <button
-                  onClick={() => {
-                    setEstudianteData(estudiante);
-                    showModal("modalConfirmacion");
-                  }}
-                  className="m-1 px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700 padd"
-                >
-                  <TrashIcon className="h-6 w-6" />
-                </button>
-              )}
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-  )}
-</table>
 
           </div>
        
