@@ -1,5 +1,8 @@
 import jwt from 'jsonwebtoken'; // Importar JWT
 import { cryptPassword } from '../../lib/helpers';
+import { enviarCorreo } from '../../utils/emailSender';
+import { enviarCorreoBienvenida } from '../api/enviarCorreoBienvenida'; // Función para enviar correo
+
 const sequelize = require('../../../database/database');
 const { QueryTypes } = require('sequelize');
 
@@ -115,6 +118,21 @@ const usuarios = await sequelize.query(
           VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
           { replacements: [Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo, Creado_Por], type: QueryTypes.INSERT }
         );
+
+     // Mensaje para el correo de bienvenida
+     const mensaje = `
+     <h1>Bienvenido a Fundación Intur</h1>
+     <p>Estimado/a <strong>${Nombre_Usuario}</strong>,</p>
+     <p>Tu cuenta ha sido creada exitosamente. Tu contraseña inicial es:</p>
+     <p><strong>${Contrasena}</strong></p>
+     <p>Por razones de seguridad, te recomendamos cambiar tu contraseña después de iniciar sesión.</p>
+     <p>Inicia sesión en la plataforma <a href="http://localhost:3000">aquí</a>.</p>
+     <p>Saludos,</p>
+     <p>Equipo de Fundación Intur</p>
+   `;
+
+   // Enviar correo de bienvenida
+ ///  await enviarCorreoBienvenida(Correo, 'Bienvenido a Fundación Intur', mensaje);
   
         return res.status(201).json({ message: "Usuario creado exitosamente" });
   

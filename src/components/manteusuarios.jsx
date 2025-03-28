@@ -538,10 +538,13 @@ if (emailExists) {
 
   const handleDelete = async (Id_Usuario) => {
     try {
+      const token = localStorage.getItem("token"); // 🔑 Obtener el token del usuario autenticado
+  
       const response = await fetch("/api/usuarios", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
         },
         body: JSON.stringify({ Id_Usuario }),
       });

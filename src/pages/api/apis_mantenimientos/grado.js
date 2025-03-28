@@ -5,9 +5,27 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     // Obtener grados
     try {
-      const grados = await sequelize.query('SELECT * FROM tbl_grado', {
-        type: QueryTypes.SELECT,
-      });
+
+      const grados = await sequelize.query(
+        `
+        SELECT 
+          s.Id_Seccion,
+          s.Nombre_Seccion,
+          s.Id_Grado,
+          g.Nombre AS Nombre_Grado,
+          s.Estado,
+          s.Fecha_Creacion,
+          s.Fecha_Modificacion,
+          s.Creado_Por,
+          s.Modificado_Por
+        FROM tbl_seccion s
+        INNER JOIN tbl_grado g ON s.Id_Grado = g.Id_Grado
+        `,
+        {
+          type: QueryTypes.SELECT,
+        }
+      );
+
       res.status(200).json(grados);
     } catch (error) {
       console.error('Error al obtener los grados:', error);

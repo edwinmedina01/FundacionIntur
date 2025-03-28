@@ -15,10 +15,25 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva línea de beneficio
-    const { Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio ,Estado} = req.body;
+    const { Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado } = req.body;
+
     try {
+      // Verificar si el Nombre_Beneficio ya existe
+      const existingBeneficio = await sequelize.query(
+        'SELECT * FROM tbl_lineas_de_beneficio WHERE Nombre_Beneficio = ?',
+        {
+          replacements: [Nombre_Beneficio],
+          type: QueryTypes.SELECT,
+        }
+      );
+
+      if (existingBeneficio.length > 0) {
+        return res.status(400).json({ error: 'El nombre del beneficio ya existe' });
+      }
+
+      // Insertar el nuevo beneficio
       await sequelize.query(
-        'INSERT INTO tbl_lineas_de_beneficio (Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio,Estado) VALUES (?, ?, ?, ?, ?)', 
+        'INSERT INTO tbl_lineas_de_beneficio (Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado) VALUES (?, ?, ?, ?, ?)', 
         {
           replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado],
           type: QueryTypes.INSERT,
@@ -32,11 +47,26 @@ export default async function handler(req, res) {
   } else if (req.method === 'PUT') {
     // Actualizar una línea de beneficio
     const { Id_Beneficio, Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado } = req.body;
+
     try {
-      await sequelize.query(
-        'UPDATE tbl_lineas_de_beneficio SET Nombre_Beneficio = ?, Tipo_Beneficio = ?, Monto_Beneficio = ?, Responsable_Beneficio = ? , Estado = ? WHERE Id_Beneficio = ?', 
+      // Verificar si el Nombre_Beneficio ya existe en otra línea de beneficio (excluyendo el actual)
+      const existingBeneficio = await sequelize.query(
+        'SELECT * FROM tbl_lineas_de_beneficio WHERE Nombre_Beneficio = ? AND Id_Beneficio != ?',
         {
-          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado, Id_Beneficio ],
+          replacements: [Nombre_Beneficio, Id_Beneficio],
+          type: QueryTypes.SELECT,
+        }
+      );
+
+      if (existingBeneficio.length > 0) {
+        return res.status(400).json({ error: 'El nombre del beneficio ya existe' });
+      }
+
+      // Actualizar la línea de beneficio
+      await sequelize.query(
+        'UPDATE tbl_lineas_de_beneficio SET Nombre_Beneficio = ?, Tipo_Beneficio = ?, Monto_Beneficio = ?, Responsable_Beneficio = ?, Estado = ? WHERE Id_Beneficio = ?', 
+        {
+          replacements: [Nombre_Beneficio, Tipo_Beneficio, Monto_Beneficio, Responsable_Beneficio, Estado, Id_Beneficio],
           type: QueryTypes.UPDATE,
         }
       );

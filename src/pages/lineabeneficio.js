@@ -1,8 +1,5 @@
-// pages/dashboard.js
-
 import Layout from '../components/Layout';
-import BenefactoresManagement from '../components/benefactores';
-import UsersManagement from '../components/benefactores'; // Asegúrate de que la ruta sea correcta
+import LineaBeneficioManagement from '../components/mantenimientolineas'; // Asegúrate de que la ruta sea correcta
 import jwt from 'jsonwebtoken';
 import { useEffect } from 'react';
 
@@ -15,9 +12,8 @@ document.title = "Mantenimiento de Usuarios";
 
 return (
 <Layout>
+   <LineaBeneficioManagement /> {/* Componente de gestión de usuarios */}
    
-        <BenefactoresManagement /> {/* Componente de gestión de usuarios */}
-    
 </Layout>
 );
 };
@@ -31,10 +27,10 @@ jwt.verify(token, SECRET_KEY);
 return { props: {} };
 } catch (error) {
 return {
-redirect: {
-destination: '/',
-permanent: false,
-},
+  redirect: {
+    destination: "/",
+    permanent: false,
+  },
 };
 }
 };
