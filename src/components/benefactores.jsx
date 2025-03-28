@@ -10,6 +10,8 @@ import { deepSearch } from "../../src/utils/deepSearch";
 import { getBase64ImageFromUrl } from "../../src/utils/getBase64ImageFromUrl"; 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import SearchBar from "../components/basicos/SearchBar"
+import Pagination from "../components/basicos/Pagination"
 const BenefactoresManagement = () => {
   const router = useRouter();
 
@@ -40,7 +42,8 @@ const BenefactoresManagement = () => {
   });
   
   const [currentPage, setCurrentPage] = useState(1);
-  const [BenefactoresPerPage] = useState(10);
+
+  const [BenefactoresPerPage, setBenefactoresPerPage] = useState(10);
   
   const cargarEstados = useCallback(async () => {
     //  setLoading(true);
@@ -508,54 +511,17 @@ const handleExportv2 = async () => {
   }
 
   return (
-    <div className="w-full lg:w-2/3 p-6 rounded-lg">
-      <center>
-        <h2 className="text-2xl font-semibold mb-4">Listado Benefactores</h2>
-      </center>
-
-      {/* Barra de búsqueda */}
-      {/* Barra de búsqueda */}
-  <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-white shadow-sm">
-    <MagnifyingGlassIcon className="h-6 w-6 mr-2 text-gray-600" />
-    <input
-  type="text"
-  value={searchQuery.general}
-  onChange={(e) => setSearchQuery((prev) => ({ ...prev, general: e.target.value }))}
-  className="border-none focus:ring-0 w-200 text-gray-700 bg-transparent"
-  placeholder="Buscar por nombre o correo"
+    <div className="w-full lg:w-3/3 p-6 rounded-lg">
+   
+   <SearchBar
+  title="Listado de Benefactores"
+  titleIcon={MagnifyingGlassIcon}
+  searchQuery={searchQuery}
+  setSearchQuery={setSearchQuery}
+  handleClearSearch={handleClearSearch}
+  onExport={handleExport}
 />
 
-      {/* Botón para limpiar búsqueda */}
-  {searchQuery.general && (
-    <button
-      onClick={handleClearSearch}
-      className="px-0 py-0 bg-white-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md"
-    >
-      ❌ 
-    </button>
-    
-  )
-  }
-  </div>
-
-      <br />
-      {/* Botón para exportar */}
-      <div className="mb-4 flex justify-between items-center">
-        {/* Botón para agregar Benefactor
-        {permisos.Permiso_Insertar === '1' && (
-          <Link href="/agregarBenefactor">
-            <button className="flex items-center bg-blue-600 text-white rounded-lg p-2 hover:bg-blue-700">
-              <UserPlusIcon className="w-6 h-6 mr-2" />
-              <span>Agregar Benefactor</span>
-            </button>
-          </Link>
-        )} */}
-        {/* Botón para exportar */}
-        <button onClick={handleExport} className="flex items-center bg-green-600 text-white rounded-lg p-2 hover:bg-green-700">
-          <ArrowDownCircleIcon className="w-6 h-6 mr-2" />
-          <span>Exportar a Excel</span>
-        </button>
-      </div>
 
       {/* Mensajes de notificación */}
       {notification && <div className="text-green-600">{notification}</div>}
@@ -567,15 +533,15 @@ const handleExportv2 = async () => {
 <table className="xls_style-excel-table">
   <thead>
     <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Telefono</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Direccion</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad E.</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
+      <th className="py-4 px-6  font-semibold text-left">Identidad</th>
+      <th className="py-4 px-6  font-semibold text-left">Nombre y Apellido</th>
+      <th className="py-4 px-6  font-semibold text-left">Sexo</th>
+      <th className="py-4 px-6  font-semibold text-left">Telefono</th>
+      <th className="py-4 px-6  font-semibold text-left">Direccion</th>
+      <th className="py-4 px-6  font-semibold text-left">Identidad E.</th>
+      <th className="py-4 px-6  font-semibold text-left">Estudiante</th>
+      <th className="py-4 px-6  font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
+      <th className="py-4 px-6  font-semibold text-left">Acciones</th>
     </tr>
   </thead>
 
@@ -624,51 +590,23 @@ const handleExportv2 = async () => {
     )}
   </tbody>
 </table>
+<Pagination
+  currentPage={currentPage}
+  totalItems={filteredBenefactores.length}
+  itemsPerPage={BenefactoresPerPage}
+  setPage={setCurrentPage}
+  setItemsPerPage={setBenefactoresPerPage}
+  prevPage={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+  nextPage={() =>
+    setCurrentPage((prev) =>
+      Math.min(prev + 1, Math.ceil(filteredBenefactores.length / benefactoresPerPage))
+    )
+  }
+/>
 
 </div>
 
-      {/* Paginación */}
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => paginate(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-            currentPage === 1
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none"
-          }`}
-        >
-          Anterior
-        </button>
-
-        <div className="flex space-x-2">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => paginate(index + 1)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-                currentPage === index + 1
-                  ? "bg-white-600 text-black shadow-lg scale-105"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={() => paginate(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-            currentPage === totalPages
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-black shadow-md hover:bg-gray-200 focus:outline-none'
-          }`}
-        >
-          Siguiente
-        </button>
-      </div>
+   
     </div>
   );
 };
