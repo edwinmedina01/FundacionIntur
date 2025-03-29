@@ -12,7 +12,7 @@ export const reglasValidacionPersona = {
 
   Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
 
-  Fecha_Nacimiento: { ...reglasGenerales.Fecha(), requerido: true },
+  Fecha_Nacimiento: { ...reglasGenerales.FechaNacimiento(), requerido: true },
   Lugar_Nacimiento: { ...reglasGenerales.NombreGeneral(3, 100), requerido: true },
 
   Identidad: { 

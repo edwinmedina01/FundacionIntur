@@ -7,6 +7,7 @@ import { saveAs } from 'file-saver';
 import { validarFormulario } from '../../utils/validaciones';
 import { reglasValidacionBeneficio } from '../../../models/ReglasValidacionModelos';
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
+import ModalGenerico from '../../utils/ModalGenerico';
 import useModal from '../../hooks/useModal';
 import { obtenerEstados } from '../../utils/api';
 import { exportToExcel } from '../../utils/exportToExcel';

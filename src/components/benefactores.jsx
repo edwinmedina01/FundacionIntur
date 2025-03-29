@@ -12,8 +12,13 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import SearchBar from "../components/basicos/SearchBar"
 import Pagination from "../components/basicos/Pagination"
+import RelacionForm from "../components/basicos/RelacionForm"
+import  ModalGenerico  from "../utils/ModalGenerico";// Importar la función
+import { validarFormulario}  from '../utils/validaciones';
+import useModal from "../hooks/useModal";
 const BenefactoresManagement = () => {
   const router = useRouter();
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 
   const { user } = useContext(AuthContext); // Usuario logueado
  const [estados, setEstados] = useState([]);
@@ -40,6 +45,143 @@ const BenefactoresManagement = () => {
     Estado: "",
     Created: "",
   });
+
+    const [personaDataRelacion, setPersonaDataRelacion] = useState({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      Id_Departamento: 0,
+      Id_Municipio: 0,
+      Id_Estudiante: 0,
+      esNuevo:true,
+      Id_Tipo_Persona:1,
+      Estado:1
+  
+    });
+  
+
+    const handleTutorInputChange = (event) => {
+  const { name, value } = event.target;
+  setPersonaDataRelacion((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
+
+
+const handleCancelRelacion = () => {
+  setPersonaDataRelacion((prevData) => ({
+    ...prevData,
+    Primer_Nombre: "",
+    Segundo_Nombre: "",
+    Primer_Apellido: "",
+    Segundo_Apellido: "",
+    Sexo: "",
+    Fecha_Nacimiento: "",
+    Lugar_Nacimiento: "",
+    Identidad: "",
+    Creado_Por: "",
+    Id_Departamento: 0,
+    Id_Municipio: 0,
+    esNuevo: true,
+    Id_Tipo_Persona:1,
+    Estado:1
+  }));
+
+};
+
+const handlePersonaSubmit = async (e) => {
+  e.preventDefault();
+  try {
+console.log("handlePersonaSubmit")
+
+    personaDataRelacion.Creado_Por=user.id;
+    personaDataRelacion.Modificado_Por=user.id;
+    personaDataRelacion.Fecha_Nacimiento='2000-01-01';
+    personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
+    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,"formTutor");
+
+      if (errores.length > 0) {
+     
+      //toast.error(errores.join("\n"), error);
+        return;
+      }
+
+      // const errores2 = validarFormulario(formData, reglasValidacionEstudiante);
+
+      // if (errores2.length > 0) {
+     
+      //   toast.error(errores2.join("\n"), error);
+      //   return;
+      // }
+
+
+
+      let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
+
+
+      if (res != null) {
+        fetchEstudiantes(); // Llama a la función para actualizar la lista de estudiantes
+        
+        // Verifica si es una acción de registrar o actualizar
+        if (editId) {
+          toast.success("Registro Creado", {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        } else {
+          toast.success("Registro Actualizado", {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: "colored",
+          });
+        }
+      }
+      
+      closeModal("modalRelacion")
+      closeModal("modalRelacionBenefactor")
+      
+   
+    
+    setPersonaDataRelacion({
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Direccion: "",
+      Telefono: "",
+      Estado: null,
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      esEstudiente:true,
+      esNuevo:true
+    });
+    
+
+
+  } catch (error) {
+    console.error("Error al guardar estudiante y persona", error);
+  }
+};
+
   
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -530,6 +672,30 @@ const handleExportv2 = async () => {
 
 {/* Tabla de Benefactores */}
 <div >
+<ModalGenerico
+  id="modalRelacionBenefactor"
+  isOpen={modals["modalRelacionBenefactor"]}
+  onClose={() => closeModal("modalRelacionBenefactor")}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Benefactor" : "Actualizar Benefactor"}
+  tamano="max-w-4xl"
+>
+
+
+<RelacionForm
+  personaDataRelacion={personaDataRelacion}
+  setPersonaDataRelacion={setPersonaDataRelacion} // <-- Asegúrate de pasar esto
+  handleInputChange={handleTutorInputChange}
+  handleSubmit={handlePersonaSubmit}
+  handleCancel={handleCancelRelacion}
+  estados={estados}
+  permisos={permisos}
+  tipoRelacion="Benefactor" // 👈 útil para validación DOM con ID
+
+  formId="formTutor" // 👈 útil para validación DOM con ID
+/>
+
+</ModalGenerico>
+
 <table className="xls_style-excel-table">
   <thead>
     <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">

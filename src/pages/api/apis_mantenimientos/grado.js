@@ -9,17 +9,9 @@ export default async function handler(req, res) {
       const grados = await sequelize.query(
         `
         SELECT 
-          s.Id_Seccion,
-          s.Nombre_Seccion,
-          s.Id_Grado,
-          g.Nombre AS Nombre_Grado,
-          s.Estado,
-          s.Fecha_Creacion,
-          s.Fecha_Modificacion,
-          s.Creado_Por,
-          s.Modificado_Por
-        FROM tbl_seccion s
-        INNER JOIN tbl_grado g ON s.Id_Grado = g.Id_Grado
+          *
+        FROM tbl_grado 
+        
         `,
         {
           type: QueryTypes.SELECT,

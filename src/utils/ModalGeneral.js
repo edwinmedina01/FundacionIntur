@@ -1,6 +1,6 @@
 import React from "react";
 
- const ModalGenerico = ({ 
+export  const ModalGeneral = ({ 
   id,
   isOpen, 
   onClose, 
@@ -34,4 +34,3 @@ import React from "react";
   );
 };
 
-export default ModalGenerico;

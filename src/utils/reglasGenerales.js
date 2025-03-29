@@ -354,6 +354,37 @@ NombreCompuesto: (min = 10, max = 300) => ({
         ]
     }),
 
+    FechaNacimiento: () => ({
+        tipo: "date",
+        validaciones: [
+          {
+            label: "Debe estar en formato YYYY-MM-DD.",
+            test: (valor) => /^\d{4}-\d{2}-\d{2}$/.test(valor),
+          },
+          {
+            label: "La edad debe estar entre 04 y 90 años.",
+            test: (valor) => {
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false; // Validación de formato primero
+      
+              const fechaNacimiento = new Date(valor);
+              const hoy = new Date();
+      
+              let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+              const mesDiferencia = hoy.getMonth() - fechaNacimiento.getMonth();
+              const diaDiferencia = hoy.getDate() - fechaNacimiento.getDate();
+      
+              // Ajustar edad si aún no ha cumplido años este año
+              if (mesDiferencia < 0 || (mesDiferencia === 0 && diaDiferencia < 0)) {
+                edad--;
+              }
+      
+              return edad >= 4 && edad <= 90;
+            },
+          },
+        ],
+      }),
+      
+
     // ✅ Valor en Moneda (Formato 1000.50)
     Moneda: (min = 0, max = Infinity) => ({
         tipo: "decimal",
