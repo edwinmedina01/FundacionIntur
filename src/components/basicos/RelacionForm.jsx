@@ -2,35 +2,29 @@ import React from "react";
 
 const RelacionForm = ({
   tipoRelacion = "Tutor",
-  personaRelacion,
-  setPersonaRelacion,
+  personaDataRelacion,
+  setPersonaDataRelacion,
   handleInputChange,
   handleSubmit,
   handleCancel,
   estados = [],
   permisos = {},
+  formId = "formRelacion", // ID del formulario para usar en validaciones DOM si lo deseas
 }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPersonaRelacion({ ...personaRelacion, [name]: value });
+    setPersonaDataRelacion({ ...personaDataRelacion, [name]: value });
   };
 
-  const nombreCompleto = `${personaRelacion.Primer_Nombre || "Sin Nombre"} ${personaRelacion.Segundo_Nombre || ""} ${personaRelacion.Primer_Apellido || ""} ${personaRelacion.Segundo_Apellido || ""}`.trim();
+  const titulo = personaDataRelacion?.esNuevo
+    ? `Agregar ${tipoRelacion}`
+    : `Editar ${tipoRelacion}`;
+
+  const textoBoton = personaDataRelacion?.esNuevo ? "Registrar" : "Actualizar";
 
   return (
-    <div className="space-y-6 mt-4">
-      <div>
-        <label className="block mb-2 text-sm font-medium text-gray-700">
-          Nombre Completo Estudiante
-        </label>
-        <input
-          type="text"
-          name="NombreCompleto"
-          value={nombreCompleto}
-          disabled
-          className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
-        />
-      </div>
+    <form id={formId} className="space-y-6 mt-4">
+      {/* <h2 className="text-2xl font-bold text-gray-700 mb-4">{titulo}</h2> */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col">
@@ -39,7 +33,7 @@ const RelacionForm = ({
             id="Identidad"
             name="Identidad"
             placeholder="Número de Identidad"
-            value={personaRelacion.Identidad}
+            value={personaDataRelacion?.Identidad}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -52,7 +46,7 @@ const RelacionForm = ({
             id="Primer_Nombre"
             name="Primer_Nombre"
             placeholder="Primer Nombre"
-            value={personaRelacion.Primer_Nombre}
+            value={personaDataRelacion?.Primer_Nombre}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -65,7 +59,7 @@ const RelacionForm = ({
             id="Primer_Apellido"
             name="Primer_Apellido"
             placeholder="Primer Apellido"
-            value={personaRelacion.Primer_Apellido}
+            value={personaDataRelacion?.Primer_Apellido}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -77,7 +71,7 @@ const RelacionForm = ({
           <select
             id="Sexo"
             name="Sexo"
-            value={personaRelacion.Sexo}
+            value={personaDataRelacion?.Sexo}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -94,7 +88,7 @@ const RelacionForm = ({
             id="Direccion"
             name="Direccion"
             placeholder={`Dirección del ${tipoRelacion}`}
-            value={personaRelacion.Direccion}
+            value={personaDataRelacion?.Direccion}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -105,7 +99,7 @@ const RelacionForm = ({
           <label htmlFor="Estado" className="text-gray-700 font-medium">Estado</label>
           <select
             name="Estado"
-            value={personaRelacion.Estado}
+            value={personaDataRelacion?.Estado}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -125,7 +119,7 @@ const RelacionForm = ({
             id="Telefono"
             name="Telefono"
             placeholder={`Teléfono del ${tipoRelacion}`}
-            value={personaRelacion.Telefono}
+            value={personaDataRelacion?.Telefono}
             onChange={handleChange}
             required
             className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
@@ -134,23 +128,25 @@ const RelacionForm = ({
       </div>
 
       <div className="flex justify-end">
-        {personaRelacion.esNuevo
-          ? permisos.Permiso_Insertar === "1" && (
-              <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Registrar
-              </button>
-            )
-          : permisos.Permiso_Actualizar === "1" && (
-              <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Actualizar
-              </button>
-            )}
+        {permisos?.Permiso_Insertar === "1" && personaDataRelacion?.esNuevo && (
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Registrar {tipoRelacion}
+          </button>
+        )}
+
+        {permisos?.Permiso_Actualizar === "1" && !personaDataRelacion?.esNuevo && (
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Actualizar {tipoRelacion}
+          </button>
+        )}
 
         <button
           type="button"
@@ -160,7 +156,7 @@ const RelacionForm = ({
           Cancelar
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 

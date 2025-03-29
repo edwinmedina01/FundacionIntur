@@ -23,7 +23,7 @@ const EstudiantesCrud = () => {
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [estados, setEstados] = useState([]);
   // const [modals, setModals] = useState({
-  //   modalConfirmacion: false,
+  //   modalConfirmacion: false,Estudian
   //   modalEliminarTutor: false,
   //   modalEliminarBenefactor: false,
   // });
@@ -201,7 +201,6 @@ const prevStep = () => {
     Creado_Por: "",
     Id_Departamento: 0,
     Id_Municipio: 0,
-    Id_Tipo_Persona: 1,
     Id_Estudiante: 0,
     esNuevo:true,
     Id_Tipo_Persona:1,
@@ -250,7 +249,7 @@ const [benefactorData, setBenefactorData] = useState({
       fetchPermisos(user.rol);
 
     }
-  }, [user]);
+  }, [user,idEstudiante]);
   const fetchEstudiantes = async () => {
     try {
       const response = await axios.get("/api/estudiantes");
@@ -265,27 +264,14 @@ const [benefactorData, setBenefactorData] = useState({
       const updatedStudent = response.data.find(
         (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
       );
+      console.log("updatedStudent")
+      console.log(updatedStudent)
       setSelectedStudent(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
   
       handleEdit(updatedStudent || null); // Actualizar el seleccionado o limpiar si no existe
-      setActiveTab(Number(tab))
-      switch (Number(tab))
-      
-      {
-          case 3:
-          case 2:
-            const relacion = updatedStudent.Relaciones.find(
-              (e) =>  e.Id === Number( relacionId)
-            );
-            if (relacion){
-              handleEditTutor(relacion)
-            
-            }
-        
-          break;
 
+ 
 
-      }
     }
       console.log(response.data)
     } catch (error) {
@@ -306,6 +292,56 @@ const [benefactorData, setBenefactorData] = useState({
     }));
 
   }
+
+
+const nuevoTutor= (tipo=1)=>{
+
+  setPersonaDataRelacion( {
+    Primer_Nombre: "",
+    Segundo_Nombre: "",
+    Primer_Apellido: "",
+    Segundo_Apellido: "",
+    Sexo: "",
+    Fecha_Nacimiento: "",
+    Lugar_Nacimiento: "",
+    Identidad: "",
+    Creado_Por: "",
+    Id_Departamento: 0,
+    Id_Municipio: 0,
+  
+    esNuevo:true,
+    Id_Tipo_Persona:tipo,
+    Estado:1,
+    Estudiante:estudianteData,
+    Id_estudiante:idEstudiante
+
+
+  })
+
+  personaDataRelacion.Estudiante.Persona=personaData;
+  personaDataRelacion.Id_Tipo_Persona=tipo;
+
+switch (tipo) {
+  case 2:
+    showModal("modalRelacion")
+    break;
+    case 3:
+      showModal("modalRelacionBenefactor")
+      break;
+
+
+}
+ 
+
+}
+
+
+useEffect(() => {
+  //if (personaDataRelacion?.esNuevo) {
+   // showModal("modalRelacion");
+ // }
+}, [personaDataRelacion]);
+
 
 
   const handleTabChange = (tabIndex) => {
@@ -559,13 +595,13 @@ const handleBenefactorInputChange = (event) => {
 const handlePersonaSubmit = async (e) => {
   e.preventDefault();
   try {
-
+console.log("handlePersonaSubmit")
 
     personaDataRelacion.Creado_Por=user.id;
     personaDataRelacion.Modificado_Por=user.id;
     personaDataRelacion.Fecha_Nacimiento='2000-01-01';
     personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
-    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion);
+    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,"formTutor");
 
       if (errores.length > 0) {
      
@@ -613,7 +649,9 @@ const handlePersonaSubmit = async (e) => {
         }
       }
       
-
+      closeModal("modalRelacion")
+      closeModal("modalRelacionBenefactor")
+      
    
     
     setPersonaDataRelacion({
@@ -633,6 +671,7 @@ const handlePersonaSubmit = async (e) => {
       esNuevo:true
     });
     
+
 
   } catch (error) {
     console.error("Error al guardar estudiante y persona", error);
@@ -896,6 +935,10 @@ const handleSubmitGraduacion = async (e) => {
     setEditId(null); //correccion para el estado del boton "registrar estudiante, y no se quede en actualizar cuando se cancele"
   };
 
+
+
+
+
   const handleEdit = (estudiante) => {
 
     setPersonaDataRelacion({
@@ -911,6 +954,7 @@ const handleSubmitGraduacion = async (e) => {
       Id_Area: estudiante.Id_Area,
       Id_Instituto: estudiante.Id_Instituto,
       Creado_Por: estudiante.Creado_Por,
+      Id_Estudiante:estudiante.Id_Estudiante,
       Relaciones:estudiante.Relaciones
     });
 
@@ -988,10 +1032,26 @@ setPersonaDataRelacion({
   Id_Persona:tutor.Persona.Id_Persona,
   Estado:tutor.Estado,
   Update:true,
+  esNuevo:false,
   Id: tutor.Id,
+  Id_Tipo_Persona:tutor.Id_Tipo_Persona
+
 
 })
+
+switch (personaDataRelacion.Id_Tipo_Persona) {
+  case value:
+    showModal("modalRelacion")
+    break;
+
+    case value:
+      showModal("modalRelacionBenefactor")
+      break;
+
+
+}
     
+//showModal("modalRelacion")modalRelacionBenefactor
 
   };
 
@@ -1308,7 +1368,33 @@ if (!permisos) {
             </select>
           </td>
         </tr>
+        <tr>
+          <td colSpan={4}>
+            
+    <div className="flex justify-between mt-4">
+      {editId ? (
+        permisos.Permiso_Actualizar === "1" && (
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Actualizar
+          </button>
+        )
+      ) : (
+        permisos.Permiso_Insertar === "1" && (
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Agregar
+          </button>
+        )
+      )}
+
+      <button type="button" onClick={handleCancel} className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        Cancelar
+      </button>
+    </div>
+          </td>
+        </tr>
       </tbody>
+
+      
     </table>
 
 
@@ -1318,7 +1404,7 @@ if (!permisos) {
   </h2>
   
   <button
-    onClick={() => showModal("modalRelacion")}
+    onClick={() => nuevoTutor(2)}
     type="button"
     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
   >
@@ -1329,17 +1415,22 @@ if (!permisos) {
   <ModalGenerico
   isOpen={modals["modalRelacion"]}
   onClose={() => closeModal("modalRelacion")}
-  titulo="📌 Nueva Relación"
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Tutor" : "Actualizar Tutor"}
   tamano="max-w-4xl"
 >
-  <RelacionForm
-    personaDataRelacion={personaDataRelacion}
-    handleInputChange={handleTutorInputChange}
-    handleSubmit={handlePersonaSubmit}
-    handleCancel={handleCancelRelacion}
-    estados={estados}
-    permisos={permisos}
-  />
+
+
+<RelacionForm
+  personaDataRelacion={personaDataRelacion}
+  setPersonaDataRelacion={setPersonaDataRelacion} // <-- Asegúrate de pasar esto
+  handleInputChange={handleTutorInputChange}
+  handleSubmit={handlePersonaSubmit}
+  handleCancel={handleCancelRelacion}
+  estados={estados}
+  permisos={permisos}
+  formId="formTutor" // 👈 útil para validación DOM con ID
+/>
+
 </ModalGenerico>
 </div>
 
@@ -1375,6 +1466,7 @@ if (!permisos) {
                   <div className="flex justify-center gap-2">
                     {permisos.Permiso_Actualizar === "1" && (
                       <button
+                        type="button"
                         onClick={() => handleEditTutor(relacion)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
                       >
@@ -1383,6 +1475,7 @@ if (!permisos) {
                     )}
                     {permisos.Permiso_Eliminar === "1" && (
                       <button
+                        type="button"
                         onClick={() => handleDeleteRelacion(relacion.Id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
                       >
@@ -1406,64 +1499,43 @@ if (!permisos) {
 
   <h2 className="text-xl font-semibold text-gray-800 mb-4">Benefactores </h2>
 
-<table className="xls_style-excel-table">
-  <thead className="bg-gray-100">
-    <tr>
-      <th className="">Identidad</th>
-      <th className="">Persona Relacionada</th>
-      <th className="">Estado</th>
-      <th className="">Observaciones</th>
-      <th className="">Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {estudianteData.Relaciones?.length > 0 ? (
-      estudianteData.Relaciones
-        .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3)
-        .map((relacion) => {
-          const estado = estados.find(e => e.Codigo_Estado === relacion.Estado);
-          return (
-            <tr key={relacion.Id} className="hover:bg-gray-50 transition">
-              <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Identidad}</td>
-              <td className="px-4 py-2 text-sm text-center border-b">
-                {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
-              </td>
-              <td className="px-4 py-2 text-sm text-center border-b">
-                {estado ? estado.Nombre_Estado : "Desconocido"}
-              </td>
-              <td className="px-4 py-2 text-sm text-center border-b">{relacion.Observaciones}</td>
-              <td className="px-4 py-2 text-sm text-center border-b">
-                <div className="flex justify-center gap-2">
-                  {permisos.Permiso_Actualizar === "1" && (
-                    <button
-                      onClick={() => handleEditTutor(relacion)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                  {permisos.Permiso_Eliminar === "1" && (
-                    <button
-                      onClick={() => handleDeleteRelacion(relacion.Id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          );
-        })
-    ) : (
-      <tr>
-        <td colSpan="5" className="px-4 py-4 text-center text-sm text-gray-500">
-          No hay tutores registrados.
-        </td>
-      </tr>
-    )}
-  </tbody>
-</table>
+  
+  <div className="flex justify-between items-center mb-4">
+  <h2 className="text-2xl font-semibold text-gray-700">
+    <strong>Tutores</strong>
+  </h2>
+  
+  <button
+    onClick={() => nuevoTutor(3)}
+    type="button"
+    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+  >
+    + Agregar Benefactor
+  </button>
+  </div>
+
+
+
+  <ModalGenerico
+  isOpen={modals["modalRelacionBenefactor"]}
+  onClose={() => closeModal("modalRelacionBenefactor")}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Benefactor" : "Actualizar Benefactor"}
+  tamano="max-w-4xl"
+>
+
+
+<RelacionForm
+  personaDataRelacion={personaDataRelacion}
+  setPersonaDataRelacion={setPersonaDataRelacion} // <-- Asegúrate de pasar esto
+  handleInputChange={handleTutorInputChange}
+  handleSubmit={handlePersonaSubmit}
+  handleCancel={handleCancelRelacion}
+  estados={estados}
+  permisos={permisos}
+  formId="formbenefactor" // 👈 útil para validación DOM con ID
+/>
+
+</ModalGenerico>
 
 
 <h2 className="text-xl font-semibold text-gray-800 mb-4">Información de Graduación</h2>
@@ -1493,25 +1565,6 @@ if (!permisos) {
 
 
 
-    <div className="flex justify-between mt-4">
-      {editId ? (
-        permisos.Permiso_Actualizar === "1" && (
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Actualizar
-          </button>
-        )
-      ) : (
-        permisos.Permiso_Insertar === "1" && (
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Agregar
-          </button>
-        )
-      )}
-
-      <button type="button" onClick={handleCancel} className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-        Cancelar
-      </button>
-    </div>
 
 
 

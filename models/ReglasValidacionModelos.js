@@ -45,7 +45,7 @@ export const reglasValidacionRelacion = {
     Primer_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
   //  Segundo_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
   
-    Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
+  //  Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
   
     //Fecha_Nacimiento: { ...reglasGenerales.Fecha(), requerido: true },
    // Lugar_Nacimiento: { ...reglasGenerales.TextoLibre(3, 100), requerido: true },
