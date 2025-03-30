@@ -28,7 +28,7 @@ export const reglasValidacionPersona = {
   Modificado_Por: { tipo: "int", requerido: false },
   //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 
   Telefono: { ...reglasGenerales.Telefono(), requerido: true },
   Direccion: { ...reglasGenerales.Direccion(5, 255), requerido: true },

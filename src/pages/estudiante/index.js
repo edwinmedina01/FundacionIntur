@@ -8,8 +8,7 @@ import { toast } from "react-toastify";
 //import GraduandoInner from '../../components/GraduandoInner';
 import { useRouter } from 'next/router';
 
-import dynamic from "next/dynamic";
-import "react-step-progress-bar/styles.css";
+
 
 
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
@@ -19,8 +18,8 @@ import ModalGenerico from "../../utils/ModalGenerico";
 
 import RelacionForm from '../../components/basicos/RelacionForm';
 import useModal from "../../hooks/useModal";
-import html2pdf from 'html2pdf.js';
-import jsPDF from 'jspdf';
+//import html2pdf from 'html2pdf.js';
+//import jsPDF from 'jspdf';
 import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 import { validarFormulario } from "../../utils/validaciones";
@@ -66,8 +65,8 @@ const EstudiantesCrud = () => {
   const router = useRouter();
 
 
-  const { tab, idEstudiante, relacionId } = router.query;
-  const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
+  const {  idEstudiante } = router.query;
+  //const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
   const [graduacion, setGraduacion] = useState([]);
@@ -96,9 +95,7 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
 }, []); // 🔥 Se ejecu
 
 
-  // Importar dinámicamente para evitar problemas con SSR
-const ProgressBar = dynamic(() => import("react-step-progress-bar").then(mod => mod.ProgressBar), { ssr: false });
-const Step = dynamic(() => import("react-step-progress-bar").then(mod => mod.Step), { ssr: false });
+
 
 const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
 
@@ -111,29 +108,19 @@ const prevStep = () => {
 };
 
 
-  // Función para convertir el contenido HTML a PDF
-  const handleExportPDF = () => {
-    const element = document.getElementById("fichaEstudiantil"); // El ID de tu formulario o elemento HTML
-    const options = {
-      margin:       1,
-      filename:     'formulario.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().from(element).set(options).save(); // Exporta el contenido
-  };
+  // // Función para convertir el contenido HTML a PDF
+  // const handleExportPDF = () => {
+  //   const element = document.getElementById("fichaEstudiantil"); // El ID de tu formulario o elemento HTML
+  //   const options = {
+  //     margin:       1,
+  //     filename:     'formulario.pdf',
+  //     image:        { type: 'jpeg', quality: 0.98 },
+  //     html2canvas:  { scale: 2 },
+  //     jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  //   };
+  //   html2pdf().from(element).set(options).save(); // Exporta el contenido
+  // };
 
-
-// Barra de Progreso
-<div className="mb-6">
-  <ProgressBar percent={(currentStep - 1) * 33.33} filledBackground="blue">
-    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>1</div>}</Step>
-    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>2</div>}</Step>
-    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>3</div>}</Step>
-    <Step>{({ accomplished }) => <div className={accomplished ? "completed" : "step"}>4</div>}</Step>
-  </ProgressBar>
-</div>
 
 // Contenido de cada paso
 {currentStep === 1 && <div>Paso 1: Información Personal</div>}
@@ -860,10 +847,14 @@ const [benefactorData, setBenefactorData] = useState({
       fetchPermisos(user.rol);
 
     }
-  }, [user,idEstudiante]);
+  }, [user]);
+
   const fetchEstudiantes = async () => {
     try {
       const response = await axios.get("/api/estudiantes");
+
+
+      
       setEstudiantes(response.data);
 
 
@@ -886,6 +877,7 @@ const [benefactorData, setBenefactorData] = useState({
     }
       console.log(response.data)
     } catch (error) {
+      setEstudiantes([]);
       console.error("Error al obtener estudiantes", error);
     }
   };
@@ -947,90 +939,86 @@ switch (tipo) {
 }
 
 
-useEffect(() => {
-  //if (personaDataRelacion?.esNuevo) {
-   // showModal("modalRelacion");
- // }
-}, [personaDataRelacion]);
 
 
 
-  const handleTabChange = (tabIndex) => {
+
+  // const handleTabChange = (tabIndex) => {
     
     
-    if (selectedStudent==null) {
-      toast.error("Seleccione un estudiante", error);
-      return;
-    }
+  //   if (selectedStudent==null) {
+  //     toast.error("Seleccione un estudiante", error);
+  //     return;
+  //   }
     
  
 
-    switch(tabIndex){
+  //   switch(tabIndex){
       
-      case 1:
+  //     case 1:
 
-      personaData.Id_Tipo_Persona=1;
+  //     personaData.Id_Tipo_Persona=1;
 
-      if(estudianteData==null){
-        personaDataRelacion.esNuevo=true;
-        personaDataRelacion.Id_Persona=null;
+  //     if(estudianteData==null){
+  //       personaDataRelacion.esNuevo=true;
+  //       personaDataRelacion.Id_Persona=null;
         
-      }
+  //     }
     
         
 
-      break;
+  //     break;
    
-      case 2:
-        if (selectedStudent==null) {
-          toast.error("Seleccione un estudiante", error);
-          return;
-        }
+  //     case 2:
+  //       if (selectedStudent==null) {
+  //         toast.error("Seleccione un estudiante", error);
+  //         return;
+  //       }
         
-        personaDataRelacion.Id_Tipo_Persona=2;
-        personaDataRelacion.esNuevo=true;
-        personaDataRelacion.Id_Persona=null;
-        resizeTo();
+  //       personaDataRelacion.Id_Tipo_Persona=2;
+  //       personaDataRelacion.esNuevo=true;
+  //       personaDataRelacion.Id_Persona=null;
+  //       resizeTo();
 
-      break;
+  //     break;
            
-      case 3:
-        if (selectedStudent==null) {
-          toast.error("Seleccione un estudiante", error);
-          return;
-        }
+  //     case 3:
+  //       if (selectedStudent==null) {
+  //         toast.error("Seleccione un estudiante", error);
+  //         return;
+  //       }
         
-        personaDataRelacion.Id_Tipo_Persona=3;
-        personaDataRelacion.esNuevo=true;
-        personaDataRelacion.Id_Persona=null;
+  //       personaDataRelacion.Id_Tipo_Persona=3;
+  //       personaDataRelacion.esNuevo=true;
+  //       personaDataRelacion.Id_Persona=null;
 
 
-      resizeTo();
-      break;
+  //     resizeTo();
+  //     break;
 
-      case 4:
-        if (selectedStudent==null) {
-          toast.error("Seleccione un estudiante", error);
-          return;
-        }
+  //     case 4:
+  //       if (selectedStudent==null) {
+  //         toast.error("Seleccione un estudiante", error);
+  //         return;
+  //       }
         
 
    
 
-        setSelectedStudent(estudianteTemp);
-        personaDataRelacion.esNuevo=false;
-        personaDataRelacion.Id_Persona=null;
+  //       setSelectedStudent(estudianteTemp);
+  //       personaDataRelacion.esNuevo=false;
+  //       personaDataRelacion.Id_Persona=null;
 
 
-      resizeTo();
+  //     resizeTo();
 
-      break;
+  //     break;
 
 
-    }
+  //   }
 
-    setActiveTab(tabIndex);
-  };
+  //   setActiveTab(tabIndex);
+  // };
   
   const fetchInstitutos = async () => {
     try {
@@ -1078,30 +1066,6 @@ useEffect(() => {
       }
     };
 
-  const fetchGraduacionold2 = async ({ id, Id_Estudiante }) => {
-    try {
-      // Construye la URL con los parámetros de consulta
-      const url = new URL('/api/graduandos', window.location.origin);
-      if (id) url.searchParams.append('id', 0);
-      if (Id_Estudiante) url.searchParams.append('Id_Estudiante',  Id_Estudiante);
-  
-      // Hace la solicitud GET
-      const response = await fetch(url.toString());
-      setGraduacion(response.data);
-      // Si la respuesta no es exitosa, lanza un error
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al obtener el graduando');
-      }
-  
-      // Devuelve los datos del graduando
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error:', error.message);
-      throw error; // Propaga el error para manejarlo en el componente
-    }
-  };
 
   const fetchAreas = async () => {
     try {
@@ -1302,10 +1266,13 @@ const handleSubmit = async (e) => {
   estudianteData.Modificado_Por=user.id;
   personaData.Sexo=Number(personaData.Sexo);
   estudianteData.Estado=Number(personaData.Estado);
+  estudianteData.Estado=Number(personaData.Estado);
  const errores = validarFormulario(personaData, reglasValidacionPersona);
 
     if (errores.length > 0) {
    
+      console.log("validarFormulario Errores");
+      console.log(personaData);
       console.log(errores);
     //toast.error(errores.join("\n"), error);
       return;
@@ -1315,6 +1282,9 @@ const handleSubmit = async (e) => {
 
     if (errores2.length > 0) {
    
+      console.log("validarFormulario Estudiante");
+      console.log(estudianteData);
+      console.log(errores2);
       toast.error(errores2.join("\n"), error);
       return;
     }
@@ -1868,7 +1838,7 @@ if (!permisos) {
 
   {/* Sección Estudiante */}
 {/* Sección Estudiante */}
-{activeTab === 1 && (
+
   <div className="space-y-6" id="fichaEstudiantil">
     <h2 className="text-lg font-semibold text-gray-800">Datos del Estudiante</h2>
 
@@ -2128,7 +2098,7 @@ if (!permisos) {
 
 
   
-{
+
 
 
   <ModalGenerico
@@ -2153,7 +2123,7 @@ if (!permisos) {
   formId="formBenefactor" // 👈 útil para validación DOM con ID
 />
 
-</ModalGenerico> }
+</ModalGenerico> 
 
 
 <div>
@@ -2261,131 +2231,10 @@ if (!permisos) {
 
 
   </div>
-)}
 
 
 
-{/* Sección Graduandos */}
-{activeTab === 4 && (
-  <div>
 
-
-  <div>
-
-
-
-<form onSubmit={handleSubmitGraduacion}>
-
-
-
-<div>
-  <label className="block mb-2 text-sm font-medium text-gray-700">
-    Nombre Completo Estudiante
-  </label>
-  
-  <input
-    type="text"
-    name="NombreCompleto"
-    value={`
-      ${personaData.Primer_Nombre || "Sin Nombre"} 
-      ${personaData.Segundo_Nombre || ""} 
-      ${personaData.Primer_Apellido || ""} 
-      ${personaData.Segundo_Apellido || ""}`.trim()}
-    disabled
-    className="border border-gray-300 p-3 rounded-lg w-full bg-gray-100 text-gray-500 cursor-not-allowed"
-  />
-
-</div>
-<div>
-  <label htmlFor="Anio" className="block mb-2 text-sm font-medium text-gray-700">
-    Año:
-  </label>
-  <input
-    type="number"
-    name="Anio"
-    value={graduacion.Anio}
-    onChange={handleChange}
-    required
-    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    placeholder="Ingrese el año"
-  />
-</div>
-
-<div>
-  <label htmlFor="Fecha_Inicio" className="block mb-2 text-sm font-medium text-gray-700">
-    Fecha de Inicio:
-  </label>
-  <input
-    type="date"
-    name="Fecha_Inicio"
-    value={graduacion.Fecha_Inicio}
-    onChange={handleChange}
-    required
-    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-</div>
-
-<div>
-  <label htmlFor="Fecha_Final" className="block mb-2 text-sm font-medium text-gray-700">
-    Fecha de Finalización:
-  </label>
-  <input
-    type="date"
-    name="Fecha_Final"
-    value={graduacion.Fecha_Final}
-    onChange={handleChange}
-    className="p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-</div>
-<div>
-                    {/* Campo de estado genérico */}
-                    <label>Estado:</label>
-            <select             className="mb-4 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="Estado" value={graduacion.Estado || ""} onChange={handleChange} required>
-                <option value="">Seleccione un estado</option>
-                {estados.map((estado) => (
-                    <option key={estado.Codigo_Estado} value={estado.Codigo_Estado}>
-                        {estado.Nombre_Estado}
-                    </option>
-                ))}
-            </select>
-</div>
-<br></br>
-
-<div className="flex justify-end">
-{isEditing
-? // Mostrar botón "Actualizar" solo si tiene permisos de actualización
-permisos.Permiso_Actualizar === "1" && (
-  <button
-  onClick={handleSubmitGraduacion}
-    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-  >
-    Actualizar
-  </button>
-)
-: // Mostrar botón "Agregar" solo si tiene permisos de inserción
-permisos.Permiso_Insertar === "1" && (
-  <button
-  onClick={handleSubmitGraduacion}
-    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-  >
-    Agregar
-  </button>
-)}
-
-<button
-type="button"
-onClick={resetForm}
-className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
->
-Cancelar
-</button>
-</div>
-  </form>
-</div>
-</div>
-
-
-)}
 
 
         </form>

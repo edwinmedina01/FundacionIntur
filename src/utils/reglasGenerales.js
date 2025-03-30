@@ -492,9 +492,11 @@ NombreCompuesto: (min = 10, max = 300) => ({
     
             { label: "No debe tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
     
-            { label: "Puede contener letras, números, comas, puntos, guiones y #.", test: (valor) => /^[A-Za-z0-9\s.,#-]+$/.test(valor) },
-    
-            { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
+            { 
+                label: "Puede contener letras, números, comas, puntos, guiones, #, y acentos.", 
+                test: (valor) => /^[A-Za-z0-9áéíóúÁÉÍÓÚ\s.,#-]+$/.test(valor) 
+            },
+           // { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
     
             { label: "Debe contener al menos una palabra con sentido (ejemplo: nombre de calle, avenida, barrio).", test: (valor) => /[A-Za-z]+/.test(valor) },
     
