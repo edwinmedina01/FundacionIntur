@@ -296,7 +296,7 @@ NombreCompuesto: (min = 10, max = 300) => ({
     }),
 
     // ✅ Nombre Propio (debe comenzar con mayúscula, sin números)
-    NombrePropio: (min = 2, max = Infinity) => ({
+    NombrePropioold: (min = 2, max = Infinity) => ({
         tipo: "string",
         validaciones: [
             { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
@@ -304,6 +304,30 @@ NombreCompuesto: (min = 10, max = 300) => ({
             { label: "No debe contener signos de puntuación.", test: (valor) => !/[.,;:!?]/.test(valor) }
         ]
     }),
+
+    NombrePropio: (min = 2, max = Infinity) => ({
+      tipo: "string",
+      validaciones: [
+        { 
+          label: `Debe contener entre ${min} y ${max} caracteres.`, 
+          test: (valor) => valor.length >= min && valor.length <= max 
+        },
+        { 
+          label: "Debe comenzar con mayúscula.", 
+          test: (valor) => /^[A-ZÁÉÍÓÚÑ]/.test(valor) 
+        },
+        { 
+          label: "Solo puede contener letras mayúsculas, minúsculas y acentos (sin números ni signos de puntuación).", 
+          test: (valor) => /^[a-zA-ZÁÉÍÓÚÑáéíóúñ]+$/.test(valor) 
+        },
+        { 
+          label: "No debe contener signos de puntuación.", 
+          test: (valor) => !/[.,;:!?]/.test(valor) 
+        }
+      ]
+    }),
+    
+
     NombreRol: (min = 3, max = 60) => ({
         tipo: "string",
         validaciones: [

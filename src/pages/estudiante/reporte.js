@@ -15,6 +15,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { deepSearch } from "../../utils/deepSearch";
 
+import ColumnSelection  from "../../components/basicos/ColumnSelection";
 
 const EstudiantesReporte = ({token}) => {
   const { user } = useContext(AuthContext);
@@ -23,6 +24,20 @@ const EstudiantesReporte = ({token}) => {
    
 
   });
+
+  const [columnsVisible, setColumnsVisible] = useState({
+    estudiante: true,
+    persona: true,
+    matricula: false,
+    tutor: false,
+    benefactor: false,
+    estado: false,
+  });
+
+  const handleColumnChange = (updatedColumns) => {
+    setColumnsVisible(updatedColumns);
+  };
+
   const [currentPage, setCurrentPage] = useState(1); // Página actual
    const [recordsPerPage, setUsersPerPage] = useState(10); // Valor inicial
   const [permisos, setPermisos] = useState([]);
@@ -113,8 +128,7 @@ const handleClearSearch = () => {
   const router = useRouter();
 
 
-  
-  
+
     
 
 
@@ -158,261 +172,26 @@ const currentEstudiantes = useMemo(() => {
 }, [filteredEstudiantes, indexOfFirst, indexOfLast]);
   
 
-  const exportToExcelold = async () => {
-    // 1️⃣ Crear un nuevo libro y hoja de Excel
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Estudiantes");
-  
-    // 2️⃣ Definir las columnas y encabezados
-    worksheet.columns = [
-      { header: "#", key: "Index", width: 5 },
-      { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
-      { header: "Beneficio", key: "Beneficio", width: 20 },
-      { header: "Área", key: "Area", width: 20 },
-      { header: "Identidad", key: "Identidad", width: 20 },
-      { header: "Nombre", key: "Nombre", width: 30 },
-      { header: "Sexo", key: "Sexo", width: 10 },
-      { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
-      { header: "Modalidad", key: "Modalidad", width: 20 },
-      { header: "Grado", key: "Grado", width: 15 },
-      { header: "Sección", key: "Seccion", width: 15 },
-      { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
-      { header: "Instituto", key: "Instituto", width: 30 },
-      { header: "Municipio", key: "Municipio", width: 20 },
-      { header: "Dirección", key: "Direccion", width: 30 },
-      { header: "Teléfono", key: "Telefono", width: 15 },
-      { header: "Estado", key: "Estado", width: 15 },
-      { header: "Tutor Identidad", key: "Tutor_Identidad", width: 20 },
-      { header: "Tutor Nombre", key: "Tutor_Nombre", width: 30 },
-      { header: "Benefactor Identidad", key: "Benefactor_Identidad", width: 20 },
-      { header: "Benefactor Nombre", key: "Benefactor_Nombre", width: 30 },
-      { header: "Benefactor Teléfono", key: "Benefactor_Telefono", width: 15 },
-      { header: "Benefactor Dirección", key: "Benefactor_Direccion", width: 30 },
-    ];
-  
-    // 3️⃣ Transformar los datos antes de agregarlos
-    const exportData = currentEstudiantes.map((estudiante, index) => ({
-      Index: index + 1,
-      Fecha_Creacion: estudiante.Fecha_Creacion
-        ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })
-        : "-",
-      Beneficio: estudiante.Beneficio?.Nombre_Beneficio || "-",
-      Area: estudiante.Area?.Nombre_Area || "-",
-      Identidad: estudiante.Persona?.Identidad || "-",
-      Nombre: `${estudiante.Persona?.Primer_Nombre || ""} ${
-        estudiante.Persona?.Segundo_Nombre || ""
-      } ${estudiante.Persona?.Primer_Apellido || ""} ${
-        estudiante.Persona?.Segundo_Apellido || ""
-      }`,
-      Sexo:
-        estudiante.Persona?.Sexo === 1
-          ? "Masculino"
-          : estudiante.Persona?.Sexo === 0
-          ? "Femenino"
-          : "-",
-      Año_Matricula:
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-          ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-          : "-",
-      Modalidad:
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
-      Grado:
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
-      Seccion:
-        Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion ||
-        "-",
-      Lugar_Nacimiento: estudiante.Persona?.Lugar_Nacimiento || "-",
-      Instituto: estudiante.Instituto?.Nombre_Instituto || "-",
-      Municipio: estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
-      Direccion: estudiante.Persona?.direccion || "-",
-      Telefono: estudiante.Persona?.telefono || "-",
-      Estado:
-        estudiante.Persona?.Estado === 1
-          ? "Activo"
-          : estudiante.Persona?.Estado === 0
-          ? "Inactivo"
-          : "-",
-      Tutor_Identidad: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-      )
-        .map((relacion) => relacion.Persona.Identidad || "-")
-        .join(", "),
-      Tutor_Nombre: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2
-      )
-        .map(
-          (relacion) =>
-            `${relacion.Persona.Primer_Nombre || "-"} ${
-              relacion.Persona.Primer_Apellido || "-"
-            }`
-        )
-        .join(", "),
-      Benefactor_Identidad: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-      )
-        .map((relacion) => relacion.Persona.Identidad || "-")
-        .join(", "),
-      Benefactor_Nombre: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-      )
-        .map(
-          (relacion) =>
-            `${relacion.Persona.Primer_Nombre || "-"} ${
-              relacion.Persona.Primer_Apellido || "-"
-            }`
-        )
-        .join(", "),
-      Benefactor_Telefono: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-      )
-        .map((relacion) => relacion.Persona?.telefono || "-")
-        .join(", "),
-      Benefactor_Direccion: estudiante.Relaciones.filter(
-        (relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3
-      )
-        .map((relacion) => relacion.Persona?.direccion || "-")
-        .join(", "),
-    }));
-  
-    // 4️⃣ Agregar los datos a la hoja de cálculo
-    exportData.forEach((estudiante) => {
-      worksheet.addRow(estudiante);
-    });
-  
-    // 5️⃣ Aplicar estilos a los encabezados
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-      cell.alignment = { horizontal: "center" };
-    });
-  
-    // 6️⃣ Generar el archivo y descargarlo
-    const buffer = await workbook.xlsx.writeBuffer();
-    const fileBlob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-  
-    saveAs(fileBlob, "reporte_estudiantes.xlsx");
-  };
-  
+
 
   
-  const exportToExcelv1 = async () => {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Estudiantes");
+
+
+  const [anchoTabla , setAnchoPantalla] = useState(600); // Inicializa con 0 o null
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setAnchoPantalla(window.innerWidth);
   
-      // 🖼️ 1️⃣ Agregar imagen al encabezado
-      const imageId = workbook.addImage({
-          base64: "data:image/png;base64,....", // Reemplaza con tu imagen en Base64
-          extension: "png",
-      });
-      worksheet.addImage(imageId, {
-          tl: { col: 0, row: 0 },
-          br: { col: 2, row: 2 },
-      });
-  
-      // 🏷️ 2️⃣ Agregar título
-      worksheet.mergeCells("A3:G3");
-      worksheet.getCell("A3").value = "Reporte de Estudiantes";
-      worksheet.getCell("A3").font = { size: 16, bold: true };
-      worksheet.getCell("A3").alignment = { horizontal: "center" };
-  
-      // 📆 3️⃣ Agregar fecha de generación
-      worksheet.mergeCells("H3:J3");
-      worksheet.getCell("H3").value = `Fecha: ${new Date().toLocaleDateString("es-ES")}`;
-      worksheet.getCell("H3").font = { bold: true };
-      worksheet.getCell("H3").alignment = { horizontal: "right" };
-  
-      // 📊 4️⃣ Definir encabezados
-      const headers = [
-          { header: "#", key: "Index", width: 5 },
-          { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
-          { header: "Beneficio", key: "Beneficio", width: 20 },
-          { header: "Área", key: "Area", width: 20 },
-          { header: "Identidad", key: "Identidad", width: 20 },
-          { header: "Nombre", key: "Nombre", width: 30 },
-          { header: "Sexo", key: "Sexo", width: 10 },
-          { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
-          { header: "Modalidad", key: "Modalidad", width: 20 },
-          { header: "Grado", key: "Grado", width: 15 },
-          { header: "Sección", key: "Seccion", width: 15 },
-          { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
-          { header: "Instituto", key: "Instituto", width: 30 },
-          { header: "Municipio", key: "Municipio", width: 20 },
-          { header: "Dirección", key: "Direccion", width: 30 },
-          { header: "Teléfono", key: "Telefono", width: 15 },
-          { header: "Estado", key: "Estado", width: 15 },
-          { header: "Tutor Identidad", key: "Tutor_Identidad", width: 20 },
-          { header: "Tutor Nombre", key: "Tutor_Nombre", width: 30 },
-          { header: "Benefactor Identidad", key: "Benefactor_Identidad", width: 20 },
-          { header: "Benefactor Nombre", key: "Benefactor_Nombre", width: 30 },
-          { header: "Benefactor Teléfono", key: "Benefactor_Telefono", width: 15 },
-          { header: "Benefactor Dirección", key: "Benefactor_Direccion", width: 30 },
-      ];
-  
-      // Aplicar encabezados en la fila 5
-      worksheet.getRow(5).values = headers.map((h) => h.header);
-      worksheet.getRow(5).font = { bold: true };
-      worksheet.getRow(5).alignment = { horizontal: "center" };
-      
-      // Aplicar anchos de columna
-      headers.forEach((col, index) => {
-          worksheet.getColumn(index + 1).width = col.width;
-      });
-  
-      // 📌 5️⃣ Transformar datos y agregarlos a la tabla
-      const exportData = currentEstudiantes.map((estudiante, index) => ({
-          Index: index + 1,
-          Fecha_Creacion: estudiante.Fecha_Creacion
-              ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
-              : "-",
-          Beneficio: estudiante.Beneficio?.Nombre_Beneficio || "-",
-          Area: estudiante.Area?.Nombre_Area || "-",
-          Identidad: estudiante.Persona?.Identidad || "-",
-          Nombre: `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`,
-          Sexo: estudiante.Persona?.Sexo === 1 ? "Masculino" : estudiante.Persona?.Sexo === 0 ? "Femenino" : "-",
-          Año_Matricula: Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-              ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-              : "-",
-          Modalidad: Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
-          Grado: Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
-          Seccion: Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
-          Lugar_Nacimiento: estudiante.Persona?.Lugar_Nacimiento || "-",
-          Instituto: estudiante.Instituto?.Nombre_Instituto || "-",
-          Municipio: estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
-          Direccion: estudiante.Persona?.Direccion || "-",
-          Telefono: estudiante.Persona?.Telefono || "-",
-          Estado: estudiante.Persona?.Estado === 1 ? "Activo" : estudiante.Persona?.Estado === 0 ? "Inactivo" : "-",
-          Tutor_Identidad: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 2).map(rel => rel.Persona.Identidad || "-").join(", "),
-          Tutor_Nombre: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 2).map(rel => `${rel.Persona.Primer_Nombre || "-"} ${rel.Persona.Primer_Apellido || "-"}`).join(", "),
-          Benefactor_Identidad: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 3).map(rel => rel.Persona.Identidad || "-").join(", "),
-          Benefactor_Nombre: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 3).map(rel => `${rel.Persona.Primer_Nombre || "-"} ${rel.Persona.Primer_Apellido || "-"}`).join(", "),
-          Benefactor_Telefono: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 3).map(rel => rel.Persona?.Telefono || "-").join(", "),
-          Benefactor_Direccion: estudiante.Relaciones.filter(rel => rel.TipoPersona?.Id_Tipo_Persona === 3).map(rel => rel.Persona?.Direccion || "-").join(", "),
-      }));
-  
-      // Agregar datos a la hoja
-      exportData.forEach((estudiante) => {
-          worksheet.addRow(estudiante);
-      });
-  
-      // 📌 6️⃣ Aplicar filtros
-      worksheet.autoFilter = {
-          from: { row: 5, column: 1 },
-          to: { row: 5 + exportData.length, column: headers.length },
+      const handleResize = () => {
+        setAnchoPantalla(window.innerWidth);
       };
   
-      // 📥 7️⃣ Generar el archivo y descargarlo
-      const buffer = await workbook.xlsx.writeBuffer();
-      const fileBlob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+      window.addEventListener('resize', handleResize);
   
-      saveAs(fileBlob, "reporte_estudiantes.xlsx");
-  };
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   const getBase64ImageFromUrl = async (url) => {
     const response = await fetch(url);
@@ -425,7 +204,10 @@ const currentEstudiantes = useMemo(() => {
 };
 
 
-const exportToExcel = async () => {
+
+
+
+const exportToExcelOld = async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Estudiantes");
 
@@ -538,16 +320,188 @@ const exportToExcel = async () => {
     saveAs(blob, "Reporte_Estudiantes.xlsx");
 };
 
+const limpiarDato = (valor) => {
+  return typeof valor === "string" && valor.trim() !== ""
+    ? valor
+    : typeof valor === "number"
+    ? valor
+    : "-";
+};
+
+const exportToExcel = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Estudiantes");
+
+  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+  const imageId = workbook.addImage({
+    base64: logoBase64,
+    extension: "png",
+  });
+
+  worksheet.addImage(imageId, {
+    tl: { col: 0, row: 0 },
+    ext: { width: 120, height: 50 },
+  });
+
+  worksheet.mergeCells("B1", "K1");
+  worksheet.getCell("B1").value = "Reporte de Estudiantes";
+  worksheet.getCell("B1").font = { bold: true, size: 16 };
+  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+  worksheet.mergeCells("B2", "K2");
+  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+  worksheet.getCell("B2").font = { italic: true, size: 12 };
+  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+  const filterCriteria = Object.entries(searchQuery || {})
+    .filter(([_, value]) => value)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ") || "Sin filtros";
+
+  worksheet.mergeCells("B3", "K3");
+  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+  worksheet.getCell("B3").font = { italic: true, size: 12 };
+  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+  worksheet.getRow(4).values = [];
+
+  // 🔹 Definir headers
+  const headers = [
+    { header: "#", key: "Index", width: 5 },
+    { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
+    { header: "Beneficio", key: "Beneficio", width: 20 },
+    { header: "Área", key: "Area", width: 20 },
+    { header: "Identidad", key: "Identidad", width: 20 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Sexo", key: "Sexo", width: 10 },
+    { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
+    { header: "Instituto", key: "Instituto", width: 30 },
+    { header: "Municipio", key: "Municipio", width: 20 },
+    { header: "Dirección", key: "Direccion", width: 30 },
+    { header: "Teléfono", key: "Telefono", width: 15 },
+    { header: "Estado", key: "Estado", width: 15 },
+  ];
+
+  if (columnsVisible?.matricula) {
+    headers.push(
+      { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
+      { header: "Modalidad", key: "Modalidad", width: 20 },
+      { header: "Grado", key: "Grado", width: 15 },
+      { header: "Sección", key: "Seccion", width: 15 }
+    );
+  }
+
+  if (columnsVisible?.tutor) {
+    headers.push(
+      { header: "Tutor Identidad", key: "Tutor_Identidad", width: 20 },
+      { header: "Tutor Nombre", key: "Tutor_Nombre", width: 25 },
+      { header: "Tutor Teléfono", key: "Tutor_Telefono", width: 15 },
+      { header: "Tutor Dirección", key: "Tutor_Direccion", width: 30 }
+    );
+  }
+
+  if (columnsVisible?.benefactor) {
+    headers.push(
+      { header: "Benefactor Identidad", key: "Benefactor_Identidad", width: 20 },
+      { header: "Benefactor Nombre", key: "Benefactor_Nombre", width: 25 },
+      { header: "Benefactor Teléfono", key: "Benefactor_Telefono", width: 15 },
+      { header: "Benefactor Dirección", key: "Benefactor_Direccion", width: 30 }
+    );
+  }
+
+ 
+
+  worksheet.getRow(5).values = headers.map((h) => h.header);
+  worksheet.getRow(5).font = { bold: true, color: { argb: "FFFFFF" } };
+  worksheet.getRow(5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  worksheet.getRow(5).alignment = { horizontal: "center", vertical: "middle" };
+  worksheet.getRow(5).border = {
+    top: { style: "thin" },
+    left: { style: "thin" },
+    right: { style: "thin" },
+    bottom: { style: "thin" },
+  };
   
+  headers.forEach((col, index) => {
+    worksheet.getColumn(index + 1).width = col.width;
+  });
+
+  worksheet.getRow(5).values = headers.map(h => h.header);
+headers.forEach((col, index) => {
+  worksheet.getColumn(index + 1).width = col.width;
+});
+
+   // 🧠 Enlazar columnas directamente con los datos
+  // worksheet.columns = headers;
+  // 🔁 Agregar filas
+  filteredEstudiantes.forEach((estudiante, index) => {
+    const p = estudiante.Persona || {};
+    const m = Array.isArray(estudiante.Matriculas) ? estudiante.Matriculas[0] || {} : {};
+    const municipio = p.Municipio || {};
+    const relaciones = estudiante.Relaciones || [];
+
+    const dataRow = {
+      Index: index + 1,
+      Fecha_Creacion: estudiante.Fecha_Creacion
+        ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES")
+        : "-",
+      Beneficio: limpiarDato(estudiante.Beneficio?.Nombre_Beneficio),
+      Area: limpiarDato(estudiante.Area?.Nombre_Area),
+      Identidad: `'${limpiarDato(p.Identidad)}`,
+      Nombre: limpiarDato(`${p.Primer_Nombre || ""} ${p.Segundo_Nombre || ""} ${p.Primer_Apellido || ""} ${p.Segundo_Apellido || ""}`.trim()),
+      Sexo: p.Sexo === 1 ? "Masculino" : p.Sexo === 0 ? "Femenino" : "-",
+      Lugar_Nacimiento: limpiarDato(p.Lugar_Nacimiento),
+      Instituto: limpiarDato(estudiante.Instituto?.Nombre_Instituto),
+      Municipio: limpiarDato(municipio.Nombre_Municipio),
+      Direccion: limpiarDato(p.Direccion),
+      Telefono: limpiarDato(p.Telefono),
+      Estado: p.Estado === 1 ? "Activo" : p.Estado === 0 ? "Inactivo" : "-",
+    };
+
+    if (columnsVisible?.matricula) {
+      dataRow["Año_Matricula"] = m.Fecha_Matricula
+        ? new Date(m.Fecha_Matricula).getFullYear()
+        : "-";
+      dataRow["Modalidad"] = limpiarDato(m.Modalidad?.Nombre);
+      dataRow["Grado"] = limpiarDato(m.Grado?.Nombre);
+      dataRow["Seccion"] = limpiarDato(m.Seccion?.Nombre_Seccion);
+    }
+
+    if (columnsVisible?.tutor) {
+      const tutores = relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2);
+      dataRow["Tutor_Identidad"] = tutores.map(t => `'${limpiarDato(t.Persona?.Identidad)}`).join(", ");
+      dataRow["Tutor_Nombre"] = tutores.map(t => `${limpiarDato(t.Persona?.Primer_Nombre)} ${limpiarDato(t.Persona?.Primer_Apellido)}`).join(", ");
+      dataRow["Tutor_Telefono"] = tutores.map(t => limpiarDato(t.Persona?.Telefono)).join(", ");
+      dataRow["Tutor_Direccion"] = tutores.map(t => limpiarDato(t.Persona?.Direccion)).join(", ");
+    }
+
+    if (columnsVisible?.benefactor) {
+      const benefactores = relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3);
+      dataRow["Benefactor_Identidad"] = benefactores.map(b => `'${limpiarDato(b.Persona?.Identidad)}`).join(", ");
+      dataRow["Benefactor_Nombre"] = benefactores.map(b => `${limpiarDato(b.Persona?.Primer_Nombre)} ${limpiarDato(b.Persona?.Primer_Apellido)}`).join(", ");
+      dataRow["Benefactor_Telefono"] = benefactores.map(b => limpiarDato(b.Persona?.Telefono)).join(", ");
+      dataRow["Benefactor_Direccion"] = benefactores.map(b => limpiarDato(b.Persona?.Direccion)).join(", ");
+    }
+
+    const orderedRow = headers.map(h => dataRow[h.key]);
+    worksheet.addRow(orderedRow);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveAs(blob, `Reporte_Estudiantes_${Date.now()}.xlsx`);
+};
+
 
 if(!token){
  console.log(token)
   return (
     <Layout>
-      <div className="container mx-auto p-1  min-h-screen">
     
-
-{/* Contenedor de acciones y encabezado */}
+    <div style={{with:'100%'}}>
+    {/* Contenedor de acciones y encabezado */}
 <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
   
  
@@ -581,7 +535,15 @@ if(!token){
 
   )}
    {/* Título de la sección */}
-   <p className="text-3xl font-bold text-blue-700">📋Reporte de Estudiantes</p>
+   <p>
+   <p className="text-3xl font-bold text-blue-700">📋Reporte de Estudiantes
+  
+
+ </p>
+ <ColumnSelection onColumnChange={handleColumnChange} />
+   </p>
+   
+
 
   {/* Botones de acciones */}
   <div className="flex gap-x-2">
@@ -614,24 +576,51 @@ if(!token){
 </div>
 
 
+
         {permisos[1]?.consultar ? (
-                    <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-          <table className="xls_style-excel-table  w-full">
+            <div >
+ <div className="table-container"  style={{ overflowX: 'auto', width: "75vw"  }}>
+
+
+
+
+  <table className="xls_style-excel-table min-w-max">
 <thead>
 <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-<th rowSpan="2" className="py-2 px-4 border" >#</th>
-        <th rowSpan="2" className="py-2 px-4 bg-orange-300 ">Acciones</th>
-        <th rowSpan="2" className="py-2 px-4 border">Identidad</th>
-        <th rowSpan="2" className="py-2 px-5 border" style={{ width: '300px' }} >Nombre</th>
+<th
+          rowSpan="2"
+          className="py-2 px-4 border sticky left-0 bg-white z-10 bg-blue-400"
+          style={{ position: 'sticky', left: 0, zIndex: 10 ,backgroundColor:"#BFDBFE",border:"1px"}}
+        >
+          #
+        </th>
+        <th
+          rowSpan="2"
+          className="py-2 px-4 bg-orange-300 sticky left-0 bg-white z-10 bg-blue-400"
+          style={{ position: 'sticky', left: '1rem', zIndex: 10,backgroundColor:"#BFDBFE" }}
+        >
+          Acciones
+        </th>
+        <th
+          rowSpan="2"
+          className="py-2 px-4 border sticky left-32 bg-white z-10 bg-blue-400"
+          style={{ position: 'sticky', left: '5rem', zIndex: 10 ,backgroundColor:"#BFDBFE"}}
+        >
+          Identidad
+        </th>
+        <th
+          rowSpan="2"
+          className="py-2 px-5 border sticky left-48 bg-white z-10 bg-blue-400"
+          style={{ position: 'sticky', left: '11rem', zIndex: 10,backgroundColor:"#BFDBFE" }}
+        >
+          Nombre
+        </th>
         <th rowSpan="2" className="py-2 px-4 border">Fecha Registro</th>
         <th rowSpan="2" className="py-2 px-4 border">Beneficio</th>
         <th rowSpan="2" className="py-2 px-4 border">Área</th>
 
         <th rowSpan="2" className="py-2 px-4 border">Sexo</th>
-        <th rowSpan="2" className="py-2 px-4 border">Año Matrícula</th>
-        <th rowSpan="2" className="py-2 px-4 border">Modalidad</th>
-        <th rowSpan="2" className="py-2 px-4 border">Grado</th>
-        <th rowSpan="2" className="py-2 px-4 border">Sección</th>
+
         <th rowSpan="2" className="py-2 px-4 border">Lugar Nacimiento</th>
         <th rowSpan="2" className="py-2 px-4 border">Instituto</th>
         <th rowSpan="2" className="py-2 px-4 border">Municipio</th>
@@ -652,23 +641,63 @@ if(!token){
         ))}
     </select> */}
         </th>
-        <th colSpan="4" className="py-2 px-4 bg-violet-400">Tutor</th>
-        <th colSpan="4" className="py-2 px-4 bg-emerald-400">Benefactor</th>
+       
+
+   {/* Columna de Matrícula */}
+   {columnsVisible.matricula && (
+      <th colSpan="4" className="py-2 px-4 bg-blue-400">Matrícula</th>
+    )}
+
+{columnsVisible.tutor && (
+           <th colSpan="4" className="py-2 px-4 bg-violet-400">Tutor</th>
+    )}
+
+{columnsVisible.benefactor && (
+                  <th colSpan="4" className="py-2 px-4 bg-emerald-400">Benefactor</th>
+    )}
+
+ 
+
 
       </tr>
 
   {/* Segunda fila con subcolumnas específicas de Tutor y Benefactor */}
   <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-        {/* Subcolumnas de Tutor */}
-        <th className="py-2 px-4 bg-violet-400 ">Identidad</th>
+
+        {/* Subcolumnas de Matricula */}
+ 
+
+        {columnsVisible.matricula && (
+      <>
+        <th className="py-2 px-4 bg-blue-400">Año</th>
+        <th className="py-2 px-4 bg-blue-400">Modalidad</th>
+        <th className="py-2 px-4 bg-blue-400">Grado</th>
+        <th className="py-2 px-4 bg-blue-400">Sección</th>
+      </>
+    )}
+
+{columnsVisible.tutor && (
+      <>
+         <th className="py-2 px-4 bg-violet-400 ">Identidad</th>
         <th className="py-2 px-4 bg-violet-400">Nombre</th>
         <th className="py-2 px-4 bg-violet-400">Teléfono</th>
         <th className="py-2 px-4 bg-violet-400">Dirección</th>
+      </>
+    )}
+        {/* Subcolumnas de Tutor */}
+    
         {/* Subcolumnas de Benefactor */}
-        <th className="py-2 px-4 bg-emerald-400">Identidad</th>
+
+        {columnsVisible.benefactor && (
+      <>
+         <th className="py-2 px-4 bg-emerald-400 ">Identidad</th>
         <th className="py-2 px-4 bg-emerald-400">Nombre</th>
         <th className="py-2 px-4 bg-emerald-400">Teléfono</th>
         <th className="py-2 px-4 bg-emerald-400">Dirección</th>
+      </>
+    )}
+
+
       </tr>
 </thead>
 
@@ -676,10 +705,10 @@ if(!token){
             <tbody>
               {currentEstudiantes.map((estudiante,index) => (
                 <tr key={estudiante.Id_Estudiante} className="hover:bg-blue-50">
-                         <td className="py-4 px-6 border-b">
+                         <td className=""   style={{ position: 'sticky', left: '0rem', zIndex: 10, backgroundColor: '#f3f4f6' }}>
                          {index + 1}
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="" style={{ position: 'sticky', left: '1rem', zIndex: 10, backgroundColor: '#f3f4f6' }}>
                     <div className="flex gap-2">
 
                     {permisos[1]?.actualizar && (
@@ -705,17 +734,18 @@ if(!token){
                       )}
                     </div>
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="" style={{ position: 'sticky', left: '6rem', zIndex: 10 ,     backgroundColor: '#f3f4f6'}}>
                     {estudiante.Persona?.Identidad || "Identidad -"}
                   </td>
-                  <td className="min-w-60 max-w-60 border py-4 px-6 border-b" style={{ width: '300px' }}>
+                  <td className="x5" style={{ position: 'sticky', left: '12rem', zIndex: 10, backgroundColor: '#f3f4f6' }}>
+                    <div className="max-w-[15rem] whitespace-nowrap truncate">
                     {`${estudiante.Persona?.Primer_Nombre || ""} ${
                       estudiante.Persona?.Segundo_Nombre || ""
                     } ${estudiante.Persona?.Primer_Apellido || ""} ${
                       estudiante.Persona?.Segundo_Apellido || ""
-                    }`}
+                    }`}</div>
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Fecha_Creacion
                       ? new Date(estudiante.Fecha_Creacion).toLocaleDateString(
                           "es-ES",
@@ -728,66 +758,49 @@ if(!token){
                       : "Fecha -"}
                   </td>
           
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Beneficio?.Nombre_Beneficio ||
                       "Beneficio -"}
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Area?.Nombre_Area || "Área -"}
                   </td>
   
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Persona?.Sexo === 1
                       ? "Masculino"
                       : estudiante.Persona?.Sexo === 0
                       ? "Femenino"
                       : "Sexo -"}
                   </td>
-                  <td className="py-4 px-6 border-b">
-  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-    ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-    : "-"}
-</td>
-
-                  <td className="py-4 px-6 border-b">
-                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-"}
-                  </td>
-
-                  <td className="py-4 px-6 border-b">
-                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-"}
-                  </td>
-                  <td className="py-4 px-6 border-b">
-                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-"}
-                  </td>
-
-
                   
+      
 
-
-                  <td className="py-4 px-6 border-b">
+                  <td className="max-w-[15rem] whitespace-nowrap truncate">
                     {estudiante.Persona?.Lugar_Nacimiento ||
                       "Lugar de nacimiento -"}
                   </td>
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className=" ">
+                  <div className="max-w-[15rem] whitespace-nowrap truncate">
                     {estudiante.Instituto?.Nombre_Instituto ||
-                      "Instituto -"}
+                      "Instituto -"}</div>
                   </td>
               
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className="max-w-[15rem] whitespace-nowrap truncate">
                     {estudiante.Persona?.Municipio?.Nombre_Municipio ||
                       "Municipio -"}
                   </td>
 
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Persona?.telefono ||
                       "-"}
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     {estudiante.Persona?.direccion ||
                       "-"}
                   </td>
             
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                     <strong>
                       {estudiante?.Persona?.Estado === 1
                         ? "Activo"
@@ -797,7 +810,34 @@ if(!token){
                     </strong>
                   </td>
 
-                  <td className="py-4 px-6 border-b">
+                  {columnsVisible.matricula && (
+      <>
+     
+                  <td className="">
+  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
+    ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
+    : "-"}
+</td>
+
+                  <td className="">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-"}
+                  </td>
+
+                  <td className="">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-"}
+                  </td>
+                  <td className="">
+                  {Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-"}
+                  </td>
+
+
+      </>
+    )}
+
+{columnsVisible.tutor && (
+      <>
+
+                  <td className="">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
@@ -813,7 +853,7 @@ if(!token){
                 }).join('')}
               </ul>
                   </td>
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className=" ">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
@@ -831,7 +871,7 @@ if(!token){
               </ul>
                   </td>
 
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
@@ -848,7 +888,7 @@ if(!token){
                 }).join('')}
               </ul>
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
@@ -865,9 +905,13 @@ if(!token){
                 }).join('')}
               </ul>
                   </td>
-    
+                  </>
+    )}
+
+{columnsVisible.benefactor && (
+      <>
       {/* para benefactores             */}
-                  <td className="py-4 px-6 border-b">
+                  <td className="">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -885,7 +929,7 @@ if(!token){
                   </td>
               
                   
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className=" ">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -903,7 +947,7 @@ if(!token){
               </ul>
                   </td>
                   
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className=" ">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -920,7 +964,7 @@ if(!token){
                 }).join('')}
               </ul>
                   </td>
-                  <td className="min-w-60 max-w-60 py-4 px-6 border-b">
+                  <td className=" ">
                   <ul>
                    {estudiante.Relaciones
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
@@ -938,11 +982,12 @@ if(!token){
               </ul>
                   </td>
                   
-                  
+                  </>
+    )}
                 </tr>
               ))}
             </tbody>
-          </table></div>
+          </table></div></div>
         ) : (
           // Mostrar el mensaje si no tiene permisos para consultar
 
@@ -1017,7 +1062,8 @@ if(!token){
 
       
         </div>
-      </div>
+        </div>
+   
     </Layout>
   );
 }};

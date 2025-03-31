@@ -17,9 +17,10 @@ import ModalConfirmacion from '../../utils/ModalConfirmacion';
 import ModalGenerico from "../../utils/ModalGenerico";
 
 import RelacionForm from '../../components/basicos/RelacionForm';
+import GraduacionForm from '../../components/basicos/GraduacionForm';
 import useModal from "../../hooks/useModal";
 //import html2pdf from 'html2pdf.js';
-//import jsPDF from 'jspdf';
+import jsPDF from 'jspdf';
 import { obtenerEstados } from "../../utils/api"; // Importar la función
 
 import { validarFormulario } from "../../utils/validaciones";
@@ -36,6 +37,7 @@ const EstudiantesCrud = () => {
   //   modalEliminarBenefactor: false,
   // });
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingGraduacion, setIsEditinggraduacion] = useState(false);
   const openModal = (modalKey) => {
    // setModals(prev => ({ ...prev, [modalKey]: true }));
   };
@@ -306,7 +308,7 @@ doc.addImage('/img/intur.png', 'PNG', 10, 10, 40, 15);  // Ajusta el tamaño y p
   doc.text("Nombre", 60, currentY+20);
   doc.text("Telefono", 90, currentY+20);
   doc.text("Dirección", 140, currentY+20);
-  doc.line(20, currentY+20, 200, currentY+25); // Línea para separar los encabezados
+  doc.line( 20, currentY+22, 200, currentY+22); // Línea para separar los encabezados
 
   // Posición inicial para los tutores
 currentY+=30;
@@ -322,6 +324,29 @@ currentY+=30;
       currentY += 10; // Avanzar la posición para la siguiente fila
     }
   });
+
+  // 📌 Información de Graduación
+currentY += 20;
+doc.setFont(undefined, 'bold');
+doc.text("Información de Graduación", 20, currentY);
+currentY += 10;
+doc.setFont(undefined, 'normal');
+
+// Encabezados
+doc.text("Año", 20, currentY);
+doc.text("Inicio", 60, currentY);
+doc.text("Finalización", 100, currentY);
+doc.text("Estado", 150, currentY);
+currentY += 8;
+
+// Datos de graduación
+const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
+doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
+doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
+doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
+doc.text(estadoGraduacion, 150, currentY);
+currentY += 20;
+
   
     // Guardar el archivo PDF
     doc.save("Ficha_Estudiantil.pdf");
@@ -939,6 +964,15 @@ switch (tipo) {
 }
 
 
+const editGraduacion= ()=>{
+
+
+  if(graduacion.Id_Graduando){
+    setIsEditinggraduacion(true);
+  }
+  showModal("modalGraduacion")
+
+}
 
 
 
@@ -1172,12 +1206,13 @@ const handlePersonaSubmit = async (e) => {
   e.preventDefault();
   try {
 console.log("handlePersonaSubmit")
+console.log(personaDataRelacion)
 
     personaDataRelacion.Creado_Por=user.id;
     personaDataRelacion.Modificado_Por=user.id;
     personaDataRelacion.Fecha_Nacimiento='2000-01-01';
     personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
-    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,"formTutor");
+    const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,personaDataRelacion.Id_Tipo_Persona==2? "formTutor":"formBenefactor");
 
       if (errores.length > 0) {
      
@@ -1276,6 +1311,7 @@ const handleSubmit = async (e) => {
       console.log(errores);
     //toast.error(errores.join("\n"), error);
       return;
+   
     }
 
     const errores2 = validarFormulario(estudianteData, reglasValidacionEstudiante);
@@ -1438,6 +1474,7 @@ const handleSubmitGraduacion = async (e) => {
     graduacion.Modificado_Por=user.id;
     graduacion.Estudiante=selectedStudent;  
     graduacion.Id_Estudiante=selectedStudent.Id_Estudiante;
+    graduacion.Estado=Number(graduacion.Estado);
 
     if (!isEditing){
 
@@ -1458,12 +1495,19 @@ const handleSubmitGraduacion = async (e) => {
           autoClose: 5000, // Cierra automáticamente en 5 segundos
           hideProgressBar: true, // Ocultar barra de progreso
         }
+      
+      
+      
       );
+
+      fetchGraduacion(idEstudiante)
+      closeModal("modalGraduacion")
       
 
     }else{
       await axios.put(`/api/graduando/${graduacion.Id_Graduando}`, graduacion);
-
+      fetchGraduacion(idEstudiante)
+      closeModal("modalGraduacion")
       
       toast.success('graduando actualizado exitosamente',
         {
@@ -1758,7 +1802,7 @@ if (!permisos) {
 
 <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
   {/* Barra de búsqueda */}
-  <div className="flex items-center   p-2 bg-white shadow-sm">
+  <div className="flex items-center   p-1 bg-white shadow-sm">
     
 
 
@@ -1767,15 +1811,15 @@ if (!permisos) {
   </div>
 
   {/* Título de la sección */}
-  <p className="text-3xl font-bold text-blue-700">📋Nuevo Registro Estudiante</p>
+  <p className="text-3xl font-bold text-blue-700">📋 Registro de Estudiante</p>
 
   {/* Botones de acciones */}
-  <div className="flex gap-x-2">
+  <div className="flex gap-x-1">
 
     {/* Botón para abrir el modal de agregar usuario */}
 <button
   onClick={() => (window.location.href = "/estudiante/reporte")}
-  className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+  className="flex items-center bg-orange-500 text-white px-4 py- rounded-lg hover:bg-orange-600 transition-colors shadow-md"
 >
 
 
@@ -1784,7 +1828,7 @@ if (!permisos) {
     
 <button 
         onClick={handleExportToPDF} 
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+      className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors shadow-md"
       >
       
         <DocumentArrowDownIcon className="h-5 w-5 mr-2" />   FICHA
@@ -1840,8 +1884,10 @@ if (!permisos) {
 {/* Sección Estudiante */}
 
   <div className="space-y-6" id="fichaEstudiantil">
-    <h2 className="text-lg font-semibold text-gray-800">Datos del Estudiante</h2>
-
+ 
+    <h2 className="text-2xl font-semibold text-gray-700">
+    <strong>Datos del Estudiante</strong>
+  </h2>
 
     <table className="w-full border border-gray-300 text-sm">
       <tbody>
@@ -1968,7 +2014,7 @@ if (!permisos) {
         <tr>
           <td colSpan={4}>
             
-    <div className="flex justify-between mt-4">
+    <div className="flex justify-end  mt-4">
       {editId ? (
         permisos.Permiso_Actualizar === "1" && (
           <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -2003,7 +2049,7 @@ if (!permisos) {
   <button
     onClick={() => nuevoTutor(2)}
     type="button"
-    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    className="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
   >
     + Agregar Tutor
   </button>
@@ -2124,6 +2170,27 @@ if (!permisos) {
 />
 
 </ModalGenerico> 
+ 
+  <ModalGenerico
+     id="modalGraduacion"
+  isOpen={modals["modalGraduacion"]}
+  onClose={() => closeModal("modalGraduacion")}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Graduación" : "Actualizar Graduación"}
+  tamano="max-w-4xl"
+>
+
+
+<GraduacionForm
+          personaData={personaData}
+          graduacion={graduacion}
+          handleChange={handleChange}
+          handleSubmitGraduacion={handleSubmitGraduacion}
+          isEditing={isEditingGraduacion}
+          permisos={permisos}
+          resetForm={resetForm}
+          estados={estados}
+        />
+</ModalGenerico> 
 
 
 <div>
@@ -2135,7 +2202,7 @@ if (!permisos) {
   <button
     onClick={() => nuevoTutor(3)}
     type="button"
-    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    className="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
   >
     + Agregar Benefactor
   </button>
@@ -2199,8 +2266,24 @@ if (!permisos) {
         </table>
       </div>
 
+      <h2 className="text-2xl font-semibold text-gray-700">
 
-<h2 className="text-xl font-semibold text-gray-800 mb-4">Información de Graduación</h2>
+  </h2>
+
+
+  <div className="flex justify-between items-center mb-4">
+  <h2 className="text-2xl font-semibold text-gray-700">
+  <strong>Información de Graduación</strong>
+  </h2>
+  
+  <button
+    onClick={() => editGraduacion()}
+    type="button"
+    className="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+  >
+    + Graduación
+  </button>
+  </div>
 
   <table className="xls_style-excel-table">
     <thead className="bg-gray-100">
