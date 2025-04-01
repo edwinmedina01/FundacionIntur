@@ -12,9 +12,8 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <MatriculaManagement /> {/* Componente de gestión de matriculas */}
-      </div>
+    <MatriculaManagement /> {/* Componente de gestión de matriculas */}
+    
     </Layout>
   );
 };

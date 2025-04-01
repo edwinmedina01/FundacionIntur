@@ -1,465 +1,244 @@
-import React, { useState, useEffect, useContext,useCallback } from 'react';
+// ✅ CÓDIGO REFACTORIZADO PARA TUTORES/PADRES CON ESTRUCTURA COMPLETA
+
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
-import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
+import useModal from '../hooks/useModal';
+import ModalGenerico from '../utils/ModalGenerico';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import { obtenerEstados } from '../../src/utils/api';
+import { getBase64ImageFromUrl } from '../../src/utils/getBase64ImageFromUrl';
+import { validarFormulario } from '../utils/validaciones';
+import { reglasValidacionTutores } from '../../models/ReglasValidacionModelos';
+import { deepSearch } from '../../src/utils/deepSearch';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import SearchBar from '../components/basicos/SearchBar';
+import Pagination from '../components/basicos/Pagination';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
-
-import { obtenerEstados } from "../../src/utils/api"; // Importar la función
 const TutorPadreManagement = () => {
-  const [estados, setEstados] = useState([]);
-  const router = useRouter();
-  const { user } = useContext(AuthContext); // Usuario logueado
+  const { user } = useContext(AuthContext);
+  const { modals, showModal, closeModal } = useModal();
   const [tutores, setTutores] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [formData, setFormData] = useState({
+    Id_Persona: '',
+    Persona_Nombre: '',
+    Persona_Apellido: '',
+    Persona_Telefono: '',
+    Persona_Direccion: '',
+    Estado: '',
+    Tipo_Persona: 2
+  });
+  const [isEditing, setIsEditing] = useState(false);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
-  const [formData, setFormData] = useState({
-    Id_Persona: '',
-    Primer_Nombre: '',
-    Primer_Apellido: '',
-    Municipio: '',
-    Departamento: '',
-    Tipo_Persona: 2, // Solo tutores/padres (tipo 3)
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [search, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState({ general: '' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [tutoresPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    const cargarEstados = useCallback(async () => {
-    //  setLoading(true);
-      const data = await obtenerEstados("GENÉRICO");
-      setEstados(data);
-    //  setLoading(false);
-  }, []); // 🔥 Se ejecu
-  
-  
-  useEffect(() => {
-    document.title = "Tutores/Padres";
-}, []);
+  const cargarEstados = useCallback(async () => {
+    const data = await obtenerEstados('GENÉRICO');
+    setEstados(data);
+  }, []);
 
-  useEffect(() => {
-    cargarEstados()
-    fetchTutores();
-
-    fetchPermisos();
-  }, [user]);
-
-
-
-  const handleEdit = (data) => {
-    console.log("handleEdit")
-    console.log(data)
-    router.push({
-      pathname: '/estudiante', // Ruta de la página destino
-      query: {
-        tab: 2,
-        idEstudiante: data.Id_Estudiante,
-        relacionId:data.Id_Relacion
-      },
-    });
-  };
-
-  // Verificación de permisos
   const fetchPermisos = async () => {
     try {
-      if (user) {
-        const idObjeto = 15; // ID relacionado con tutores (suponiendo que esto corresponde a los tutores)
-        const response = await axios.post('/api/api_permiso', {
-          idRol: user.rol,
-          idObjeto,
-        });
-
-        const permisosData = response.data;
-
-        if (
-          permisosData.Permiso_Insertar !== '1' &&
-          permisosData.Permiso_Actualizar !== '1' &&
-          permisosData.Permiso_Eliminar !== '1' &&
-          permisosData.Permiso_Consultar !== '1'
-        ) {
-          setSinPermisos(true);
-        } else {
-          setPermisos(permisosData);
-        }
-      }
+      const idObjeto = 15;
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
+      const data = response.data;
+      if (Object.values(data).every(v => v !== '1')) setSinPermisos(true);
+      else setPermisos(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al obtener permisos');
     }
   };
 
   const fetchTutores = async () => {
-    try {
-      const response = await axios.get('/api/tutorpadre');
-      if (response.data && Array.isArray(response.data)) {
-        setTutores(response.data);
-      } else {
-        throw new Error('Datos no válidos recibidos');
-      }
-    } catch (error) {
-      console.error('Error fetching tutores:', error);
-      setError('Hubo un problema al obtener los tutores');
-    }
+    const response = await axios.get('/api/tutorpadre');
+    setTutores(response.data);
   };
 
-  // Funciones para obtener el nombre (esto depende de cómo tengas la información)
-  const getMunicipioNameById = (municipioId) => {
-    // Implementar lógica para obtener el nombre del municipio según el ID
-    return 'Nombre Municipio';
-  };
-  
-  const getDepartamentoNameById = (departamentoId) => {
-    // Implementar lógica para obtener el nombre del departamento según el ID
-    return 'Nombre Departamento';
-  };
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (isEditing) {
-        const response = await fetch(`/api/tutorpadre`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al actualizar el tutor');
-        }
-
-        setUpdateNotification('Tutor actualizado exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
-      } else {
-        const response = await fetch('/api/tutorpadre', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al agregar el tutor');
-        }
-
-        setNotification('Tutor agregado exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
-      }
-
+  useEffect(() => {
+    if (user) {
+      cargarEstados();
+      fetchPermisos();
       fetchTutores();
-      resetForm();
-    } catch (error) {
-      console.error('Error al guardar el tutor:', error);
     }
-  };
-
-  // const handleEdit = (tutor) => {
-  //   setFormData(tutor);
-  //   setIsEditing(true);
-  // };
-
-  const handleDelete = async (Id_Persona) => {
-    try {
-      const response = await fetch('/api/tutorpadre', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ Id_Persona }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el tutor');
-      }
-
-      fetchTutores();
-      resetForm();
-      setDeleteNotification('Tutor eliminado exitosamente');
-      setTimeout(() => {
-        setDeleteNotification('');
-      }, 3000);
-    } catch (error) {
-      console.error('Error al eliminar el tutor:', error);
-    }
-  };
+  }, [user]);
 
   const resetForm = () => {
     setFormData({
-      Id_Persona: '',
-      Nombre: '',
-      Apellido: '',
-      Municipio: '',
-      Departamento: '',
-      Tipo_Persona: 3, // Solo tutores/padres (tipo 3)
+      Id_Persona: '', Persona_Nombre: '', Persona_Apellido: '', Persona_Telefono: '', Persona_Direccion: '', Estado: '', Tipo_Persona: 2
     });
     setIsEditing(false);
   };
 
-  const filteredTutores = tutores.filter((tutor) => {
-    const searchLower = search.toLowerCase();
-    return (
-      (tutor.Identidad && String(tutor.Identidad).toLowerCase().includes(searchLower)) ||
-      (tutor.Persona_Nombre && String(tutor.Persona_Nombre).toLowerCase().includes(searchLower)) ||
-      (tutor.Persona_Apellido && String(tutor.Persona_Apellido).toLowerCase().includes(searchLower)) ||
-      (tutor.Persona_Telefono && String(tutor.Persona_Telefono).toLowerCase().includes(searchLower)) ||
-      (tutor.Persona_Direccion && String(tutor.Persona_Direccion).toLowerCase().includes(searchLower)) ||
-      (tutor.Estudiante_Nombre && String(tutor.Estudiante_Nombre).toLowerCase().includes(searchLower)) ||
-      (tutor.Estudiante_Apellido && String(tutor.Estudiante_Apellido).toLowerCase().includes(searchLower))
-    );
-  });
-  
-  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const errores = validarFormulario(formData, reglasValidacionTutores);
+    if (errores.length > 0) return alert(errores.join('\n'));
 
-  // Paginación
-  const indexOfLastTutor = currentPage * tutoresPerPage;
-  const indexOfFirstTutor = indexOfLastTutor - tutoresPerPage;
-  const currentTutores = filteredTutores.slice(indexOfFirstTutor, indexOfLastTutor);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const totalPages = Math.ceil(filteredTutores.length / tutoresPerPage);
-
-  // const handleExport = () => {
-  //   const transformedTutores = tutores.map((tutor) => ({
-  //     Identidad: tutor.Identidad,
-  //     Nombre: `${tutor.Primer_Nombre} ${tutor.Primer_Apellido}`,
-  //     Sexo: tutor.Sexo === 1 ? 'Masculino' : 'Femenino',
-  //     telefono: `${tutor.telefono}`,
-  //     direccion: `${tutor.direccion}`,
-  //   }));
-
-  //   const worksheet = XLSX.utils.json_to_sheet(transformedTutores);
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Tutores');
-  //   XLSX.writeFile(workbook, 'tutores.xlsx');
-  // };
-
-  
-  const handleExport = () => {
-    const transformedTutores = tutores.map((tutor) => ({
-      Identidad: tutor.Identidad,
-      Nombre: `${tutor.Primer_Nombre} ${tutor.Primer_Apellido}`,
-      Sexo: tutor.Sexo === 1 ? 'Masculino' : 'Femenino',
-      telefono: `${tutor.telefono}`,
-      direccion: `${tutor.direccion}`,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(transformedTutores);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Tutores');
-    XLSX.writeFile(workbook, 'tutores.xlsx');
+    try {
+      if (isEditing) {
+        await axios.put(`/api/tutorpadre/${formData.Id_Persona}`, formData);
+      } else {
+        await axios.post('/api/tutorpadre', formData);
+      }
+      resetForm();
+      closeModal('modalAddRow');
+      fetchTutores();
+    } catch (error) {
+      alert('Error al guardar tutor');
+    }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/tutorpadre/${id}`);
+      fetchTutores();
+      closeModal('modalConfirmacion');
+    } catch (error) {
+      alert('Error al eliminar tutor');
+    }
+  };
 
-  if (!user) {
-    return <p>Cargando usuario...</p>;
-  }
+  const exportToExcel = async () => {
+    const headers = [
+      { header: 'Identidad', key: 'Identidad', width: 20 },
+      { header: 'Nombre', key: 'Nombre', width: 30 },
+      { header: 'Teléfono', key: 'Telefono', width: 20 },
+      { header: 'Dirección', key: 'Direccion', width: 40 },
+      { header: 'Estudiante', key: 'Estudiante', width: 30 },
+      { header: 'Estado', key: 'Estado', width: 20 }
+    ];
 
-  if (error) {
-    return (
-      <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg">
-        <h3>Error al cargar los tutores:</h3>
-        <p>{error}</p>
-      </div>
-    );
-  }
+    const data = tutores.map(t => {
+      const estado = estados.find(e => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido';
+      return {
+        Identidad: t.Identidad,
+        Nombre: `${t.Persona_Nombre} ${t.Persona_Apellido}`,
+        Telefono: t.Persona_Telefono,
+        Direccion: t.Persona_Direccion,
+        Estudiante: `${t.Estudiante_Nombre} ${t.Estudiante_Apellido}`,
+        Estado: estado,
+      };
+    });
 
-  if (sinPermisos) {
-    return (
-      <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
-        <ShieldExclamationIcon className="h-12 w-12 mr-4" />
-        <div>
-          <h3 className="font-bold text-lg">Sin permisos para acceder a los tutores</h3>
-          <p>No tienes permisos para acceder a esta información.</p>
-        </div>
-      </div>
-    );
-  }
+    const logoBase64 = await getBase64ImageFromUrl('/img/intur.png');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Tutores');
+    const imageId = workbook.addImage({ base64: logoBase64, extension: 'png' });
+    worksheet.addImage(imageId, { tl: { col: 0, row: 0 }, ext: { width: 120, height: 50 } });
 
-  if (!permisos) {
-    return <p>Cargando permisos...</p>;
-  }
+    worksheet.mergeCells('B1:G1');
+    worksheet.getCell('B1').value = 'Reporte de Tutores';
+    worksheet.getCell('B1').font = { bold: true, size: 16 };
+    worksheet.getCell('B1').alignment = { horizontal: 'center' };
+
+    worksheet.getRow(4).values = headers.map(h => h.header);
+    worksheet.columns = headers;
+    data.forEach(d => worksheet.addRow(d));
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'Tutores.xlsx');
+  };
+
+  const filteredTutores = tutores.filter(t => deepSearch(t, searchQuery));
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = filteredTutores.slice(indexOfFirst, indexOfLast);
+
+  if (!user) return <p>Cargando usuario...</p>;
+  if (error) return <p>{error}</p>;
+  if (sinPermisos) return <p>No tienes permisos para acceder.</p>;
+  if (!permisos) return <p>Cargando permisos...</p>;
 
   return (
-    <div className="w-full lg:w-2/3 p-6 rounded-lg">
-      <center>
-        <h2 className="text-2xl font-semibold mb-4">Listado Tutores/Padres</h2>
-      </center>
+    <div className="p-6">
+      <SearchBar
+        title="Listado de Tutores"
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleClearSearch={() => setSearchQuery({ general: '' })}
+        onAdd={() => { resetForm(); showModal('modalAddRow'); }}
+        onExport={exportToExcel}
+      />
 
-      {/* Barra de búsqueda */}
-      <div className="w-2/2">
-        <div>
-          <center>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-              placeholder="Buscar..."
-            />
-          </center>
-        </div>
-      </div>
-      <br />
-      {/* Botón para exportar */}
-      <div className="mb-4 flex justify-between items-center">
-        {/* Botón para agregar tutor
-        {permisos.Permiso_Insertar === '1' && (
-          <Link href="/agregarTutor">
-            <button className="flex items-center bg-blue-600 text-white rounded-lg p-2 hover:bg-blue-700">
-              <UserPlusIcon className="w-6 h-6 mr-2" />
-              <span>Agregar Tutor</span>
-            </button>
-          </Link>
-        )} */}
-        {/* Botón para exportar */}
-        <button onClick={handleExport} className="flex items-center bg-green-600 text-white rounded-lg p-2 hover:bg-green-700">
-          <ArrowDownCircleIcon className="w-6 h-6 mr-2" />
-          <span>Exportar a Excel</span>
-        </button>
-      </div>
-
-      {/* Mensajes de notificación */}
-      {notification && <div className="text-green-600">{notification}</div>}
-      {updateNotification && <div className="text-yellow-600">{updateNotification}</div>}
-      {deleteNotification && <div className="text-red-600">{deleteNotification}</div>}
-
-{/* Tabla de tutores */}
-
-
-<table className="xls_style-excel-table">
-  <thead>
-    <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Nombre y Apellido</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sexo</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Teléfono</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Dirección</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad E.</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {tutores && tutores.length > 0 ? (
-      currentTutores.map((Benefactor) => {
-        // Buscar el estado correspondiente en el diccionario de estados
-        const estado = estados.find(e => e.Codigo_Estado === Benefactor.Estado);
-
-        return (
-          <tr key={Benefactor.Id_Persona}>
-            <td className="border px-4 py-2">{Benefactor.Identidad}</td>
-            <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
-            <td className="border px-4 py-2">
-              {Benefactor.Sexo === 1
-                ? 'Masculino'
-                : Benefactor.Sexo === 0
-                ? 'Femenino'
-                : 'Desconocido'}
-            </td>
-            <td className="border px-4 py-2">{Benefactor.Persona_Telefono}</td>
-            <td className="border px-4 py-2">{Benefactor.Persona_Direccion}</td>
-            <td className="border px-4 py-2">{Benefactor.Estudiante_Identidad}</td>
-            <td className="border px-4 py-2">{Benefactor.Estudiante_Nombre} {Benefactor.Estudiante_Apellido}</td>
-
-            {/* Mostrar el Estado con su Nombre correspondiente */}
-            <td className="border px-4 py-2">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
-
-            <td className='xls_center'>
-              {permisos.Permiso_Actualizar === "1" && (
-                <button
-                  onClick={() => handleEdit(Benefactor)}
-                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                </button>
-              )}
-            </td>
+      <table className="xls_style-excel-table">
+        <thead>
+          <tr>
+            <th>Identidad</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Estudiante</th>
+            <th>Estado</th>
+            <th>Acciones</th>
           </tr>
-        );
-      })
-    ) : (
-      <tr>
-        <td colSpan="9">No hay Benefactores disponibles</td>
-      </tr>
-    )}
-  </tbody>
-</table>
+        </thead>
+        <tbody>
+          {currentItems.map(t => (
+            <tr key={t.Id_Persona}>
+              <td>{t.Identidad}</td>
+              <td>{t.Persona_Nombre} {t.Persona_Apellido}</td>
+              <td>{t.Persona_Telefono}</td>
+              <td>{t.Persona_Direccion}</td>
+              <td>{t.Estudiante_Nombre} {t.Estudiante_Apellido}</td>
+              <td>{estados.find(e => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido'}</td>
+              <td>
+                <button onClick={() => { setFormData(t); setIsEditing(true); showModal('modalAddRow'); }}><PencilSquareIcon className="h-5 w-5" /></button>
+                <button onClick={() => { setFormData(t); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredTutores.length}
+        itemsPerPage={itemsPerPage}
+        setPage={setCurrentPage}
+        setItemsPerPage={setItemsPerPage}
+        prevPage={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        nextPage={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTutores.length / itemsPerPage)))}
+      />
 
-
-
-{/* Paginación */}
-<div className="flex justify-between items-center mt-4">
-  {/* Botón "Anterior" */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === 1
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Anterior
-  </button>
-
-  {/* Páginas */}
-  <div className="flex space-x-2">
-    {Array.from({ length: totalPages }, (_, index) => (
-      <button
-        key={index + 1}
-        onClick={() => paginate(index + 1)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-          currentPage === index + 1
-            ? "bg-white-600 text-black shadow-lg scale-105"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
-        }`}
+      <ModalGenerico
+        id="modalAddRow"
+        isOpen={modals['modalAddRow']}
+        onClose={() => closeModal('modalAddRow')}
+        titulo={isEditing ? 'Editar Tutor' : 'Agregar Tutor'}
       >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input name="Persona_Nombre" value={formData.Persona_Nombre} onChange={e => setFormData({ ...formData, Persona_Nombre: e.target.value })} placeholder="Nombre" className="w-full border p-2 rounded" />
+          <input name="Persona_Apellido" value={formData.Persona_Apellido} onChange={e => setFormData({ ...formData, Persona_Apellido: e.target.value })} placeholder="Apellido" className="w-full border p-2 rounded" />
+          <input name="Persona_Telefono" value={formData.Persona_Telefono} onChange={e => setFormData({ ...formData, Persona_Telefono: e.target.value })} placeholder="Teléfono" className="w-full border p-2 rounded" />
+          <input name="Persona_Direccion" value={formData.Persona_Direccion} onChange={e => setFormData({ ...formData, Persona_Direccion: e.target.value })} placeholder="Dirección" className="w-full border p-2 rounded" />
+          <select name="Estado" value={formData.Estado} onChange={e => setFormData({ ...formData, Estado: e.target.value })} className="w-full border p-2 rounded">
+            <option value="">Seleccione Estado</option>
+            {estados.map(e => <option key={e.Codigo_Estado} value={e.Codigo_Estado}>{e.Nombre_Estado}</option>)}
+          </select>
+          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">{isEditing ? 'Actualizar' : 'Guardar'}</button>
+        </form>
+      </ModalGenerico>
 
-  {/* Botón "Siguiente" */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === totalPages
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Siguiente
-  </button>
-</div>
-
+      <ModalConfirmacion
+        isOpen={modals['modalConfirmacion']}
+        onClose={() => closeModal('modalConfirmacion')}
+        onConfirm={() => handleDelete(formData.Id_Persona)}
+        titulo="❌ Confirmar Eliminación"
+        mensaje="¿Estás seguro de que deseas eliminar este tutor?"
+        entidad={formData?.Persona_Nombre}
+        confirmText="Eliminar"
+        confirmColor="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 };

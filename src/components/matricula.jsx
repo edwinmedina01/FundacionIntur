@@ -1,456 +1,222 @@
-import React, { useState, useEffect, useContext ,useCallback} from 'react';
+// ✅ CÓDIGO REFACTORIZADO PARA MATRÍCULA MANAGEMENT USANDO COMPONENTE
+
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
-import { ShieldExclamationIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { obtenerEstados } from "../../src/utils/api"; // Importar la función
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver"; // Para descargar el archivo en el navegador
+import { obtenerEstados } from '../../src/utils/api';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import useModal from '../hooks/useModal';
+import ModalGenerico from '../utils/ModalGenerico';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import exportToExcel from '../utils/exportToExcel';
+import SearchBar from '../components/basicos/SearchBar';
+import Pagination from '../components/basicos/Pagination';
+import MatriculaForm from '../components/basicos/MatriculaForm';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const MatriculaManagement = () => {
+  const { user } = useContext(AuthContext);
+  const { modals, showModal, closeModal } = useModal();
   const [estados, setEstados] = useState([]);
-  const router = useRouter();
-  const { user } = useContext(AuthContext); // Usuario logueado
   const [matriculas, setMatriculas] = useState([]);
+  const [formData, setFormData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [permisos, setPermisos] = useState(null);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
-
-    const cargarEstados = useCallback(async () => {
-    //  setLoading(true);
-      const data = await obtenerEstados("GENÉRICO");
-      setEstados(data);
-    //  setLoading(false);
-  }, []); // 🔥 Se ejecu
-  
-
-  const [formData, setFormData] = useState({
-    Id_Matricula: '',
-    Estudiante: '',
-    Modalidad: '',
-    Grado: '',
-    Seccion: '',
-    Fecha_Matricula: '',
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [notification, setNotification] = useState('');
-  const [updateNotification, setUpdateNotification] = useState('');
-  const [deleteNotification, setDeleteNotification] = useState('');
-  const [search, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState({ general: '' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [matriculasPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  useEffect(() => {
-    cargarEstados()
-    fetchMatriculas();
-    fetchPermisos();
-  }, [user]);
+  const cargarEstados = useCallback(async () => {
+    const data = await obtenerEstados('GENÉRICO');
+    setEstados(data);
+  }, []);
 
-  // Verificación de permisos
   const fetchPermisos = async () => {
     try {
-      if (user) {
-        const idObjeto = 14; // ID relacionado con matriculas
-        const response = await axios.post('/api/api_permiso', {
-          idRol: user.rol,
-          idObjeto,
-        });
-
-        const permisosData = response.data;
-
-        if (
-          permisosData.Permiso_Insertar !== '1' &&
-          permisosData.Permiso_Actualizar !== '1' &&
-          permisosData.Permiso_Eliminar !== '1' &&
-          permisosData.Permiso_Consultar !== '1'
-        ) {
-          setSinPermisos(true);
-        } else {
-          setPermisos(permisosData);
-        }
-      }
+      const idObjeto = 14;
+      const response = await axios.post('/api/api_permiso', {
+        idRol: user.rol,
+        idObjeto,
+      });
+      const data = response.data;
+      if (Object.values(data).every(v => v !== '1')) setSinPermisos(true);
+      else setPermisos(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al obtener permisos');
     }
   };
 
   const fetchMatriculas = async () => {
-    try {
-      const response = await axios.get('/api/matriculas');
-      setMatriculas(response.data);
-    } catch (error) {
-      console.error('Error fetching matriculas:', error);
-    }
+    const response = await axios.get('/api/matriculas');
+    setMatriculas(response.data);
   };
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleClearSearch = () => {
-  setSearchQuery("");
-  setCurrentPage(1); // Reiniciar a la primera página
-}; 
-
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (isEditing) {
-        const response = await fetch(`/api/matriculas`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al actualizar la matrícula');
-        }
-
-        setUpdateNotification('Matrícula actualizada exitosamente');
-        setTimeout(() => {
-          setUpdateNotification('');
-        }, 3000);
-      } else {
-        const response = await fetch('/api/matriculas', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al crear la matrícula');
-        }
-
-        setNotification('Matrícula agregada exitosamente');
-        setTimeout(() => {
-          setNotification('');
-        }, 3000);
-      }
-
+  useEffect(() => {
+    if (user) {
+      cargarEstados();
+      fetchPermisos();
       fetchMatriculas();
-      resetForm();
-    } catch (error) {
-      console.error('Error al guardar la matrícula:', error);
     }
-  };
+  }, [user]);
 
-  const handleEdit = (matricula) => {
-    setFormData(matricula);
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (Id_Matricula) => {
+  const handleDelete = async (id) => {
     try {
-      const response = await fetch('/api/matriculas', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ Id_Matricula }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar la matrícula');
-      }
-
+      await axios.delete(`/api/matriculas`, { data: { Id_Matricula: id } });
       fetchMatriculas();
-      resetForm();
-      toast.error('Matrícula eliminada exitosamente', {
-        style: {
-          backgroundColor: '#ffebee', // Fondo suave rojo
-          color: '#d32f2f', // Texto rojo oscuro
-          fontWeight: 'bold',
-          border: '1px solid #f5c6cb',
-          padding: '16px',
-          borderRadius: '12px',
-        },
-        position: 'bottom-right',
-        autoClose: 5000,
-        hideProgressBar: true,
-      });
-      
+      closeModal('modalConfirmacion');
     } catch (error) {
-      toast.error('Error al eliminar la matrícula:', error);
+      alert('Error al eliminar la matrícula');
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      Id_Matricula: '',
-      Estudiante: '',
-      Modalidad: '',
-      Grado: '',
-      Seccion: '',
-      Fecha_Matricula: '',
-    });
-    setIsEditing(false);
-  };
 
-  const filteredMatriculas = matriculas.filter((matricula) =>
-    matricula.Estudiante.toLowerCase().includes(search.toLowerCase()) ||
-    matricula.Modalidad.toLowerCase().includes(search.toLowerCase()) ||
-    matricula.Grado.toLowerCase().includes(search.toLowerCase()) ||
-    matricula.Seccion.toLowerCase().includes(search.toLowerCase()) ||
-    String(matricula.Identidad).toLowerCase().includes(search.toLowerCase()) // Asegurar que Identidad sea un string
-  );
+
+  const handleExportMatriculas = async () => {
+    const headers = [
+      { header: "ID Matrícula", key: "ID", width: 15 },
+      { header: "Identidad", key: "Identidad", width: 20 },
+      { header: "Estudiante", key: "Estudiante", width: 30 },
+      { header: "Modalidad", key: "Modalidad", width: 20 },
+      { header: "Grado", key: "Grado", width: 15 },
+      { header: "Sección", key: "Seccion", width: 15 },
+      { header: "Fecha Matrícula", key: "Fecha_Matricula", width: 20 },
+      { header: "Estado", key: "Estado", width: 20 },
+    ];
   
-  // Paginación
-  const indexOfLastMatricula = currentPage * matriculasPerPage;
-  const indexOfFirstMatricula = indexOfLastMatricula - matriculasPerPage;
-  const currentMatriculas = filteredMatriculas.slice(indexOfFirstMatricula, indexOfLastMatricula);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  const totalPages = Math.ceil(filteredMatriculas.length / matriculasPerPage);
-
-  // Función para exportar a Excel
-  // const handleExport = () => {
-  //   const transformedMatriculas = filteredMatriculas.map((matricula) => ({
-  //     Id_Matricula: matricula.Id_Matricula,
-  //     Estudiante: matricula.Estudiante,
-  //     Modalidad: matricula.Modalidad,
-  //     Grado: matricula.Grado,
-  //     Seccion: matricula.Seccion,
-  //     Fecha_Matricula: new Date(matricula.Fecha_Matricula).toLocaleDateString('es-ES'),
-  //   }));
-
-  //   const worksheet = XLSX.utils.json_to_sheet(transformedMatriculas);
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, 'Matriculas');
-  //   XLSX.writeFile(workbook, 'matriculas.xlsx');
-  // };
-
-const handleExport = async () => {
-  // 1️⃣ Crear un nuevo libro y hoja de Excel
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Matrículas");
-
-  // 2️⃣ Definir las columnas y encabezados
-  worksheet.columns = [
-    { header: "ID Matrícula", key: "Id_Matricula", width: 15 },
-    { header: "Estudiante", key: "Estudiante", width: 30 },
-    { header: "Modalidad", key: "Modalidad", width: 20 },
-    { header: "Grado", key: "Grado", width: 15 },
-    { header: "Sección", key: "Seccion", width: 10 },
-    { header: "Fecha Matrícula", key: "Fecha_Matricula", width: 20 },
-  ];
-
-  // 3️⃣ Transformar los datos antes de agregarlos
-  const transformedMatriculas = filteredMatriculas.map((matricula) => ({
-    Id_Matricula: matricula.Id_Matricula,
-    Estudiante: matricula.Estudiante,
-    Modalidad: matricula.Modalidad,
-    Grado: matricula.Grado,
-    Seccion: matricula.Seccion,
-    Fecha_Matricula: new Date(matricula.Fecha_Matricula).toLocaleDateString("es-ES"),
-  }));
-
-  // 4️⃣ Agregar los datos a la hoja de cálculo
-  transformedMatriculas.forEach((matricula) => {
-    worksheet.addRow(matricula);
-  });
-
-  // 5️⃣ Aplicar estilos a los encabezados
-  worksheet.getRow(1).eachCell((cell) => {
-    cell.font = { bold: true };
-    cell.alignment = { horizontal: "center" };
-  });
-
-  // 6️⃣ Generar el archivo y descargarlo
-  const buffer = await workbook.xlsx.writeBuffer();
-  const fileBlob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-
-  saveAs(fileBlob, "matriculas.xlsx");
-};
+    const data = filteredMatriculas.map((matricula) => {
+      const estado = estados.find((e) => e.Codigo_Estado === matricula.Estado)?.Nombre_Estado || "Desconocido";
+  
+      return {
+        ID: matricula.Id_Matricula,
+        Identidad: matricula.Identidad || "-",
+        Estudiante: `${matricula.Estudiante || ""} ${matricula.Primer_Apellido || ""}`,
+        Modalidad: matricula.Modalidad || "-",
+        Grado: matricula.Grado || "-",
+        Seccion: matricula.Seccion || "-",
+        Fecha_Matricula: matricula.Fecha_Matricula
+          ? new Date(matricula.Fecha_Matricula).toLocaleDateString("es-ES")
+          : "-",
+        Estado: estado,
+      };
+    });
+  
+    await exportToExcel({
+      fileName: "Matriculas.xlsx",
+      title: "Reporte General de Matrículas",
+      headers,
+      data,
+      searchQuery,
+    });
+  };
+  
 
 
-  if (!user) {
-    return <p>Cargando usuario...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
-
-  if (sinPermisos) {
+  const filteredMatriculas = matriculas.filter(m => {
+    const query = searchQuery.general.toLowerCase();
     return (
-      <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-lg flex items-center">
-        <ShieldExclamationIcon className="h-12 w-12 mr-4" />
-        <div>
-          <h3 className="font-bold text-lg">Sin permisos para acceder a la pantalla de Matrículas</h3>
-          <p>No tienes permisos para acceder a esta información.</p>
-        </div>
-      </div>
+      m.Estudiante?.toLowerCase().includes(query) ||
+      m.Modalidad?.toLowerCase().includes(query) ||
+      m.Grado?.toLowerCase().includes(query) ||
+      m.Seccion?.toLowerCase().includes(query) ||
+      String(m.Identidad || '').toLowerCase().includes(query)
     );
-  }
+  });
 
-  if (!permisos) {
-    return <p>Cargando permisos...</p>;
-  }
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = filteredMatriculas.slice(indexOfFirst, indexOfLast);
+
+  if (!user) return <p>Cargando usuario...</p>;
+  if (error) return <p>{error}</p>;
+  if (sinPermisos) return <p>No tienes permisos para acceder.</p>;
+  if (!permisos) return <p>Cargando permisos...</p>;
 
   return (
-    <div className="w-full lg:w-2/3 p-6 rounded-lg">
-      <center>
-        <h2 className="text-2xl font-semibold mb-4">Matrícula General</h2>
-      </center>
+    <div className="p-6">
+      <SearchBar
+        title="Matrícula General"
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleClearSearch={() => setSearchQuery({ general: '' })}
+        onAdd={() => { setFormData(null); setIsEditing(false); showModal('modalAddMatricula'); }}
+        onExport={handleExportMatriculas}
+      />
 
-      {/* Barra de búsqueda */}
-      <div className="w-2/2">
-        <div>
-        <center><input
-  type="text"
-  value={search}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  className="p-3 pl-10 pr-4 border border-gray-900 rounded-lg w-1/2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-  placeholder="Buscar..."
-/></center>
-        </div>
-      </div>
-<br></br>
-      {/* Botón para exportar */}
-      <div className="mb-4 flex justify-between items-center">
-{/* Botón para agregar matrícula */}
- {permisos.Permiso_Insertar === '1' && (
-<button
-  onClick={() => router.push('/matricula')}
-  className="bg-cyan-800 text-white py-2 px-4 rounded hover:bg-cyan-700 transition duration-200"
->
-  <UserPlusIcon className="w-5 h-5 inline-block mr-2" /> 
-  Nueva Matrícula
-</button>
-)}
-  {permisos.Permiso_Consultar === '1' && (
-      <Link href={`/matricula`}>
-       <button className="bg-blue-500 text-white px-2 py-2 rounded hover:bg-blue-600 transition-colors">
-       <PencilSquareIcon className="h-6 w-6 inline" />  Editar Registros
-        </button>
-         </Link>
- )}
-        <button
-          onClick={handleExport}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
-          >
-           <ArrowDownCircleIcon className="h-6 w-6 inline" />    Exportar Excel
-          </button>
-      </div>
+      <table className="xls_style-excel-table">
+        <thead>
+          <tr>
+            <th>Identidad</th>
+            <th>Estudiante</th>
+            <th>Modalidad</th>
+            <th>Grado</th>
+            <th>Sección</th>
+            <th>Fecha Matrícula</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map(m => (
+            <tr key={m.Id_Matricula}>
+              <td>{m.Identidad}</td>
+              <td>{m.Estudiante} {m.Primer_Apellido}</td>
+              <td>{m.Modalidad}</td>
+              <td>{m.Grado}</td>
+              <td>{m.Seccion}</td>
+              <td>{m.Fecha_Matricula ? new Date(m.Fecha_Matricula).toISOString().split('T')[0] : 'No disponible'}</td>
+              <td>{estados.find(e => e.Codigo_Estado === m.Estado)?.Nombre_Estado || 'Desconocido'}</td>
+              <td>
+                {permisos.Permiso_Actualizar === '1' && (
+                  <button onClick={() => { setFormData(m); setIsEditing(true); showModal('modalAddMatricula'); }}><PencilSquareIcon className="h-5 w-5" /></button>
+                )}
+                {permisos.Permiso_Eliminar === '1' && (
+                  <button onClick={() => { setFormData(m); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredMatriculas.length}
+        itemsPerPage={itemsPerPage}
+        setPage={setCurrentPage}
+        setItemsPerPage={setItemsPerPage}
+        prevPage={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        nextPage={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredMatriculas.length / itemsPerPage)))}
+      />
 
-{/* Tabla de matrículas */}     
-<table className="xls_style-excel-table">
-  <thead>
-    <tr>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Identidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estudiante</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Modalidad</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Grado</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Sección</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Fecha Matrícula</th>
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
-      <th className="py-4 px-6 bg-blue-200 text-blue-800 font-semibold text-left">Acciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {currentMatriculas.map((matricula) => {
-      // Buscar el estado correspondiente en el diccionario de estados
-      const estado = estados.find(e => e.Codigo_Estado === matricula.Estado );
-
-      return (
-        <tr key={matricula.Id_Matricula}>
-          <td className="py-2 px-4">{matricula.Identidad}</td>
-          <td className="py-2 px-4">
-            {matricula.Estudiante} {matricula.Segundo_Nombre} {matricula.Primer_Apellido} {matricula.Segundo_Apellido}
-          </td>
-          <td className="py-2 px-4">{matricula.Modalidad}</td>
-          <td className="py-2 px-4">{matricula.Grado}</td>
-          <td className="py-2 px-4">{matricula.Seccion}</td>
-          <td className="py-4 px-6 border-b">
-            {matricula.Fecha_Matricula
-              ? new Date(matricula.Fecha_Matricula).toISOString().split('T')[0] // Convierte a UTC y formatea
-              : "No disponible"}
-          </td>
-
-          {/* Mostrar el Estado con su Nombre correspondiente */}
-          <td className="py-2 px-4">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
-
-          {(permisos.Permiso_Actualizar === '1' || permisos.Permiso_Eliminar === '1') && (
-            <td className="py-2 px-4">
-              {permisos.Permiso_Eliminar === '1' && (
-                <center>
-                  <button
-                    onClick={() => handleDelete(matricula.Id_Matricula)}
-                    className="px-2 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                  >
-                    <TrashIcon className="h-6 w-6" />
-                  </button>
-                </center>
-              )}
-            </td>
-          )}
-        </tr>
-      );
-    })}
-  </tbody>
-</table>
-
-
- {/* Paginación */}
-<div className="flex justify-between items-center mt-4">
-  {/* Botón "Anterior" */}
-  <button
-    onClick={() => paginate(currentPage - 1)}
-    disabled={currentPage === 1}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === 1
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Anterior
-  </button>
-
-  {/* Páginas */}
-  <div className="flex space-x-2">
-    {Array.from({ length: totalPages }, (_, index) => (
-      <button
-        key={index + 1}
-        onClick={() => paginate(index + 1)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-          currentPage === index + 1
-            ? 'bg-white-600 text-black shadow-lg scale-105'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none'
-        }`}
+      <ModalGenerico
+        id="modalAddMatricula"
+        isOpen={modals['modalAddMatricula']}
+        onClose={() => closeModal('modalAddMatricula')}
+        titulo={isEditing ? 'Editar Matrícula' : 'Agregar Matrícula'}
       >
-        {index + 1}
-      </button>
-    ))}
-  </div>
+        <MatriculaForm
+          formData={formData}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onClose={() => closeModal('modalAddMatricula')}
+          fetchMatriculas={fetchMatriculas}
+        />
+      </ModalGenerico>
 
-  {/* Botón "Siguiente" */}
-  <button
-    onClick={() => paginate(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 transform ${
-      currentPage === totalPages
-        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        : 'bg-white-600 text-black shadow-md hover:bg-gray-200 focus:outline-none'
-    }`}
-  >
-    Siguiente
-  </button>
-</div>
-
-      </div>
+      <ModalConfirmacion
+        isOpen={modals['modalConfirmacion']}
+        onClose={() => closeModal('modalConfirmacion')}
+        onConfirm={() => handleDelete(formData.Id_Matricula)}
+        titulo="❌ Confirmar Eliminación"
+        mensaje="¿Estás seguro de que deseas eliminar esta matrícula?"
+        entidad={formData?.Estudiante}
+        confirmText="Eliminar"
+        confirmColor="bg-red-600 hover:bg-red-700"
+      />
+    </div>
   );
 };
 

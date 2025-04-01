@@ -353,6 +353,8 @@ NombreCompuesto: (min = 10, max = 300) => ({
             { label: "Debe estar en formato YYYY-MM-DD.", test: (valor) => /^\d{4}-\d{2}-\d{2}$/.test(valor) }
         ]
     }),
+    
+    
 
     // ✅ Valor en Moneda (Formato 1000.50)
     Moneda: (min = 0, max = Infinity) => ({

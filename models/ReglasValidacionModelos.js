@@ -338,3 +338,8 @@ export const reglasValidacionUsuario = {
 
   Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };
+export const reglasValidacionGraduando = {
+ 
+  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
+};
+
