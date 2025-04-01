@@ -4,12 +4,13 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { obtenerEstados } from '../../src/utils/api';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
+
 import useModal from '../hooks/useModal';
 import ModalGenerico from '../utils/ModalGenerico';
 import ModalConfirmacion from '../utils/ModalConfirmacion';
-import exportToExcel from '../utils/exportToExcel';
+
+import { exportToExcel } from "../utils/exportToExcel"; // Importar la función
+
 import SearchBar from '../components/basicos/SearchBar';
 import Pagination from '../components/basicos/Pagination';
 import MatriculaForm from '../components/basicos/MatriculaForm';
@@ -91,7 +92,7 @@ const MatriculaManagement = () => {
   
       return {
         ID: matricula.Id_Matricula,
-        Identidad: matricula.Identidad || "-",
+        Identidad: " "+matricula.Identidad || "-",
         Estudiante: `${matricula.Estudiante || ""} ${matricula.Primer_Apellido || ""}`,
         Modalidad: matricula.Modalidad || "-",
         Grado: matricula.Grado || "-",

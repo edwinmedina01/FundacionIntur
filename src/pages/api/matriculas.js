@@ -1,15 +1,18 @@
 const sequelize = require('../../../database/database');
 const { QueryTypes } = require('sequelize');
+const Matricula = require('../../../models/matricula');
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      // Consulta con relaciones y concatenación de Estudiante y Primer_Apellido
       const matriculas = await sequelize.query(
         `
         SELECT 
           m.Id_Matricula,
           m.Estado,
+          mo.Id_Modalidad,
+          g.Id_Grado,
+          s.Id_Seccion,
           CONCAT(p.Primer_Nombre, ' ', pp.Segundo_Nombre, ' ', pp.Primer_Apellido, ' ', pp.Segundo_Apellido) AS Estudiante,
           mo.Nombre AS Modalidad,
           g.Nombre AS Grado,
@@ -30,7 +33,6 @@ export default async function handler(req, res) {
         }
       );
 
-      // Verificar si se encontraron resultados
       if (matriculas.length === 0) {
         return res.status(404).json({ error: 'No se encontraron matrículas.' });
       }
@@ -40,6 +42,69 @@ export default async function handler(req, res) {
       console.error('Error al obtener las matrículas:', error.message);
       res.status(500).json({ error: 'Error al obtener las matrículas.' });
     }
+  } else if (req.method === 'POST') {
+    try {
+      const {
+        Id_Estudiante,
+        Id_Modalidad,
+        Id_Grado,
+        Id_Seccion,
+        Fecha_Matricula,
+        Estado,
+        Creado_Por
+      } = req.body;
+
+      const nuevaMatricula = await Matricula.create({
+        Id_Estudiante,
+        Id_Modalidad,
+        Id_Grado,
+        Id_Seccion,
+        Fecha_Matricula,
+        Estado,
+        Creado_Por,
+        Fecha_Creacion: new Date().toISOString().split('T')[0]
+      });
+
+      res.status(201).json({ message: 'Matrícula creada correctamente', matricula: nuevaMatricula });
+    } catch (error) {
+      console.error('Error al crear la matrícula:', error.message);
+      res.status(500).json({ error: 'Error al crear la matrícula.' });
+    }
+  } else if (req.method === 'PUT') {
+    try {
+      const {
+        Id_Matricula,
+        Id_Estudiante,
+        Id_Modalidad,
+        Id_Grado,
+        Id_Seccion,
+        Fecha_Matricula,
+        Estado,
+        Modificado_Por
+      } = req.body;
+
+      const matricula = await Matricula.findByPk(Id_Matricula);
+
+      if (!matricula) {
+        return res.status(404).json({ error: 'Matrícula no encontrada.' });
+      }
+
+      await matricula.update({
+        Id_Estudiante,
+        Id_Modalidad,
+        Id_Grado,
+        Id_Seccion,
+        Fecha_Matricula,
+        Estado,
+        Modificado_Por,
+        Fecha_Modificacion: new Date().toISOString().split('T')[0]
+      });
+
+      res.status(200).json({ message: 'Matrícula actualizada correctamente', matricula });
+    } catch (error) {
+      console.error('Error al actualizar la matrícula:', error.message);
+      res.status(500).json({ error: 'Error al actualizar la matrícula.' });
+    }
   } else if (req.method === 'DELETE') {
     try {
       const { Id_Matricula } = req.body;
@@ -48,7 +113,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'ID de matrícula es requerido.' });
       }
 
-      // Verificar si la matrícula existe
       const [matricula] = await sequelize.query(
         `SELECT * FROM tbl_matricula WHERE Id_Matricula = :id`,
         {
@@ -61,7 +125,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Matrícula no encontrada.' });
       }
 
-      // Eliminar la matrícula
       await sequelize.query(
         `DELETE FROM tbl_matricula WHERE Id_Matricula = :id`,
         {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect,useCallback } from 'react';
 import { obtenerEstados } from '../../../src/utils/api';
 import Select from 'react-select';
+import { toast } from 'react-toastify';
 
 const MatriculaForm = ({ formData, isEditing, setIsEditing, onClose, fetchMatriculas }) => {
   const [form, setForm] = useState({
@@ -97,8 +98,15 @@ const MatriculaForm = ({ formData, isEditing, setIsEditing, onClose, fetchMatric
       setForm({ Estudiante: '', Modalidad: '', Grado: '', Seccion: '', Fecha_Matricula: '', Estado: '' });
       setIsEditing(false);
       onClose();
+      toast.success( (isEditing ? 'Matrícula actualizada' : 'Matrícula creada'), {
+        position: 'top-right',
+        autoClose: 4000,
+      });
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message || 'Error al procesar la matrícula', {
+        position: 'top-right',
+        autoClose: 5000,
+      });
     }
   };
 
@@ -137,26 +145,26 @@ const MatriculaForm = ({ formData, isEditing, setIsEditing, onClose, fetchMatric
 </div>
 
       <div className="flex flex-col">
-        <label htmlFor="Modalidad" className="text-gray-700">Modalidad</label>
-        <select name="Modalidad" value={form.Modalidad} onChange={handleChange} className="w-full border p-2 rounded" required>
+        <label htmlFor="Id_Modalidad" className="text-gray-700">Modalidad</label>
+        <select name="Id_Modalidad" value={form.Id_Modalidad} onChange={handleChange} className="w-full border p-2 rounded" required>
           <option value="">Seleccione Modalidad</option>
-          {modalidades.map(m => <option key={m.Id_Modalidad} value={m.Modalidad}>{m.Nombre}</option>)}
+          {modalidades.map(m => <option key={m.Id_Modalidad} value={m.Id_Modalidad}>{m.Nombre}</option>)}
         </select>
       </div>
 
       <div className="flex flex-col">
-        <label htmlFor="Grado" className="text-gray-700">Curso/Grado</label>
-        <select name="Grado" value={form.Grado} onChange={handleChange} className="w-full border p-2 rounded" required>
+        <label htmlFor="GraId_Gradodo" className="text-gray-700">Curso/Grado</label>
+        <select name="Id_Grado" value={form.Id_Grado} onChange={handleChange} className="w-full border p-2 rounded" required>
           <option value="">Seleccione Grado</option>
-          {grados.map(g => <option key={g.Id_Grado} value={g.Grado}>{g.Nombre}</option>)}
+          {grados.map(g => <option key={g.Id_Grado} value={g.Id_Grado}>{g.Nombre}</option>)}
         </select>
       </div>
 
       <div className="flex flex-col">
-        <label htmlFor="Seccion" className="text-gray-700">Sección</label>
-        <select name="Seccion" value={form.Seccion} onChange={handleChange} className="w-full border p-2 rounded" required>
+        <label htmlFor="Id_Seccion" className="text-gray-700">Sección</label>
+        <select name="Id_Seccion" value={form.Id_Seccion} onChange={handleChange} className="w-full border p-2 rounded" required>
           <option value="">Seleccione Sección</option>
-          {secciones.map(s => <option key={s.Id_Seccion} value={s.Seccion}>{s.Nombre_Seccion}</option>)}
+          {secciones.map(s => <option key={s.Id_Seccion} value={s.Id_Seccion}>{s.Nombre_Seccion}</option>)}
         </select>
       </div>
 
