@@ -5,14 +5,14 @@ export const reglasValidacionPersona = {
   Id_Tipo_Persona: { tipo: "int", requerido: true },
   Id_Departamento: { tipo: "int", requerido: true },
 
-  Primer_Nombre: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
-  Segundo_Nombre: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
-  Primer_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
-  Segundo_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
+  Primer_Nombre: { ...reglasGenerales.NombrePropio(1, 60), requerido: true },
+  Segundo_Nombre: { ...reglasGenerales.NombrePropio(1, 60), requerido: false },
+  Primer_Apellido: { ...reglasGenerales.NombrePropio(1, 60), requerido: true },
+  Segundo_Apellido: { ...reglasGenerales.NombrePropio(1, 60), requerido: false },
 
   Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
 
-  Fecha_Nacimiento: { ...reglasGenerales.Fecha(), requerido: true },
+  Fecha_Nacimiento: { ...reglasGenerales.FechaNacimiento(), requerido: true },
   Lugar_Nacimiento: { ...reglasGenerales.NombreGeneral(3, 100), requerido: true },
 
   Identidad: { 
@@ -28,7 +28,7 @@ export const reglasValidacionPersona = {
   Modificado_Por: { tipo: "int", requerido: false },
   //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 
   Telefono: { ...reglasGenerales.Telefono(), requerido: true },
   Direccion: { ...reglasGenerales.Direccion(5, 255), requerido: true },
@@ -45,7 +45,7 @@ export const reglasValidacionRelacion = {
     Primer_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
   //  Segundo_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
   
-    Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
+  //  Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
   
     //Fecha_Nacimiento: { ...reglasGenerales.Fecha(), requerido: true },
    // Lugar_Nacimiento: { ...reglasGenerales.TextoLibre(3, 100), requerido: true },

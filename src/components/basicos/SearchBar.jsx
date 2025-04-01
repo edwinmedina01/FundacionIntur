@@ -11,7 +11,11 @@ const SearchBar = ({
   onAddParams,  
   onExportParams,  
   addParams = [],  
-  exportParams = [] 
+  exportParams = [], 
+  showAddButton = true, // Hacer el botón de agregar opcional
+  showAddParamsButton = true, // Hacer el botón de agregar con parámetros opcional
+  showExportButton = true, // Hacer el botón de exportar opcional
+  showExportParamsButton = true, // Hacer el botón de exportar con parámetros opcional
 }) => {
   return (
     <div className="mb-4 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
@@ -63,16 +67,18 @@ const SearchBar = ({
 
       {/* Botones de acciones */}
       <div className="flex gap-x-2">
-        {/* Botón para agregar (Siempre se muestra) */}
-        <button
-          onClick={onAdd}
-          className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
-        >
-          <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar
-        </button>
+        {/* Botón para agregar (Opcional) */}
+        {showAddButton && (
+          <button
+            onClick={onAdd}
+            className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+          >
+            <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar
+          </button>
+        )}
 
-        {/* Botón para agregar con parámetros */}
-        {onAddParams && (
+        {/* Botón para agregar con parámetros (Opcional) */}
+        {showAddParamsButton && onAddParams && (
           <button
             onClick={() => onAddParams(...addParams)}
             className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
@@ -81,8 +87,8 @@ const SearchBar = ({
           </button>
         )}
 
-        {/* Botón para exportar (sin parámetros) */}
-        {onExport && (
+        {/* Botón para exportar (Opcional) */}
+        {showExportButton && onExport && (
           <button
             onClick={onExport}
             className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"
@@ -91,8 +97,8 @@ const SearchBar = ({
           </button>
         )}
 
-        {/* Botón para exportar con parámetros */}
-        {onExportParams && (
+        {/* Botón para exportar con parámetros (Opcional) */}
+        {showExportParamsButton && onExportParams && (
           <button
             onClick={() => onExportParams(...exportParams)}
             className="flex items-center bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md"

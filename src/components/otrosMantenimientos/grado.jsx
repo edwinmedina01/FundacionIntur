@@ -39,10 +39,10 @@ const GradoManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const filteredGrados = grados.filter((g) =>
-    g.Nombre.toLowerCase().includes(searchQuery.general.toLowerCase())
-    || g.Descripcion.toLowerCase().includes(searchQuery.general.toLowerCase())
-  );
+   const filteredGrados = grados//.filter((g) =>
+  //   g.Nombre?.toLowerCase().includes(searchQuery?.general.toLowerCase())
+  //   || g.Descripcion?.toLowerCase().includes(searchQuery?.general.toLowerCase())
+  // );
 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;

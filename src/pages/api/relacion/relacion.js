@@ -83,8 +83,8 @@ export default async function handler(req, res) {
         // Buscar Persona por Identidad
 
         if(personaRelacion.esNuevo){
-            personaRelacion.Id_Municipio=personaRelacion.Estudiante.Persona.Id_Municipio;
-            personaRelacion.Id_Departamento=personaRelacion.Estudiante.Persona.Id_Departamento;
+            personaRelacion.Id_Municipio=1;
+            personaRelacion.Id_Departamento=1;
             personaRelacion.Id_estudiante=personaRelacion.Estudiante.Id_Estudiante;
             personaRelacion.Estudiante=0;
             personaRelacion.Estado=personaRelacion.Estado;

@@ -296,7 +296,7 @@ NombreCompuesto: (min = 10, max = 300) => ({
     }),
 
     // ✅ Nombre Propio (debe comenzar con mayúscula, sin números)
-    NombrePropio: (min = 2, max = Infinity) => ({
+    NombrePropioold: (min = 2, max = Infinity) => ({
         tipo: "string",
         validaciones: [
             { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
@@ -304,6 +304,30 @@ NombreCompuesto: (min = 10, max = 300) => ({
             { label: "No debe contener signos de puntuación.", test: (valor) => !/[.,;:!?]/.test(valor) }
         ]
     }),
+
+    NombrePropio: (min = 2, max = Infinity) => ({
+      tipo: "string",
+      validaciones: [
+        { 
+          label: `Debe contener entre ${min} y ${max} caracteres.`, 
+          test: (valor) => valor.length >= min && valor.length <= max 
+        },
+        { 
+          label: "Debe comenzar con mayúscula.", 
+          test: (valor) => /^[A-ZÁÉÍÓÚÑ]/.test(valor) 
+        },
+        { 
+          label: "Solo puede contener letras mayúsculas, minúsculas y acentos (sin números ni signos de puntuación).", 
+          test: (valor) => /^[a-zA-ZÁÉÍÓÚÑáéíóúñ]+$/.test(valor) 
+        },
+        { 
+          label: "No debe contener signos de puntuación.", 
+          test: (valor) => !/[.,;:!?]/.test(valor) 
+        }
+      ]
+    }),
+    
+
     NombreRol: (min = 3, max = 60) => ({
         tipo: "string",
         validaciones: [
@@ -355,6 +379,37 @@ NombreCompuesto: (min = 10, max = 300) => ({
     }),
     
     
+
+    FechaNacimiento: () => ({
+        tipo: "date",
+        validaciones: [
+          {
+            label: "Debe estar en formato YYYY-MM-DD.",
+            test: (valor) => /^\d{4}-\d{2}-\d{2}$/.test(valor),
+          },
+          {
+            label: "La edad debe estar entre 04 y 90 años.",
+            test: (valor) => {
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false; // Validación de formato primero
+      
+              const fechaNacimiento = new Date(valor);
+              const hoy = new Date();
+      
+              let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+              const mesDiferencia = hoy.getMonth() - fechaNacimiento.getMonth();
+              const diaDiferencia = hoy.getDate() - fechaNacimiento.getDate();
+      
+              // Ajustar edad si aún no ha cumplido años este año
+              if (mesDiferencia < 0 || (mesDiferencia === 0 && diaDiferencia < 0)) {
+                edad--;
+              }
+      
+              return edad >= 4 && edad <= 90;
+            },
+          },
+        ],
+      }),
+      
 
     // ✅ Valor en Moneda (Formato 1000.50)
     Moneda: (min = 0, max = Infinity) => ({
@@ -463,9 +518,11 @@ NombreCompuesto: (min = 10, max = 300) => ({
     
             { label: "No debe tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
     
-            { label: "Puede contener letras, números, comas, puntos, guiones y #.", test: (valor) => /^[A-Za-z0-9\s.,#-]+$/.test(valor) },
-    
-            { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
+            { 
+                label: "Puede contener letras, números, comas, puntos, guiones, #, y acentos.", 
+                test: (valor) => /^[A-Za-z0-9áéíóúÁÉÍÓÚ\s.,#-]+$/.test(valor) 
+            },
+           // { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
     
             { label: "Debe contener al menos una palabra con sentido (ejemplo: nombre de calle, avenida, barrio).", test: (valor) => /[A-Za-z]+/.test(valor) },
     

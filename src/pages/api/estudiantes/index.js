@@ -111,6 +111,18 @@ export default async function handler(req, res) {
       //    }
 
 
+
+
+
+    // 🔍 Validar que no exista otro con la misma identidad
+    const existeIdentidad = await Persona.findOne({
+      where: { Identidad: personaData.Identidad }
+    });
+
+    if (existeIdentidad) {
+      return res.status(400).json({ error: "La identidad ya está registrada." });
+    }
+
         
 
   const persona = await Persona.create(personaData);
