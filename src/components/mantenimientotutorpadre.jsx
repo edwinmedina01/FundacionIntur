@@ -6,6 +6,7 @@ import AuthContext from '../context/AuthContext';
 import useModal from '../hooks/useModal';
 import ModalGenerico from '../utils/ModalGenerico';
 import ModalConfirmacion from '../utils/ModalConfirmacion';
+import {exportToExcel} from '../utils/exportToExcel';
 import { obtenerEstados } from '../../src/utils/api';
 import { getBase64ImageFromUrl } from '../../src/utils/getBase64ImageFromUrl';
 import { validarFormulario } from '../utils/validaciones';
@@ -15,8 +16,10 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import SearchBar from '../components/basicos/SearchBar';
 import Pagination from '../components/basicos/Pagination';
+import RelacionForm from '../components/basicos/RelacionForm';
 import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
-
+import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../models/ReglasValidacionModelos";
+import { toast } from "react-toastify";
 const TutorPadreManagement = () => {
   const { user } = useContext(AuthContext);
   const { modals, showModal, closeModal } = useModal();
@@ -38,7 +41,7 @@ const TutorPadreManagement = () => {
   const [searchQuery, setSearchQuery] = useState({ general: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
+  const [estudiantes, setEstudiantes] = useState([]);
   const cargarEstados = useCallback(async () => {
     const data = await obtenerEstados('GENÉRICO');
     setEstados(data);
@@ -67,6 +70,7 @@ const TutorPadreManagement = () => {
   useEffect(() => {
     if (user) {
       cargarEstados();
+      fetchEstudiantes();
       fetchPermisos();
       fetchTutores();
     }
@@ -81,7 +85,7 @@ const TutorPadreManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errores = validarFormulario(formData, reglasValidacionTutores);
+    const errores = validarFormulario(formData, reglasValidacionTutores,"formtutor");
     if (errores.length > 0) return alert(errores.join('\n'));
 
     try {
@@ -108,7 +112,35 @@ const TutorPadreManagement = () => {
     }
   };
 
-  const exportToExcel = async () => {
+   const handleEdit = (data) => {
+      console.log("handleEdit", data);
+    
+      const estudiante = estudiantes.find(est => Number( est.Id_Estudiante) ==Number( data.Id_Estudiante));
+    
+      // Buscar la relación por el ID que viene en data (puede ser `data.Id_Relacion` o `data.Relacion?.Id`)
+      const relacion = estudiante?.Relaciones?.find(rel => rel.Id === data.Id || rel.Id === data.Id_Relacion);
+    
+      setIsEditing(true);
+      if (relacion && relacion.Persona) {
+        setPersonaDataRelacion({
+          ...relacion.Persona,
+          Id_Estudiante: data.Id_Estudiante,
+          esNuevo: false,
+          Id_Tipo_Persona: relacion.Persona.Id_Tipo_Persona,
+          Id_Relacion: relacion.Id,
+          Id: relacion.Id,
+          Id_Persona: relacion.Persona.Id_Persona,
+        });
+    
+        showModal("modalRelacion");
+      } else {
+        console.warn("No se encontró la relación o persona");
+        toast.error("No se encontró la información del tutor o benefactor.");
+      }
+    };
+ 
+
+  const handleExportTutores = async () => {
     const headers = [
       { header: 'Identidad', key: 'Identidad', width: 20 },
       { header: 'Nombre', key: 'Nombre', width: 30 },
@@ -117,11 +149,12 @@ const TutorPadreManagement = () => {
       { header: 'Estudiante', key: 'Estudiante', width: 30 },
       { header: 'Estado', key: 'Estado', width: 20 }
     ];
-
-    const data = tutores.map(t => {
-      const estado = estados.find(e => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido';
+  
+    const data = tutores.map((t) => {
+      const estado = estados.find((e) => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido';
+  
       return {
-        Identidad: t.Identidad,
+        Identidad: " "+t.Identidad,
         Nombre: `${t.Persona_Nombre} ${t.Persona_Apellido}`,
         Telefono: t.Persona_Telefono,
         Direccion: t.Persona_Direccion,
@@ -129,26 +162,163 @@ const TutorPadreManagement = () => {
         Estado: estado,
       };
     });
-
-    const logoBase64 = await getBase64ImageFromUrl('/img/intur.png');
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Tutores');
-    const imageId = workbook.addImage({ base64: logoBase64, extension: 'png' });
-    worksheet.addImage(imageId, { tl: { col: 0, row: 0 }, ext: { width: 120, height: 50 } });
-
-    worksheet.mergeCells('B1:G1');
-    worksheet.getCell('B1').value = 'Reporte de Tutores';
-    worksheet.getCell('B1').font = { bold: true, size: 16 };
-    worksheet.getCell('B1').alignment = { horizontal: 'center' };
-
-    worksheet.getRow(4).values = headers.map(h => h.header);
-    worksheet.columns = headers;
-    data.forEach(d => worksheet.addRow(d));
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'Tutores.xlsx');
+  
+    await exportToExcel({
+      fileName: "Tutores.xlsx",
+      title: "Reporte de Tutores",
+      headers,
+      data,
+      searchQuery // si aplicas filtros, pásalo desde tu componente
+    });
   };
 
+
+
+  const [personaDataRelacion, setPersonaDataRelacion] = useState({
+    Primer_Nombre: "",
+    Segundo_Nombre: "",
+    Primer_Apellido: "",
+    Segundo_Apellido: "",
+    Sexo: "",
+    Fecha_Nacimiento: "",
+    Lugar_Nacimiento: "",
+    Identidad: "",
+    Creado_Por: "",
+    Id_Departamento: 0,
+    Id_Municipio: 0,
+    Id_Estudiante: 0,
+    esNuevo:true,
+    Id_Tipo_Persona:1,
+    Estado:1
+
+  });
+
+
+  const fetchEstudiantes = async () => {
+    const res = await fetch('/api/estudiantes');
+    const data = await res.json();
+    setEstudiantes(data);
+  };
+
+
+  const handleTutorInputChange = (event) => {
+const { name, value } = event.target;
+setPersonaDataRelacion((prevData) => ({
+  ...prevData,
+  [name]: value,
+}));
+};
+
+
+const handleCancelRelacion = () => {
+setPersonaDataRelacion((prevData) => ({
+  ...prevData,
+  Primer_Nombre: "",
+  Segundo_Nombre: "",
+  Primer_Apellido: "",
+  Segundo_Apellido: "",
+  Sexo: "",
+  Fecha_Nacimiento: "",
+  Lugar_Nacimiento: "",
+  Identidad: "",
+  Creado_Por: "",
+  Id_Departamento: 0,
+  Id_Municipio: 0,
+  esNuevo: true,
+  Id_Tipo_Persona:1,
+  Estado:1
+}));
+
+closeModal("modalRelacion");
+};
+
+const handlePersonaSubmit = async (e) => {
+e.preventDefault();
+try {
+console.log("handlePersonaSubmit")
+
+  personaDataRelacion.Creado_Por=user.id;
+  personaDataRelacion.Modificado_Por=user.id;
+  personaDataRelacion.Fecha_Nacimiento='2000-01-01';
+  personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
+  const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,"formTutor");
+
+    if (errores.length > 0) {
+   
+    //toast.error(errores.join("\n"), error);
+      return;
+    }
+
+    // const errores2 = validarFormulario(formData, reglasValidacionEstudiante);
+
+    // if (errores2.length > 0) {
+   
+    //   toast.error(errores2.join("\n"), error);
+    //   return;
+    // }
+
+
+
+    let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
+
+
+    if (res != null) {
+      fetchEstudiantes(); // Llama a la función para actualizar la lista de estudiantes
+      
+      // Verifica si es una acción de registrar o actualizar
+      if (!isEditing) {
+        toast.success("Registro Creado", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        });
+      } else {
+        toast.success("Registro Actualizado", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "colored",
+        });
+      }
+    }
+    
+    closeModal("modalRelacion")
+
+    
+ 
+  
+  setPersonaDataRelacion({
+    Primer_Nombre: "",
+    Segundo_Nombre: "",
+    Primer_Apellido: "",
+    Segundo_Apellido: "",
+    Direccion: "",
+    Telefono: "",
+    Estado: null,
+    Sexo: "",
+    Fecha_Nacimiento: "",
+    Lugar_Nacimiento: "",
+    Identidad: "",
+    Creado_Por: "",
+    esEstudiente:true,
+    esNuevo:true
+  });
+  
+  fetchTutores()
+
+
+} catch (error) {
+  console.error("Error al guardar estudiante y persona", error);
+}
+};
+  
   const filteredTutores = tutores.filter(t => deepSearch(t, searchQuery));
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -166,8 +336,9 @@ const TutorPadreManagement = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleClearSearch={() => setSearchQuery({ general: '' })}
-        onAdd={() => { resetForm(); showModal('modalAddRow'); }}
-        onExport={exportToExcel}
+     
+        onExport={handleExportTutores}
+        showAddButton={false}
       />
 
       <table className="xls_style-excel-table">
@@ -192,8 +363,13 @@ const TutorPadreManagement = () => {
               <td>{t.Estudiante_Nombre} {t.Estudiante_Apellido}</td>
               <td>{estados.find(e => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido'}</td>
               <td>
-                <button onClick={() => { setFormData(t); setIsEditing(true); showModal('modalAddRow'); }}><PencilSquareIcon className="h-5 w-5" /></button>
-                <button onClick={() => { setFormData(t); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button>
+                   <button
+                                  onClick={() => handleEdit(t)}
+                                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                                >
+                                  <PencilSquareIcon className="h-6 w-6" />
+                                </button>
+                {/* <button onClick={() => { setFormData(t); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button> */}
               </td>
             </tr>
           ))}
@@ -211,22 +387,23 @@ const TutorPadreManagement = () => {
       />
 
       <ModalGenerico
-        id="modalAddRow"
-        isOpen={modals['modalAddRow']}
-        onClose={() => closeModal('modalAddRow')}
+        id="modalRelacion"
+        isOpen={modals['modalRelacion']}
+        onClose={() => closeModal('modalRelacion')}
         titulo={isEditing ? 'Editar Tutor' : 'Agregar Tutor'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input name="Persona_Nombre" value={formData.Persona_Nombre} onChange={e => setFormData({ ...formData, Persona_Nombre: e.target.value })} placeholder="Nombre" className="w-full border p-2 rounded" />
-          <input name="Persona_Apellido" value={formData.Persona_Apellido} onChange={e => setFormData({ ...formData, Persona_Apellido: e.target.value })} placeholder="Apellido" className="w-full border p-2 rounded" />
-          <input name="Persona_Telefono" value={formData.Persona_Telefono} onChange={e => setFormData({ ...formData, Persona_Telefono: e.target.value })} placeholder="Teléfono" className="w-full border p-2 rounded" />
-          <input name="Persona_Direccion" value={formData.Persona_Direccion} onChange={e => setFormData({ ...formData, Persona_Direccion: e.target.value })} placeholder="Dirección" className="w-full border p-2 rounded" />
-          <select name="Estado" value={formData.Estado} onChange={e => setFormData({ ...formData, Estado: e.target.value })} className="w-full border p-2 rounded">
-            <option value="">Seleccione Estado</option>
-            {estados.map(e => <option key={e.Codigo_Estado} value={e.Codigo_Estado}>{e.Nombre_Estado}</option>)}
-          </select>
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">{isEditing ? 'Actualizar' : 'Guardar'}</button>
-        </form>
+       
+       <RelacionForm
+  personaDataRelacion={personaDataRelacion}
+  setPersonaDataRelacion={setPersonaDataRelacion} // <-- Asegúrate de pasar esto
+  handleInputChange={handleTutorInputChange}
+  handleSubmit={handlePersonaSubmit}
+  handleCancel={handleCancelRelacion}
+  estados={estados}
+  permisos={permisos}
+  formId="formTutor" // 👈 útil para validación DOM con ID
+  tipoRelacion="Tutor" // 👈 útil para validación DOM con ID
+/>
       </ModalGenerico>
 
       <ModalConfirmacion

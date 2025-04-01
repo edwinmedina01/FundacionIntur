@@ -15,11 +15,13 @@ import Pagination from "../components/basicos/Pagination"
 import RelacionForm from "../components/basicos/RelacionForm"
 import  ModalGenerico  from "../utils/ModalGenerico";// Importar la función
 import { validarFormulario}  from '../utils/validaciones';
+import { toast } from "react-toastify";
+import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../models/ReglasValidacionModelos";
 import useModal from "../hooks/useModal";
 const BenefactoresManagement = () => {
   const router = useRouter();
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
-
+  const [estudiantes, setEstudiantes] = useState([]);
   const { user } = useContext(AuthContext); // Usuario logueado
  const [estados, setEstados] = useState([]);
   const [Benefactores, setBenefactores] = useState([]);
@@ -66,6 +68,13 @@ const BenefactoresManagement = () => {
     });
   
 
+    const fetchEstudiantes = async () => {
+      const res = await fetch('/api/estudiantes');
+      const data = await res.json();
+      setEstudiantes(data);
+    };
+  
+
     const handleTutorInputChange = (event) => {
   const { name, value } = event.target;
   setPersonaDataRelacion((prevData) => ({
@@ -94,6 +103,7 @@ const handleCancelRelacion = () => {
     Estado:1
   }));
 
+  closeModal("modalRelacion");
 };
 
 const handlePersonaSubmit = async (e) => {
@@ -130,7 +140,7 @@ console.log("handlePersonaSubmit")
         fetchEstudiantes(); // Llama a la función para actualizar la lista de estudiantes
         
         // Verifica si es una acción de registrar o actualizar
-        if (editId) {
+        if (!isEditing) {
           toast.success("Registro Creado", {
             position: "top-center",
             autoClose: 3000,
@@ -154,7 +164,7 @@ console.log("handlePersonaSubmit")
       }
       
       closeModal("modalRelacion")
-      closeModal("modalRelacionBenefactor")
+
       
    
     
@@ -175,6 +185,7 @@ console.log("handlePersonaSubmit")
       esNuevo:true
     });
     
+    fetchBenefactores()
 
 
   } catch (error) {
@@ -235,6 +246,7 @@ const fetchPermisos = useCallback(async () => {
   useEffect(() => {
     cargarEstados();
     fetchBenefactores();
+    fetchEstudiantes();
     fetchPermisos();
   }, [user,fetchPermisos,cargarEstados]);
 
@@ -318,19 +330,33 @@ const handleSubmit = async (e) => {
   };
 
 
-
   const handleEdit = (data) => {
-    console.log("handleEdit")
-    console.log(data)
-    router.push({
-      pathname: '/estudiante', // Ruta de la página destino
-      query: {
-        tab: 3,
-        idEstudiante: data.Id_Estudiante,
-        relacionId:data.Id_Relacion
-      },
-    });
+    console.log("handleEdit", data);
+  
+    const estudiante = estudiantes.find(est => est.Id_Estudiante === data.Id_Estudiante);
+  
+    // Buscar la relación por el ID que viene en data (puede ser `data.Id_Relacion` o `data.Relacion?.Id`)
+    const relacion = estudiante?.Relaciones?.find(rel => rel.Id === data.Id || rel.Id === data.Id_Relacion);
+  
+    setIsEditing(true);
+    if (relacion && relacion.Persona) {
+      setPersonaDataRelacion({
+        ...relacion.Persona,
+        Id_Estudiante: data.Id_Estudiante,
+        esNuevo: false,
+        Id_Tipo_Persona: relacion.Persona.Id_Tipo_Persona,
+        Id_Relacion: relacion.Id,
+        Id: relacion.Id,
+        Id_Persona: relacion.Persona.Id_Persona,
+      });
+  
+      showModal("modalRelacion");
+    } else {
+      console.warn("No se encontró la relación o persona");
+      toast.error("No se encontró la información del tutor o benefactor.");
+    }
   };
+  
 
   const handleDelete = async (Id_Persona) => {
     try {
@@ -699,11 +725,12 @@ const handleExportv2 = async () => {
    
    <SearchBar
   title="Listado de Benefactores"
-  titleIcon={MagnifyingGlassIcon}
+
   searchQuery={searchQuery}
   setSearchQuery={setSearchQuery}
   handleClearSearch={handleClearSearch}
-  onAdd={  nuevoTutor}
+  showAddButton={false}
+
   onExport={handleExport}
 />
 
@@ -720,7 +747,7 @@ const handleExportv2 = async () => {
     id="modalRelacion"
   isOpen={modals["modalRelacion"]}
   onClose={() => closeModal("modalRelacion")}
-  titulo={personaDataRelacion?.esNuevo ? "Agregar Tutor" : "Actualizar Tutor"}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Benefactor" : "Actualizar Benefactor"}
   tamano="max-w-4xl"
 >
 
@@ -734,7 +761,7 @@ const handleExportv2 = async () => {
   estados={estados}
   permisos={permisos}
   formId="formTutor" // 👈 útil para validación DOM con ID
-  tipoRelacion="Tutor" // 👈 útil para validación DOM con ID
+  tipoRelacion="Benefactor" // 👈 útil para validación DOM con ID
 />
 
 </ModalGenerico> 

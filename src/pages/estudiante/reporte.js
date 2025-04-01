@@ -792,11 +792,10 @@ if(!token){
                   </td>
 
                   <td className="">
-                    {estudiante.Persona?.telefono ||
-                      "-"}
-                  </td>
+                    {estudiante.Persona?.Telefono ||
+                      "-"}                  </td>
                   <td className="">
-                    {estudiante.Persona?.direccion ||
+                    {estudiante.Persona?.Direccion ||
                       "-"}
                   </td>
             
@@ -877,7 +876,7 @@ if(!token){
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const telefono = relacion.Persona.telefono || '-';
+                  const telefono = relacion.Persona.Telefono || '-';
           
 
 
@@ -894,7 +893,7 @@ if(!token){
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
                    .map(relacion => {
             
-                  const direccion = relacion.Persona.direccion || '-';
+                  const direccion = relacion.Persona.Direccion || '-';
           
 
 
@@ -953,7 +952,7 @@ if(!token){
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
             
-                  const telefono = relacion.Persona.telefono || '-';
+                  const telefono = relacion.Persona.Telefono || '-';
           
 
 
@@ -970,7 +969,7 @@ if(!token){
                     .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
                    .map(relacion => {
             
-                  const direccion = relacion.Persona.direccion || '-';
+                  const direccion = relacion.Persona.Direccion || '-';
           
 
 
