@@ -2234,7 +2234,8 @@ if (!permisos) {
         <td className="border px-4 py-2 flex justify-center items-center space-x-2">
   {permisos.Permiso_Actualizar === "1" && (
     <button
-      onClick={() => handleEditTutor(relacion)}
+    type="button"
+    onClick={() => handleEditTutor(relacion)}
       className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
     >
       <PencilSquareIcon className="h-6 w-6" />
@@ -2242,6 +2243,8 @@ if (!permisos) {
   )}
   {permisos.Permiso_Eliminar === "1" && (
     <button
+    type="button"
+
       onClick={() => handleDeleteRelacion(relacion.Id)}
 
       

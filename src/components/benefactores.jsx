@@ -405,6 +405,48 @@ const handleSubmit = async (e) => {
   // };
 
 
+  const nuevoTutor= ()=>{
+
+    setPersonaDataRelacion( {
+      Primer_Nombre: "",
+      Segundo_Nombre: "",
+      Primer_Apellido: "",
+      Segundo_Apellido: "",
+      Sexo: "",
+      Fecha_Nacimiento: "",
+      Lugar_Nacimiento: "",
+      Identidad: "",
+      Creado_Por: "",
+      Id_Departamento: 0,
+      Id_Municipio: 0,
+    
+      esNuevo:true,
+      Id_Tipo_Persona:tipo,
+      Estado:1,
+     // Estudiante:estudianteData,
+     // Id_estudiante:idEstudiante
+  
+  
+    })
+  
+ //   personaDataRelacion.Estudiante.Persona=personaData;
+   // personaDataRelacion.Id_Tipo_Persona=tipo;
+  
+  // switch (tipo) {
+  //   case 2:
+  //     showModal("modalRelacion")
+  //     break;
+      // case 3:
+        showModal("modalRelacionBenefactor")
+  //       break;
+  
+  
+  // }
+   
+  
+  }
+
+
 const handleExportold = async () => {
   // 1️⃣ Crear un nuevo libro y hoja de Excel
   const workbook = new ExcelJS.Workbook();
@@ -661,6 +703,7 @@ const handleExportv2 = async () => {
   searchQuery={searchQuery}
   setSearchQuery={setSearchQuery}
   handleClearSearch={handleClearSearch}
+  onAdd={  nuevoTutor}
   onExport={handleExport}
 />
 
@@ -672,11 +715,12 @@ const handleExportv2 = async () => {
 
 {/* Tabla de Benefactores */}
 <div >
+
 <ModalGenerico
-  id="modalRelacionBenefactor"
-  isOpen={modals["modalRelacionBenefactor"]}
-  onClose={() => closeModal("modalRelacionBenefactor")}
-  titulo={personaDataRelacion?.esNuevo ? "Agregar Benefactor" : "Actualizar Benefactor"}
+    id="modalRelacion"
+  isOpen={modals["modalRelacion"]}
+  onClose={() => closeModal("modalRelacion")}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Tutor" : "Actualizar Tutor"}
   tamano="max-w-4xl"
 >
 
@@ -689,12 +733,11 @@ const handleExportv2 = async () => {
   handleCancel={handleCancelRelacion}
   estados={estados}
   permisos={permisos}
-  tipoRelacion="Benefactor" // 👈 útil para validación DOM con ID
-
   formId="formTutor" // 👈 útil para validación DOM con ID
+  tipoRelacion="Tutor" // 👈 útil para validación DOM con ID
 />
 
-</ModalGenerico>
+</ModalGenerico> 
 
 <table className="xls_style-excel-table">
   <thead>
