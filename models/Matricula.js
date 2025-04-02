@@ -95,3 +95,4 @@ Matricula.belongsTo(Seccion, {
 
 
 module.exports = Matricula;
+

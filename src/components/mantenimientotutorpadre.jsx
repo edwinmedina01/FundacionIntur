@@ -10,7 +10,7 @@ import {exportToExcel} from '../utils/exportToExcel';
 import { obtenerEstados } from '../../src/utils/api';
 import { getBase64ImageFromUrl } from '../../src/utils/getBase64ImageFromUrl';
 import { validarFormulario } from '../utils/validaciones';
-import { reglasValidacionTutores } from '../../models/ReglasValidacionModelos';
+
 import { deepSearch } from '../../src/utils/deepSearch';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
