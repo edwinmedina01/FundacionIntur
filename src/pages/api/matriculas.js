@@ -1,6 +1,7 @@
-const sequelize = require('../../../database/database');
+const sequelize = require('../../../database/database'); 
 const { QueryTypes } = require('sequelize');
-const Matricula = require('../../../models/matricula');
+
+const Matricula = require('../../../models/Matricula'); // Asegúrate de tener la ruta correcta
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
