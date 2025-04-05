@@ -65,6 +65,7 @@ const handleClearSearch = () => {
     try {
       const response = await axios.get("/api/estudiantes");
       setEstudiantes(response.data);
+      
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
     }
@@ -207,118 +208,7 @@ const currentEstudiantes = useMemo(() => {
 
 
 
-const exportToExcelOld = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Estudiantes");
 
-    // 📌 **Obtener la Imagen en Base64**
-    const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
-    const imageId = workbook.addImage({
-        base64: logoBase64,
-        extension: "png",
-    });
-
-    // 📌 **Insertar el Logo en la Esquina Izquierda**
-    worksheet.addImage(imageId, {
-        tl: { col: 0, row: 0 }, // Posición en la celda A1
-        ext: { width: 120, height: 50 }, // Tamaño del logo
-    });
-
-    // 📌 **Insertar el Título en la Fila 1**
-    worksheet.mergeCells("B1", "K1");
-    worksheet.getCell("B1").value = "Reporte de Estudiantes";
-    worksheet.getCell("B1").font = { bold: true, size: 16 };
-    worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Fecha de Exportación en la Fila 2**
-    worksheet.mergeCells("B2", "K2");
-    worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
-    worksheet.getCell("B2").font = { italic: true, size: 12 };
-    worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Criterios de Búsqueda en la Fila 3**
-    const filterCriteria = Object.entries(searchQuery || {})
-        .filter(([_, value]) => value)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(", ") || "Sin filtros";
-
-    worksheet.mergeCells("B3", "K3");
-    worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
-    worksheet.getCell("B3").font = { italic: true, size: 12 };
-    worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Agregar una Fila Vacía en la Fila 4 para Separar los Encabezados**
-    worksheet.getRow(4).values = [];
-
-    // 📌 **Definir Encabezados desde la Fila 5**
-    const headers = [
-        { header: "#", key: "Index", width: 5 },
-        { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
-        { header: "Beneficio", key: "Beneficio", width: 20 },
-        { header: "Área", key: "Area", width: 20 },
-        { header: "Identidad", key: "Identidad", width: 20 },
-        { header: "Nombre", key: "Nombre", width: 30 },
-        { header: "Sexo", key: "Sexo", width: 10 },
-        { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
-        { header: "Modalidad", key: "Modalidad", width: 20 },
-        { header: "Grado", key: "Grado", width: 15 },
-        { header: "Sección", key: "Seccion", width: 15 },
-        { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
-        { header: "Instituto", key: "Instituto", width: 30 },
-        { header: "Municipio", key: "Municipio", width: 20 },
-        { header: "Dirección", key: "Direccion", width: 30 },
-        { header: "Teléfono", key: "Telefono", width: 15 },
-        { header: "Estado", key: "Estado", width: 15 },
-    ];
-
-    // 📌 **Estilizar los Encabezados en la Fila 5**
-    const headerRow = worksheet.getRow(5);
-    headerRow.values = headers.map((h) => h.header);
-    headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
-    headerRow.alignment = { horizontal: "center", vertical: "middle" };
-    headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
-
-    // 📌 **Definir Anchos de Columna**
-    headers.forEach((col, index) => {
-        worksheet.getColumn(index + 1).width = col.width;
-    });
-
-    // 📌 **Filtrar Estudiantes con deepSearch**
-    const filteredStudents = estudiantes.filter((estudiante) => deepSearch(estudiante, searchQuery));
-
-    // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
-    let rowIndex = 6;
-    filteredStudents.forEach((estudiante, index) => {
-        worksheet.getRow(rowIndex).values = [
-            index + 1,
-            estudiante.Fecha_Creacion ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES") : "-",
-            estudiante.Beneficio?.Nombre_Beneficio || "-",
-            estudiante.Area?.Nombre_Area || "-",
-            estudiante.Persona?.Identidad || "-",
-            `${estudiante.Persona?.Primer_Nombre || ""} ${estudiante.Persona?.Segundo_Nombre || ""} ${estudiante.Persona?.Primer_Apellido || ""} ${estudiante.Persona?.Segundo_Apellido || ""}`.trim(),
-            estudiante.Persona?.Sexo === 1 ? "Masculino" : estudiante.Persona?.Sexo === 0 ? "Femenino" : "-",
-            Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Fecha_Matricula
-                ? new Date(estudiante.Matriculas[0]?.Fecha_Matricula).getFullYear()
-                : "-",
-            Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Modalidad?.Nombre || "-",
-            Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Grado?.Nombre || "-",
-            Array.isArray(estudiante.Matriculas) && estudiante.Matriculas[0]?.Seccion?.Nombre_Seccion || "-",
-            estudiante.Persona?.Lugar_Nacimiento || "-",
-            estudiante.Instituto?.Nombre_Instituto || "-",
-            estudiante.Persona?.Municipio?.Nombre_Municipio || "-",
-            estudiante.Persona?.Direccion || "-",
-            estudiante.Persona?.Telefono || "-",
-            estudiante.Persona?.Estado === 1 ? "Activo" : estudiante.Persona?.Estado === 0 ? "Inactivo" : "-",
-        ];
-        rowIndex++;
-    });
-
-    // 📌 **Descargar el Archivo**
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    saveAs(blob, "Reporte_Estudiantes.xlsx");
-};
 
 const limpiarDato = (valor) => {
   return typeof valor === "string" && valor.trim() !== ""
@@ -328,7 +218,7 @@ const limpiarDato = (valor) => {
     : "-";
 };
 
-const exportToExcel = async () => {
+const exportToExcelv1 = async () => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Estudiantes");
 
@@ -425,6 +315,7 @@ const exportToExcel = async () => {
   headers.forEach((col, index) => {
     worksheet.getColumn(index + 1).width = col.width;
   });
+  
 
   worksheet.getRow(5).values = headers.map(h => h.header);
 headers.forEach((col, index) => {
@@ -469,10 +360,12 @@ headers.forEach((col, index) => {
 
     if (columnsVisible?.tutor) {
       const tutores = relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2);
-      dataRow["Tutor_Identidad"] = tutores.map(t => `'${limpiarDato(t.Persona?.Identidad)}`).join(", ");
-      dataRow["Tutor_Nombre"] = tutores.map(t => `${limpiarDato(t.Persona?.Primer_Nombre)} ${limpiarDato(t.Persona?.Primer_Apellido)}`).join(", ");
-      dataRow["Tutor_Telefono"] = tutores.map(t => limpiarDato(t.Persona?.Telefono)).join(", ");
-      dataRow["Tutor_Direccion"] = tutores.map(t => limpiarDato(t.Persona?.Direccion)).join(", ");
+
+      dataRow["Tutor_Nombre"] = tutores.map(t => `${limpiarDato(t.Persona?.Primer_Nombre)} ${limpiarDato(t.Persona?.Primer_Apellido)}`).join("\n");
+      dataRow["Tutor_Identidad"] = tutores.map(t => `'${limpiarDato(t.Persona?.Identidad)}`).join("\n");
+      dataRow["Tutor_Telefono"] = tutores.map(t => limpiarDato(t.Persona?.Telefono)).join("\n");
+      dataRow["Tutor_Direccion"] = tutores.map(t => limpiarDato(t.Persona?.Direccion)).join("\n");
+      
     }
 
     if (columnsVisible?.benefactor) {
@@ -485,6 +378,166 @@ headers.forEach((col, index) => {
 
     const orderedRow = headers.map(h => dataRow[h.key]);
     worksheet.addRow(orderedRow);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveAs(blob, `Reporte_Estudiantes_${Date.now()}.xlsx`);
+};
+
+const exportToExcel = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Estudiantes");
+
+  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
+  const imageId = workbook.addImage({ base64: logoBase64, extension: "png" });
+
+  worksheet.addImage(imageId, {
+    tl: { col: 0, row: 0 },
+    ext: { width: 120, height: 50 },
+  });
+
+  worksheet.mergeCells("B1", "K1");
+  worksheet.getCell("B1").value = "Reporte de Estudiantes";
+  worksheet.getCell("B1").font = { bold: true, size: 16 };
+  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
+
+  worksheet.mergeCells("B2", "K2");
+  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
+  worksheet.getCell("B2").font = { italic: true, size: 12 };
+  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
+
+  const filterCriteria = Object.entries(searchQuery || {})
+    .filter(([_, value]) => value)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ") || "Sin filtros";
+
+  worksheet.mergeCells("B3", "K3");
+  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
+  worksheet.getCell("B3").font = { italic: true, size: 12 };
+  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
+
+  const headers = [
+    { header: "#", key: "Index", width: 5 },
+    { header: "Fecha Registro", key: "Fecha_Creacion", width: 15 },
+    { header: "Beneficio", key: "Beneficio", width: 20 },
+    { header: "Área", key: "Area", width: 20 },
+    { header: "Identidad", key: "Identidad", width: 20 },
+    { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Sexo", key: "Sexo", width: 10 },
+    { header: "Lugar Nacimiento", key: "Lugar_Nacimiento", width: 20 },
+    { header: "Instituto", key: "Instituto", width: 30 },
+    { header: "Municipio", key: "Municipio", width: 20 },
+    { header: "Dirección", key: "Direccion", width: 30 },
+    { header: "Teléfono", key: "Telefono", width: 15 },
+    { header: "Estado", key: "Estado", width: 15 },
+  ];
+
+  if (columnsVisible?.matricula) {
+    headers.push(
+      { header: "Año Matrícula", key: "Año_Matricula", width: 15 },
+      { header: "Modalidad", key: "Modalidad", width: 20 },
+      { header: "Grado", key: "Grado", width: 15 },
+      { header: "Sección", key: "Seccion", width: 15 }
+    );
+  }
+
+  if (columnsVisible?.tutor) {
+    headers.push(
+      { header: "Tutor Identidad", key: "Tutor_Identidad", width: 20 },
+      { header: "Tutor Nombre", key: "Tutor_Nombre", width: 25 },
+      { header: "Tutor Teléfono", key: "Tutor_Telefono", width: 15 },
+      { header: "Tutor Dirección", key: "Tutor_Direccion", width: 30 }
+    );
+  }
+
+  if (columnsVisible?.benefactor) {
+    headers.push(
+      { header: "Benefactor Identidad", key: "Benefactor_Identidad", width: 20 },
+      { header: "Benefactor Nombre", key: "Benefactor_Nombre", width: 25 },
+      { header: "Benefactor Teléfono", key: "Benefactor_Telefono", width: 15 },
+      { header: "Benefactor Dirección", key: "Benefactor_Direccion", width: 30 }
+    );
+  }
+
+  worksheet.getRow(5).values = headers.map((h) => h.header);
+  worksheet.getRow(5).font = { bold: true, color: { argb: "FFFFFF" } };
+  worksheet.getRow(5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
+  worksheet.getRow(5).alignment = { horizontal: "center", vertical: "middle" };
+  worksheet.getRow(5).border = {
+    top: { style: "thin" },
+    left: { style: "thin" },
+    right: { style: "thin" },
+    bottom: { style: "thin" },
+  };
+
+  headers.forEach((col, index) => {
+    worksheet.getColumn(index + 1).width = col.width;
+  });
+
+  // 🔁 Agregar filas
+  filteredEstudiantes.forEach((estudiante, index) => {
+    const p = estudiante.Persona || {};
+    const m = Array.isArray(estudiante.Matriculas) ? estudiante.Matriculas[0] || {} : {};
+    const municipio = p.Municipio || {};
+    const relaciones = estudiante.Relaciones || [];
+
+    const dataRow = {
+      Index: index + 1,
+      Fecha_Creacion: estudiante.Fecha_Creacion
+        ? new Date(estudiante.Fecha_Creacion).toLocaleDateString("es-ES")
+        : "-",
+      Beneficio: limpiarDato(estudiante.Beneficio?.Nombre_Beneficio),
+      Area: limpiarDato(estudiante.Area?.Nombre_Area),
+      Identidad: `'${limpiarDato(p.Identidad)}`,
+      Nombre: limpiarDato(`${p.Primer_Nombre || ""} ${p.Segundo_Nombre || ""} ${p.Primer_Apellido || ""} ${p.Segundo_Apellido || ""}`.trim()),
+      Sexo: p.Sexo === 1 ? "Masculino" : p.Sexo === 0 ? "Femenino" : "-",
+      Lugar_Nacimiento: limpiarDato(p.Lugar_Nacimiento),
+      Instituto: limpiarDato(estudiante.Instituto?.Nombre_Instituto),
+      Municipio: limpiarDato(municipio.Nombre_Municipio),
+      Direccion: limpiarDato(p.Direccion),
+      Telefono: limpiarDato(p.Telefono),
+      Estado: p.Estado === 1 ? "Activo" : p.Estado === 0 ? "Inactivo" : "-",
+    };
+
+    if (columnsVisible?.matricula) {
+      dataRow["Año_Matricula"] = m.Fecha_Matricula ? new Date(m.Fecha_Matricula).getFullYear() : "-";
+      dataRow["Modalidad"] = limpiarDato(m.Modalidad?.Nombre);
+      dataRow["Grado"] = limpiarDato(m.Grado?.Nombre);
+      dataRow["Seccion"] = limpiarDato(m.Seccion?.Nombre_Seccion);
+    }
+
+    if (columnsVisible?.tutor) {
+      const tutores = relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2);
+      dataRow["Tutor_Identidad"] = tutores.map(t => `'${limpiarDato(t.Persona?.Identidad)}`).join("\n");
+      dataRow["Tutor_Nombre"] = tutores.map(t => `${limpiarDato(t.Persona?.Primer_Nombre)} ${limpiarDato(t.Persona?.Primer_Apellido)}`).join("\n");
+      dataRow["Tutor_Telefono"] = tutores.map(t => limpiarDato(t.Persona?.Telefono)).join("\n");
+      dataRow["Tutor_Direccion"] = tutores.map(t => limpiarDato(t.Persona?.Direccion)).join("\n");
+    }
+
+    if (columnsVisible?.benefactor) {
+      const benefactores = relaciones.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3);
+      dataRow["Benefactor_Identidad"] = benefactores.map(b => `'${limpiarDato(b.Persona?.Identidad)}`).join("\n");
+      dataRow["Benefactor_Nombre"] = benefactores.map(b => `${limpiarDato(b.Persona?.Primer_Nombre)} ${limpiarDato(b.Persona?.Primer_Apellido)}`).join("\n");
+      dataRow["Benefactor_Telefono"] = benefactores.map(b => limpiarDato(b.Persona?.Telefono)).join("\n");
+      dataRow["Benefactor_Direccion"] = benefactores.map(b => limpiarDato(b.Persona?.Direccion)).join("\n");
+    }
+
+    const orderedRow = headers.map(h => dataRow[h.key]);
+    const row = worksheet.addRow(orderedRow);
+
+    // 🧠 Activar wrapText si corresponde
+    headers.forEach((col, i) => {
+      const wrapKeys = [
+        "Tutor_Identidad", "Tutor_Nombre", "Tutor_Telefono", "Tutor_Direccion",
+        "Benefactor_Identidad", "Benefactor_Nombre", "Benefactor_Telefono", "Benefactor_Direccion"
+      ];
+      if (wrapKeys.includes(col.key)) {
+        row.getCell(i + 1).alignment = { wrapText: true, vertical: "top" };
+      }
+    });
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
@@ -794,10 +847,11 @@ if(!token){
                   <td className="">
                     {estudiante.Persona?.Telefono ||
                       "-"}                  </td>
-                  <td className="">
-                    {estudiante.Persona?.Direccion ||
-                      "-"}
-                  </td>
+<td className="max-w-[20rem] whitespace-pre-wrap break-words align-top px-2 py-2">
+  {estudiante.Persona?.Direccion || "-"}
+</td>
+
+
             
                   <td className="">
                     <strong>
@@ -833,156 +887,64 @@ if(!token){
       </>
     )}
 
-{columnsVisible.tutor && (
-      <>
+ {/* Fila con subtabla de tutores */}
+ {columnsVisible.tutor && (
+    
+      <td colSpan={4}>
+  
 
-                  <td className="">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
-                   .map(relacion => {
+        
+  <table style={{ width: "100%",  }}>
+  <thead>
+    <tr>
+     
 
-                  const identidad = relacion.Persona.Identidad || '-';
+    </tr>
+  </thead>
+  <tbody>
+    {estudiante.Relaciones?.filter(r => r.TipoPersona?.Id_Tipo_Persona === 2).map((relacion, index) => (
+      <tr key={`tutor-${estudiante.Id_Estudiante}-${index}`}>
+        <td style={{ width: "25%" }}>{relacion.Persona?.Identidad || '-'}</td>
+        <td style={{ width: "25%" }}>{`${relacion.Persona?.Primer_Nombre || ''} ${relacion.Persona?.Primer_Apellido || ''}`}</td>
+        <td style={{ width: "25%" }}>{relacion.Persona?.Telefono || '-'}</td>
+        <td style={{ width: "25%" }}>{relacion.Persona?.Direccion || '-'}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+      </td>
    
-
-                  return `
-                  ${identidad}
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  <td className=" ">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
-                   .map(relacion => {
-            
-                  const primerNombre = relacion.Persona.Primer_Nombre || '-';
-                  const primerApellido = relacion.Persona.Primer_Apellido || '-';
-
-
-                  return `
-                 ${primerNombre} ${primerApellido}
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-
-                  <td className="">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
-                   .map(relacion => {
-            
-                  const telefono = relacion.Persona.Telefono || '-';
-          
-
-
-                  return `
-                 ${telefono} 
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  <td className="">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 2) 
-                   .map(relacion => {
-            
-                  const direccion = relacion.Persona.Direccion || '-';
-          
-
-
-                  return `
-                 ${direccion} 
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  </>
-    )}
+  )}
 
 {columnsVisible.benefactor && (
-      <>
-      {/* para benefactores             */}
-                  <td className="">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
-                   .map(relacion => {
     
-                  const identidad = relacion.Persona.Identidad || '-';
-         
-
-                  return `
-                  ${identidad}
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-              
-                  
-                  <td className=" ">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
-                   .map(relacion => {
-
-                  const primerNombre = relacion.Persona.Primer_Nombre || '-';
-                  const primerApellido = relacion.Persona.Primer_Apellido || '-';
-       
-
-                  return `
-                  ${primerNombre} ${primerApellido}
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  
-                  <td className=" ">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
-                   .map(relacion => {
-            
-                  const telefono = relacion.Persona.Telefono || '-';
-          
+    <td colSpan={4}>
 
 
-                  return `
-                 ${telefono} 
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  <td className=" ">
-                  <ul>
-                   {estudiante.Relaciones
-                    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
-                   .map(relacion => {
-            
-                  const direccion = relacion.Persona.Direccion || '-';
-          
+      
+<table style={{ width: "100%",  }}>
+<thead>
+  <tr>
+   
 
+  </tr>
+</thead>
+<tbody>
+  {estudiante.Relaciones?.filter(r => r.TipoPersona?.Id_Tipo_Persona === 3).map((relacion, index) => (
+    <tr key={`tutor-${estudiante.Id_Estudiante}-${index}`}>
+      <td style={{ width: "25%" }}>{relacion.Persona?.Identidad || '-'}</td>
+      <td style={{ width: "25%" }}>{`${relacion.Persona?.Primer_Nombre || ''} ${relacion.Persona?.Primer_Apellido || ''}`}</td>
+      <td style={{ width: "25%" }}>{relacion.Persona?.Telefono || '-'}</td>
+      <td style={{ width: "25%" }}>{relacion.Persona?.Direccion || '-'}</td>
+    </tr>
+  ))}
+</tbody>
+</table>
 
-                  return `
-                 ${direccion} 
-                    
-                  `;
-                }).join('')}
-              </ul>
-                  </td>
-                  
-                  </>
-    )}
+    </td>
+ 
+)}
                 </tr>
               ))}
             </tbody>

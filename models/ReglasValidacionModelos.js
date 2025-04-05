@@ -15,12 +15,7 @@ export const reglasValidacionPersona = {
   Fecha_Nacimiento: { ...reglasGenerales.FechaNacimiento(), requerido: true },
   Lugar_Nacimiento: { ...reglasGenerales.NombreGeneral(3, 100), requerido: true },
 
-  Identidad: { 
-      tipo: "string", 
-      regex: /^\d{13}$/, 
-      mensaje: "El número de identidad debe contener exactamente 13 dígitos.", 
-      requerido: true 
-  },
+  Identidad: { ...reglasGenerales.Identidad(), requerido: true },
 
   Creado_Por: { tipo: "int", requerido: true },
   //Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
@@ -40,23 +35,17 @@ export const reglasValidacionRelacion = {
    // Id_Tipo_Persona: { tipo: "int", requerido: true },
   //  Id_Departamento: { tipo: "int", requerido: true },
   
-    Primer_Nombre: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
+    Primer_Nombre: { ...reglasGenerales.NombreCompuesto(1, 60), requerido: true },
    // Segundo_Nombre: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
-    Primer_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: true },
+    Primer_Apellido: { ...reglasGenerales.NombreCompuesto(1, 60), requerido: true },
+    Identidad: { ...reglasGenerales.Identidad(), requerido: true },
   //  Segundo_Apellido: { ...reglasGenerales.NombreGeneral(1, 60), requerido: false },
   
   //  Sexo: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Femenino, 1 = Masculino
   
     //Fecha_Nacimiento: { ...reglasGenerales.Fecha(), requerido: true },
    // Lugar_Nacimiento: { ...reglasGenerales.TextoLibre(3, 100), requerido: true },
-  
-    Identidad: { 
-        tipo: "string", 
-        regex: /^\d{13}$/, 
-        mensaje: "El número de identidad debe contener exactamente 13 dígitos.", 
-        requerido: true 
-    },
-  
+
     Creado_Por: { tipo: "int", requerido: true },
     //Fecha_Creacion: { ...reglasGenerales.Fecha(), requerido: true },
   

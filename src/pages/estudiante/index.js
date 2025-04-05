@@ -18,6 +18,7 @@ import ModalGenerico from "../../utils/ModalGenerico";
 
 import RelacionForm from '../../components/basicos/RelacionForm';
 import GraduacionForm from '../../components/basicos/GraduacionForm';
+import FotoCarnetUpload from '../../components/basicos/FotoCarnetUpload';
 import useModal from "../../hooks/useModal";
 //import html2pdf from 'html2pdf.js';
 import jsPDF from 'jspdf';
@@ -41,11 +42,15 @@ const EstudiantesCrud = () => {
   const openModal = (modalKey) => {
    // setModals(prev => ({ ...prev, [modalKey]: true }));
   };
+  const [modalPendiente, setModalPendiente] = useState(null);
+
   
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
 
-  
+  const [fotoActual, setFotoActual] = useState(null);
+  const [fotoBase64, setFotoBase64] = useState(null);
+
   // const closeModal = (modalKey) => {
   //   setModals(prev => ({ ...prev, [modalKey]: false }));
   // };
@@ -151,7 +156,7 @@ const prevStep = () => {
 
  
   
-  const handleExportToPDF = () => {
+  const handleExportToPDFOld7 = () => {
     const doc = new jsPDF();
   
     // Configuración de la fuente
@@ -164,11 +169,17 @@ const prevStep = () => {
  // Agregar logo (imagen) desde la carpeta public
 doc.addImage('/img/intur.png', 'PNG', 10, 10, 40, 15);  // Ajusta el tamaño y posición según sea necesario
 
-    // Espacio para la foto en la parte superior derecha
-    doc.rect(170, 10, 30, 30); // Rectángulo para la foto
-    doc.setFontSize(10);
-    doc.text("Foto", 180, 25); // Texto "Foto" dentro del rectángulo
-    doc.text(`Fecha de Impresión: ${fechaImpresion}`, 160, 300);
+
+    if (fotoActual) {
+      doc.addImage(fotoActual, 'JPEG', 170, 10, 30, 30); // X, Y, ancho, alto
+    } else {
+      // 🔲 Si no hay foto, dibujar marco y texto "Foto"
+      doc.rect(170, 10, 30, 30); // Rectángulo
+      doc.setFontSize(10);
+      doc.text("Foto", 180, 25); // Texto centrado
+    }
+
+    //doc.text(`Fecha de Impresión: ${fechaImpresion}`, 160, 300);
     // Sección de Datos del Estudiante
     doc.setFontSize(12);
     doc.setFont("times", "bold");
@@ -351,410 +362,171 @@ currentY += 20;
     // Guardar el archivo PDF
     doc.save("Ficha_Estudiantil.pdf");
   };
-  
-
-  
-
-
-  const handleExportToPDF5 = () => {
+  const handleExportToPDF = () => {
     const doc = new jsPDF();
-  
-    // Configuración de la fuente y título
-    doc.setFont("helvetica", "bold");
+    doc.setFont("times", "normal");
     doc.setFontSize(18);
-    doc.text("FICHA ESTUDIANTIL", 20, 20);
   
-    // Subtítulo con el año lectivo
+    const fechaImpresion = new Date().toLocaleDateString();
+    doc.text(`FICHA ESTUDIANTIL`, 71, 20);
+    doc.addImage('/img/intur.png', 'PNG', 10, 10, 40, 15);
+  
+    if (fotoActual) {
+      doc.addImage(fotoActual, 'JPEG', 170, 10, 30, 30);
+    } else {
+      doc.rect(170, 10, 30, 30);
+      doc.setFontSize(10);
+      doc.text("Foto", 180, 25);
+    }
+  
     doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("AÑO LECTIVO: 2020 - 2021", 20, 30);
+    doc.setFont("times", "bold");
+    doc.text("DATOS DEL ESTUDIANTE", 71, 40);
+    doc.setFont("times", "normal");
   
-    // Datos del estudiante (Columna 1)
-    doc.setFont("helvetica", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 20, 40);
-    doc.setFont("helvetica", "normal");
-    
-    // Primer Nombre
-    doc.text("Primer Nombre: ", 20, 50);
-    doc.text(personaData.Primer_Nombre, 71, 50);
-    doc.line(70, 52, doc.getTextWidth(personaData.Primer_Nombre) + 70, 52);  // Subrayar
+    let y = 60;
   
-    // Primer Apellido
-    doc.text("Primer Apellido: ", 20, 60);
-    doc.text(personaData.Primer_Apellido, 71, 60);
-    doc.line(70, 62, doc.getTextWidth(personaData.Primer_Apellido) + 70, 62);  // Subrayar
+    const agregarCampo = (label, value) => {
+      doc.text(label, 20, y);
+      doc.text(value || "N/A", 71, y);
+      doc.line(70, y + 2, 185, y + 2);
+      y += 10;
+    };
   
-    // Segundo Nombre
-    doc.text("Segundo Nombre: ", 20, 70);
-    doc.text(personaData.Segundo_Nombre || "N/A", 71, 70);
-    doc.line(70, 72, doc.getTextWidth(personaData.Segundo_Nombre || "N/A") + 70, 72);  // Subrayar
+    agregarCampo("Primer Nombre:", personaData.Primer_Nombre);
+    agregarCampo("Primer Apellido:", personaData.Primer_Apellido);
+    agregarCampo("Segundo Nombre:", personaData.Segundo_Nombre);
+    agregarCampo("Segundo Apellido:", personaData.Segundo_Apellido);
+    agregarCampo("Número de Identidad:", personaData.Identidad);
+    agregarCampo("Sexo:", personaData.Sexo === "1" ? "Masculino" : "Femenino");
+    agregarCampo("Fecha de Nacimiento:", personaData.Fecha_Nacimiento);
+    agregarCampo("Lugar de Nacimiento:", personaData.Lugar_Nacimiento);
   
-    // Segundo Apellido
-    doc.text("Segundo Apellido: ", 20, 80);
-    doc.text(personaData.Segundo_Apellido || "N/A", 71, 80);
-    doc.line(70, 82, doc.getTextWidth(personaData.Segundo_Apellido || "N/A") + 70, 82);  // Subrayar
+    const departamentoNombre = departamentos.find(d => d.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
+    agregarCampo("Departamento:", departamentoNombre);
   
-    // Número de Identidad
-    doc.text("Número de Identidad: ", 20, 90);
-    doc.text(personaData.Identidad, 71, 90);
-    doc.line(70, 92, doc.getTextWidth(personaData.Identidad) + 70, 92);  // Subrayar
+    const municipioNombre = municipios.find(m => m.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
+    agregarCampo("Municipio:", municipioNombre);
   
-    // Sexo
-    doc.text("Sexo: ", 20, 100);
-    doc.text(personaData.Sexo === "1" ? "Masculino" : "Femenino", 71, 100);
-    doc.line(70, 102, doc.getTextWidth(personaData.Sexo === "1" ? "Masculino" : "Femenino") + 70, 102);  // Subrayar
+    // 📌 Dirección con ajuste automático de línea
+    doc.text("Dirección:", 20, y);
+    const direccionDividida = doc.splitTextToSize(personaData.Direccion, 110);
+    doc.text(direccionDividida, 71, y);
+    y += direccionDividida.length * 6;
+    doc.line(70, y, 185, y);
+    y += 8;
   
-    // Fecha de Nacimiento
-    doc.text("Fecha de Nacimiento: ", 20, 110);
-    doc.text(personaData.Fecha_Nacimiento, 71, 110);
-    doc.line(70, 112, doc.getTextWidth(personaData.Fecha_Nacimiento) + 70, 112);  // Subrayar
+    agregarCampo("Teléfono:", personaData.Telefono);
   
-    // Lugar de Nacimiento
-    doc.text("Lugar de Nacimiento: ", 20, 120);
-    doc.text(personaData.Lugar_Nacimiento, 71, 120);
-    doc.line(70, 122, doc.getTextWidth(personaData.Lugar_Nacimiento) + 70, 122);  // Subrayar
-  
-    // Columna 2: Departamento, Municipio, etc.
-    doc.text("Departamento: ", 120, 50);
-    const departamentoNombre = departamentos.find(depto => depto.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-    doc.text(departamentoNombre, 170, 50);
-    doc.line(170, 52, doc.getTextWidth(departamentoNombre) + 170, 52);  // Subrayar
-  
-    doc.text("Municipio: ", 120, 60);
-    const municipioNombre = municipios.find(muni => muni.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-    doc.text(municipioNombre, 170, 60);
-    doc.line(170, 62, doc.getTextWidth(municipioNombre) + 170, 62);  // Subrayar
-  
-    doc.text("Dirección: ", 120, 70);
-    doc.text(personaData.Direccion, 170, 70);
-    doc.line(170, 72, doc.getTextWidth(personaData.Direccion) + 170, 72);  // Subrayar
-  
-    doc.text("Teléfono: ", 120, 80);
-    doc.text(personaData.Telefono, 170, 80);
-    doc.line(170, 82, doc.getTextWidth(personaData.Telefono) + 170, 82);  // Subrayar
-  
-    // Área
-    doc.text("Área: ", 120, 90);
     const areaNombre = areas.find(area => area.Id_Area === estudianteData.Id_Area)?.Nombre_Area || "Desconocido";
-    doc.text(areaNombre, 170, 90);
-    doc.line(170, 92, doc.getTextWidth(areaNombre) + 170, 92);  // Subrayar
+    agregarCampo("Área:", areaNombre);
   
-    // Instituto
-    doc.text("Instituto: ", 120, 100);
     const institutoNombre = institutos.find(inst => inst.Id_Instituto === estudianteData.Id_Instituto)?.Nombre_Instituto || "Desconocido";
-    doc.text(institutoNombre, 170, 100);
-    doc.line(170, 102, doc.getTextWidth(institutoNombre) + 170, 102);  // Subrayar
+    agregarCampo("Instituto:", institutoNombre);
   
-    // Beneficio
-    doc.text("Beneficio: ", 120, 110);
     const beneficioNombre = beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio || "Desconocido";
-    doc.text(beneficioNombre, 170, 110);
-    doc.line(170, 112, doc.getTextWidth(beneficioNombre) + 170, 112);  // Subrayar
+    agregarCampo("Beneficio:", beneficioNombre);
   
-    // Estado
-    doc.text("Estado: ", 120, 120);
     const estadoTexto = personaData.Estado === "1" ? "Activo" : "Inactivo";
-    doc.text(estadoTexto, 170, 120);
-    doc.line(170, 122, doc.getTextWidth(estadoTexto) + 170, 122);  // Subrayar
+    agregarCampo("Estado:", estadoTexto);
   
-    // Guardar el archivo PDF
-    doc.save("Ficha_Estudiantil.pdf");
-  };
-  
-
-  const handleExportToPDF2 = () => {
-    const doc = new jsPDF();
-  
-    // Título
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("FICHA ESTUDIANTIL", 20, 20);
-  
+    // ➕ Página nueva
+    doc.addPage();
     doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("AÑO LECTIVO: 2020 - 2021", 20, 30);
+    doc.setFont("times", "bold");
+    doc.text("TUTORES", 71, 20);
+    doc.setFont("times", "normal");
   
-    // Creando el contenido con negrita en los labels y subrayado en los valores
-    doc.setFont("helvetica", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 20, 40);
+    doc.setFontSize(11);
+    doc.setFont("times", "bold");
+    doc.text("Identidad", 20, 40);
+    doc.text("Nombre", 60, 40);
+    doc.text("Telefono", 90, 40);
+    doc.text("Dirección", 140, 40);
+    doc.line(20, 42, 200, 42);
   
-    // Columna 1: Primer Nombre, Primer Apellido, etc.
-    doc.setFont("helvetica", "normal");
-    doc.text("Primer Nombre:", 20, 50);
-    doc.text(personaData.Primer_Nombre, 71, 50);
-  
-    doc.text("Primer Apellido:", 20, 60);
-    doc.text(personaData.Primer_Apellido, 71, 60);
-  
-    doc.text("Segundo Nombre:", 20, 70);
-    doc.text(personaData.Segundo_Nombre || "N/A", 71, 70);
-  
-    doc.text("Segundo Apellido:", 20, 80);
-    doc.text(personaData.Segundo_Apellido || "N/A", 71, 80);
-  
-    doc.text("Número de Identidad:", 20, 90);
-    doc.text(personaData.Identidad, 71, 90);
-  
-    doc.text("Sexo:", 20, 100);
-    doc.text(personaData.Sexo === 1 ? "Masculino" : "Femenino", 71, 100);
-  
-    doc.text("Fecha de Nacimiento:", 20, 110);
-    doc.text(personaData.Fecha_Nacimiento, 71, 110);
-  
-    doc.text("Lugar de Nacimiento:", 20, 120);
-    doc.text(personaData.Lugar_Nacimiento, 71, 120);
-  
-    // Columna 2: Departamento, Municipio, etc.
-    doc.text("Departamento:", 120, 50);
-    // Usamos el nombre del departamento (no el ID)
-    const departamentoNombre = departamentos.find(depto => depto.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-    doc.text(departamentoNombre, 170, 50);
-  
-    doc.text("Municipio:", 120, 60);
-    // Usamos el nombre del municipio (no el ID)
-    const municipioNombre = municipios.find(muni => muni.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-    doc.text(municipioNombre, 170, 60);
-  
-    doc.text("Dirección:", 120, 70);
-    doc.text(personaData.Direccion, 170, 70);
-  
-    doc.text("Teléfono:", 120, 80);
-    doc.text(personaData.Telefono, 170, 80);
-  
-    doc.text("Área:", 120, 90);
-    // Usamos el nombre del área (no el ID)
-    const areaNombre = estudianteData.Id_Area ? "Nombre del Área" : "Desconocido"; // Aquí debes buscar el nombre real del área
-    doc.text(areaNombre, 170, 90);
-  
-    doc.text("Instituto:", 120, 100);
-    // Usamos el nombre del instituto (no el ID)
-    const institutoNombre = estudianteData.Id_Instituto ? "Nombre del Instituto" : "Desconocido"; // Aquí debes buscar el nombre real del instituto
-    doc.text(institutoNombre, 170, 100);
-  
-    doc.text("Beneficio:", 120, 110);
-    // Usamos el nombre del beneficio (no el ID)
-    const beneficioNombre = beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio || "Desconocido";
-    doc.text(beneficioNombre, 170, 110);
-  
-    doc.text("Estado:", 120, 120);
-    doc.text(personaData.Estado === "1" ? "Activo" : "Inactivo", 170, 120);
-  
-    // Estilo de subrayado para los valores
-    doc.setLineWidth(0.5);
-    doc.line(70, 52, doc.getTextWidth(personaData.Primer_Nombre) + 70, 52);  // Subrayar "Primer Nombre"
-    doc.line(70, 62, doc.getTextWidth(personaData.Primer_Apellido) + 70, 62);  // Subrayar "Primer Apellido"
-    doc.line(70, 72, doc.getTextWidth(personaData.Segundo_Nombre || "N/A") + 70, 72);  // Subrayar "Segundo Nombre"
-    doc.line(70, 82, doc.getTextWidth(personaData.Segundo_Apellido || "N/A") + 70, 82);  // Subrayar "Segundo Apellido"
-  
-    doc.line(70, 92, doc.getTextWidth(personaData.Identidad) + 70, 92);  // Subrayar "Número de Identidad"
-    doc.line(70, 102, doc.getTextWidth(personaData.Sexo === 1 ? "Masculino" : "Femenino") + 70, 102);  // Subrayar "Sexo"
-    doc.line(70, 112, doc.getTextWidth(personaData.Fecha_Nacimiento) + 70, 112);  // Subrayar "Fecha de Nacimiento"
-    doc.line(70, 122, doc.getTextWidth(personaData.Lugar_Nacimiento) + 70, 122);  // Subrayar "Lugar de Nacimiento"
-  
-    // Columna 2 subrayada
-    doc.line(170, 52, doc.getTextWidth(departamentoNombre) + 170, 52);  // Subrayar "Departamento"
-    doc.line(170, 62, doc.getTextWidth(municipioNombre) + 170, 62);  // Subrayar "Municipio"
-    doc.line(170, 72, doc.getTextWidth(personaData.Direccion) + 170, 72);  // Subrayar "Dirección"
-    doc.line(170, 82, doc.getTextWidth(personaData.Telefono) + 170, 82);  // Subrayar "Teléfono"
-    doc.line(170, 92, doc.getTextWidth(areaNombre) + 170, 92);  // Subrayar "Área"
-    doc.line(170, 102, doc.getTextWidth(institutoNombre) + 170, 102);  // Subrayar "Instituto"
-    doc.line(170, 112, doc.getTextWidth(beneficioNombre) + 170, 112);  // Subrayar "Beneficio"
-    doc.line(170, 122, doc.getTextWidth(personaData.Estado === "1" ? "Activo" : "Inactivo") + 170, 122);  // Subrayar "Estado"
-  
-    // Guardar el PDF
-    doc.save("Ficha_Estudiantil.pdf");
-  };
-  
+    let currentY = 50;
 
-  const handleExportToPDFOld2 = () => {
-    const doc = new jsPDF();
-
-    // Título
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("FICHA ESTUDIANTIL", 20, 20);
-
+// TUTORES (Id_Tipo_Persona === 2)
+doc.setFont("times", "normal");
+currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, currentY);
     doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("AÑO LECTIVO: 2020 - 2021", 20, 30);
-
-    // Creando el contenido con negrita en los labels y subrayado en los valores
-    doc.setFont("helvetica", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 20, 40);
-
-    // Columna 1: Primer Nombre, Primer Apellido, etc.
-    doc.setFont("helvetica", "normal");
-    doc.text("Primer Nombre:", 20, 50);
-    doc.text(personaData.Primer_Nombre, 71, 50);
-
-    doc.text("Primer Apellido:", 20, 60);
-    doc.text(personaData.Primer_Apellido, 71, 60);
-
-    doc.text("Segundo Nombre:", 20, 70);
-    doc.text(personaData.Segundo_Nombre || "N/A", 71, 70);
-
-    doc.text("Segundo Apellido:", 20, 80);
-    doc.text(personaData.Segundo_Apellido || "N/A", 71, 80);
-
-    doc.text("Número de Identidad:", 20, 90);
-    doc.text(personaData.Identidad, 71, 90);
-
-    doc.text("Sexo:", 20, 100);
-    doc.text(personaData.Sexo === 1 ? "Masculino" : "Femenino", 71, 100);
-
-    doc.text("Fecha de Nacimiento:", 20, 110);
-    doc.text(personaData.Fecha_Nacimiento, 71, 110);
-
-    doc.text("Lugar de Nacimiento:", 20, 120);
-    doc.text(personaData.Lugar_Nacimiento, 71, 120);
-
-    // Columna 2: Departamento, Municipio, etc.
-    doc.text("Departamento:", 120, 50);
-    const departamentoNombre = departamentos.find(depto => depto.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-    doc.text(departamentoNombre, 170, 50);
-
-    doc.text("Municipio:", 120, 60);
-    const municipioNombre = municipios.find(muni => muni.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-    doc.text(municipioNombre, 170, 60);
-
-    doc.text("Dirección:", 120, 70);
-    doc.text(personaData.Direccion, 170, 70);
-
-    doc.text("Teléfono:", 120, 80);
-    doc.text(personaData.Telefono, 170, 80);
-
-    doc.text("Área:", 120, 90);
-    doc.text(estudianteData.Id_Area, 170, 90);
-
-    doc.text("Instituto:", 120, 100);
-    doc.text(estudianteData.Id_Instituto, 170, 100);
-
-    doc.text("Beneficio:", 120, 110);
-    const beneficioNombre = beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio || "Desconocido";
-    doc.text(beneficioNombre, 170, 110);
-
-    doc.text("Estado:", 120, 120);
-    doc.text(personaData.Estado === "1" ? "Activo" : "Inactivo", 170, 120);
-
-    // Estilo de subrayado para los valores
-    doc.setLineWidth(0.5);
-    doc.line(70, 52, doc.getTextWidth(personaData.Primer_Nombre) + 70, 52);  // Subrayar "Primer Nombre"
-    doc.line(70, 62, doc.getTextWidth(personaData.Primer_Apellido) + 70, 62);  // Subrayar "Primer Apellido"
-    doc.line(70, 72, doc.getTextWidth(personaData.Segundo_Nombre || "N/A") + 70, 72);  // Subrayar "Segundo Nombre"
-    doc.line(70, 82, doc.getTextWidth(personaData.Segundo_Apellido || "N/A") + 70, 82);  // Subrayar "Segundo Apellido"
-
-    doc.line(70, 92, doc.getTextWidth(personaData.Identidad) + 70, 92);  // Subrayar "Número de Identidad"
-    doc.line(70, 102, doc.getTextWidth(personaData.Sexo === 1 ? "Masculino" : "Femenino") + 70, 102);  // Subrayar "Sexo"
-    doc.line(70, 112, doc.getTextWidth(personaData.Fecha_Nacimiento) + 70, 112);  // Subrayar "Fecha de Nacimiento"
-    doc.line(70, 122, doc.getTextWidth(personaData.Lugar_Nacimiento) + 70, 122);  // Subrayar "Lugar de Nacimiento"
-
-    // Columna 2 subrayada
-    doc.line(170, 52, doc.getTextWidth(departamentoNombre) + 170, 52);  // Subrayar "Departamento"
-    doc.line(170, 62, doc.getTextWidth(municipioNombre) + 170, 62);  // Subrayar "Municipio"
-    doc.line(170, 72, doc.getTextWidth(personaData.Direccion) + 170, 72);  // Subrayar "Dirección"
-    doc.line(170, 82, doc.getTextWidth(personaData.Telefono) + 170, 82);  // Subrayar "Teléfono"
-    doc.line(170, 92, doc.getTextWidth(estudianteData.Id_Area) + 170, 92);  // Subrayar "Área"
-    doc.line(170, 102, doc.getTextWidth(estudianteData.Id_Instituto) + 170, 102);  // Subrayar "Instituto"
-    doc.line(170, 112, doc.getTextWidth(beneficioNombre) + 170, 112);  // Subrayar "Beneficio"
-    doc.line(170, 122, doc.getTextWidth(personaData.Estado === "1" ? "Activo" : "Inactivo") + 170, 122);  // Subrayar "Estado"
-
-    // Guardar el PDF
+    doc.setFont("times", "bold");
+    doc.text("BENEFACTORES", 70, currentY + 10);
+    doc.setFont("times", "normal");
+  
+    doc.setFontSize(11);
+    doc.setFont("times", "bold");
+    doc.text("Identidad", 20, currentY + 20);
+    doc.text("Nombre", 60, currentY + 20);
+    doc.text("Telefono", 90, currentY + 20);
+    doc.text("Dirección", 140, currentY + 20);
+    doc.line(20, currentY + 22, 200, currentY + 22);
+    currentY += 30;
+    doc.setFont("times", "normal");
+    currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 3, currentY);
+  
+    currentY += 20;
+    doc.setFont(undefined, 'bold');
+    doc.text("Información de Graduación", 20, currentY);
+    currentY += 10;
+    doc.setFont(undefined, 'normal');
+  
+    doc.text("Año", 20, currentY);
+    doc.text("Inicio", 60, currentY);
+    doc.text("Finalización", 100, currentY);
+    doc.text("Estado", 150, currentY);
+    currentY += 8;
+  
+    const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
+    doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
+    doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
+    doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
+    doc.text(estadoGraduacion, 150, currentY);
+    currentY += 20;
+  
     doc.save("Ficha_Estudiantil.pdf");
   };
+  
 
-  const handleExportToPDFOld = () => {
-    const doc = new jsPDF();
+  
 
-    // Título
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("FICHA ESTUDIANTIL", 20, 20);
+function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY) {
+  relaciones?.forEach((relacion) => {
+    if (relacion.TipoPersona?.Id_Tipo_Persona === tipoPersonaId) {
+      const identidad = relacion.Persona?.Identidad || "";
+      const telefono = relacion.Persona?.Telefono || "";
+      const nombreCompleto = `${relacion.Persona?.Primer_Nombre || ""} ${relacion.Persona?.Primer_Apellido || ""}`;
+      const direccionTexto = relacion.Persona?.Direccion || "N/A";
 
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("AÑO LECTIVO: 2020 - 2021", 20, 30);
+      const nombreLineas = doc.splitTextToSize(nombreCompleto, 25);     // ancho columna nombre
+      const direccionLineas = doc.splitTextToSize(direccionTexto, 50);  // ancho columna dirección
 
-    // Creando el contenido con negrita en los labels y subrayado en los valores
-    doc.setFont("helvetica", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 20, 40);
+      const lineCount = Math.max(nombreLineas.length, direccionLineas.length);
 
-    // Columna 1: Primer Nombre, Primer Apellido, etc.
-    doc.setFont("helvetica", "normal");
-    doc.text("Primer Nombre:", 20, 50);
-    doc.text(personaData.Primer_Nombre, 71, 50);
+      for (let i = 0; i < lineCount; i++) {
+        // Solo en la primera línea
+        if (i === 0) {
+          doc.text(identidad, 20, currentY + (i * 6));
+          if (telefono) doc.text(telefono, 90, currentY + (i * 6));
+        }
 
-    doc.text("Primer Apellido:", 20, 60);
-    doc.text(personaData.Primer_Apellido, 71, 60);
+        // Línea actual de nombre y dirección si existe
+        if (nombreLineas[i]) doc.text(nombreLineas[i], 60, currentY + (i * 6));
+        if (direccionLineas[i]) doc.text(direccionLineas[i], 140, currentY + (i * 6));
+      }
 
-    doc.text("Segundo Nombre:", 20, 70);
-    doc.text(personaData.Segundo_Nombre || "N/A", 71, 70);
+      // Avanzar el Y según la línea más larga
+      currentY += lineCount * 6;
+    }
+  });
 
-    doc.text("Segundo Apellido:", 20, 80);
-    doc.text(personaData.Segundo_Apellido || "N/A", 71, 80);
+  return currentY;
+}
 
-    doc.text("Número de Identidad:", 20, 90);
-    doc.text(personaData.Identidad, 71, 90);
+  
 
-    doc.text("Sexo:", 20, 100);
-    doc.text(personaData.Sexo === 1 ? "Masculino" : "Femenino", 71, 100);
-
-    doc.text("Fecha de Nacimiento:", 20, 110);
-    doc.text(personaData.Fecha_Nacimiento, 71, 110);
-
-    doc.text("Lugar de Nacimiento:", 20, 120);
-    doc.text(personaData.Lugar_Nacimiento, 71, 120);
-
-    // Columna 2: Departamento, Municipio, etc.
-    doc.text("Departamento:", 120, 50);
-    doc.text(personaData.Id_Departamento, 170, 50);
-
-    doc.text("Municipio:", 120, 60);
-    doc.text(personaData.Id_Municipio, 170, 60);
-
-    doc.text("Dirección:", 120, 70);
-    doc.text(personaData.Direccion, 170, 70);
-
-    doc.text("Teléfono:", 120, 80);
-    doc.text(personaData.Telefono, 170, 80);
-
-    doc.text("Área:", 120, 90);
-    doc.text(estudianteData.Id_Area, 170, 90);
-
-    doc.text("Instituto:", 120, 100);
-    doc.text(estudianteData.Id_Instituto, 170, 100);
-
-    doc.text("Beneficio:", 120, 110);
-    doc.text(beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio, 170, 110);
-
-    doc.text("Estado:", 120, 120);
-    doc.text(personaData.Estado === "1" ? "Activo" : "Inactivo", 170, 120);
-
-    // Estilo de subrayado para los valores
-    doc.setLineWidth(0.5);
-    doc.line(70, 52, doc.getTextWidth(personaData.Primer_Nombre) + 70, 52);  // Subrayar "Primer Nombre"
-    doc.line(70, 62, doc.getTextWidth(personaData.Primer_Apellido) + 70, 62);  // Subrayar "Primer Apellido"
-    doc.line(70, 72, doc.getTextWidth(personaData.Segundo_Nombre || "N/A") + 70, 72);  // Subrayar "Segundo Nombre"
-    doc.line(70, 82, doc.getTextWidth(personaData.Segundo_Apellido || "N/A") + 70, 82);  // Subrayar "Segundo Apellido"
-
-    doc.line(70, 92, doc.getTextWidth(personaData.Identidad) + 70, 92);  // Subrayar "Número de Identidad"
-    doc.line(70, 102, doc.getTextWidth(personaData.Sexo === 1 ? "Masculino" : "Femenino") + 70, 102);  // Subrayar "Sexo"
-    doc.line(70, 112, doc.getTextWidth(personaData.Fecha_Nacimiento) + 70, 112);  // Subrayar "Fecha de Nacimiento"
-    doc.line(70, 122, doc.getTextWidth(personaData.Lugar_Nacimiento) + 70, 122);  // Subrayar "Lugar de Nacimiento"
-
-    // Columna 2 subrayada
-    doc.line(170, 52, doc.getTextWidth(personaData.Id_Departamento) + 170, 52);  // Subrayar "Departamento"
-    doc.line(170, 62, doc.getTextWidth(personaData.Id_Municipio) + 170, 62);  // Subrayar "Municipio"
-    doc.line(170, 72, doc.getTextWidth(personaData.Direccion) + 170, 72);  // Subrayar "Dirección"
-    doc.line(170, 82, doc.getTextWidth(personaData.Telefono) + 170, 82);  // Subrayar "Teléfono"
-    doc.line(170, 92, doc.getTextWidth(estudianteData.Id_Area) + 170, 92);  // Subrayar "Área"
-    doc.line(170, 102, doc.getTextWidth(estudianteData.Id_Instituto) + 170, 102);  // Subrayar "Instituto"
-    doc.line(170, 112, doc.getTextWidth(beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio) + 170, 112);  // Subrayar "Beneficio"
-    doc.line(170, 122, doc.getTextWidth(personaData.Estado === "1" ? "Activo" : "Inactivo") + 170, 122);  // Subrayar "Estado"
-
-    // Guardar el PDF
-    doc.save("Ficha_Estudiantil.pdf");
-  };
-
+ 
 
 
 
@@ -775,7 +547,10 @@ currentY += 20;
       Id_Municipio: 0,
       esNuevo: true,
       Id_Tipo_Persona:1,
-      Estado:1
+      Estado:1,
+      Direccion: "",
+      Telefono: "",
+      Estado
     }));
     setPersonaData({
       Primer_Nombre: "",
@@ -949,20 +724,28 @@ const nuevoTutor= (tipo=1)=>{
   personaDataRelacion.Estudiante.Persona=personaData;
   personaDataRelacion.Id_Tipo_Persona=tipo;
 
-switch (tipo) {
-  case 2:
-    showModal("modalRelacion")
-    break;
-    case 3:
-      showModal("modalRelacionBenefactor")
-      break;
-
-
-}
+  setTimeout(() => {
+    switch (tipo) {
+      case 2:
+     //   showModal("modalRelacion");
+        setModalPendiente("modalRelacion");
+        break;
+      case 3:
+        setModalPendiente("modalRelacionBenefactor");
+    //    showModal("modalRelacionBenefactor");
+        break;
+    }
+  }, 50); // 
  
 
 }
 
+useEffect(() => {
+  if (modalPendiente && personaDataRelacion?.esNuevo) {
+    showModal(modalPendiente);
+    setModalPendiente(null);
+  }
+}, [personaDataRelacion]);
 
 const editGraduacion= ()=>{
 
@@ -1212,11 +995,17 @@ console.log(personaDataRelacion)
     personaDataRelacion.Modificado_Por=user.id;
     personaDataRelacion.Fecha_Nacimiento='2000-01-01';
     personaDataRelacion.Estado=Number(personaDataRelacion.Estado) 
+  
     const errores = validarFormulario(personaDataRelacion, reglasValidacionRelacion,personaDataRelacion.Id_Tipo_Persona==2? "formTutor":"formBenefactor");
 
       if (errores.length > 0) {
      
-      //toast.error(errores.join("\n"), error);
+       // const idsConErrores = errores.map(e => e.id); // ⬅️ Solo los IDs
+
+       // console.log("Campos con error:", idsConErrores);
+        
+        // Ejemplo: mostrar mensaje general
+        toast.error("Verifique la información.");;
         return;
       }
 
@@ -1651,7 +1440,7 @@ const handleDeleteRelacion = (id) => {
 };
 
 
-  const handleEditTutor = (tutor) => {
+  const handleEditTutor = (tutor,tipo) => {
     console.log( "handleEditTutor")
    console.log( tutor)
    setEditId(tutor.Persona.Id_Estudiante);
@@ -1676,7 +1465,7 @@ setPersonaDataRelacion({
 
 })
 
-switch (personaDataRelacion.Id_Tipo_Persona) {
+switch (tipo) {
   case 2:
     showModal("modalRelacion")
     break;
@@ -1896,10 +1685,20 @@ if (!permisos) {
           <td className="border p-2">
             <input id="Primer_Nombre" type="text" name="Primer_Nombre" placeholder="Primer Nombre" value={personaData.Primer_Nombre} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
           </td>
+      
+          <td rowSpan={2} colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+          <FotoCarnetUpload
+  idEstudiante={estudianteData.Id_Estudiante}
+  onFotoActualizada={(base64) => setFotoActual(base64)}
+/>
+</td>     </tr>
+        <tr>
+
           <td className="border p-2 font-medium text-gray-700">Primer Apellido</td>
           <td className="border p-2">
             <input id="Primer_Apellido" type="text" name="Primer_Apellido" placeholder="Primer Apellido" value={personaData.Primer_Apellido} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
           </td>
+         
         </tr>
 
         <tr>
@@ -1963,9 +1762,23 @@ if (!permisos) {
 
         <tr>
           <td className="border p-2 font-medium text-gray-700">Dirección</td>
-          <td className="border p-2">
-            <input id="Direccion" type="text" name="Direccion" placeholder="Dirección" value={personaData.Direccion} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
-          </td>
+          <td className="border p-2 align-top">
+  <textarea
+    id="Direccion"
+    name="Direccion"
+    placeholder="Dirección"
+    value={personaData.Direccion}
+    onChange={handlePersonaInputChange}
+    required
+    className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300 resize-none text-sm overflow-hidden"
+    style={{ minHeight: '2.5rem', lineHeight: '1.25rem' }}
+    onInput={(e) => {
+      e.target.style.height = 'auto'; // 🧼 Reset
+      e.target.style.height = `${e.target.scrollHeight}px`; // 📏 Ajuste
+    }}
+  />
+</td>
+
           <td className="border p-2 font-medium text-gray-700">Teléfono</td>
           <td className="border p-2">
             <input id="Telefono" type="text" name="Telefono" placeholder="Teléfono" value={personaData.Telefono} onChange={handlePersonaInputChange} required className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300" />
@@ -2085,9 +1898,10 @@ if (!permisos) {
     <thead className="bg-gray-100">
       <tr>
         <th className="">Identidad</th>
-        <th className="">Persona Relacionada</th>
+        <th className="">Nombre Completo</th>
         <th className="">Estado</th>
-        <th className="">Observaciones</th>
+        <th className="">Dirección</th>
+        <th className="">Teléfono</th>
         <th className="">Acciones</th>
       </tr>
     </thead>
@@ -2106,13 +1920,14 @@ if (!permisos) {
                 <td className="px-4 py-2 text-sm text-center border-b">
                   {estado ? estado.Nombre_Estado : "Desconocido"}
                 </td>
-                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Observaciones}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
                 <td className="px-4 py-2 text-sm text-center border-b">
                   <div className="flex justify-center gap-2">
                     {permisos.Permiso_Actualizar === "1" && (
                       <button
                         type="button"
-                        onClick={() => handleEditTutor(relacion)}
+                        onClick={() => handleEditTutor(relacion,2)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
                       >
                         <PencilSquareIcon className="h-5 w-5" />
@@ -2212,52 +2027,57 @@ if (!permisos) {
           <thead>
             <tr className="bg-gray-100">
             <th>Identidad</th>
-              <th >Persona Relacionada</th>
+              <th >Nombre Completo</th>
               <th>Estado</th>
-              <th>Observaciones</th>
+              <th className="">Dirección</th>
+              <th className="">Teléfono</th>
               <th>Acciones</th>
 
             </tr>
           </thead>
           <tbody>
-  {estudianteData.Relaciones?.length > 0 ? (
-    estudianteData.Relaciones
-    .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3) 
-    .map((relacion) => (
-      <tr key={relacion.Id} className="hover:bg-gray-50">
-        <td className="border px-4 py-2">{relacion.Persona?.Identidad}</td>
-        <td className="border px-4 py-2">
-          {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
-        </td>
-        <td className="border px-4 py-2">{relacion.Estado}</td>
-        <td className="border px-4 py-2">{relacion.Observaciones}</td>
-        <td className="border px-4 py-2 flex justify-center items-center space-x-2">
-  {permisos.Permiso_Actualizar === "1" && (
-    <button
-    type="button"
-    onClick={() => handleEditTutor(relacion)}
-      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-    >
-      <PencilSquareIcon className="h-6 w-6" />
-    </button>
-  )}
-  {permisos.Permiso_Eliminar === "1" && (
-    <button
-    type="button"
-
-      onClick={() => handleDeleteRelacion(relacion.Id)}
-
-      
-      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-700"
-    >
-      <TrashIcon className="h-6 w-6" />
-    </button>
-  )}
-</td>
-
-      </tr>
-    ))
-  ) : (
+          {estudianteData.Relaciones?.length > 0 ? (
+        estudianteData.Relaciones
+          .filter((relacion) => relacion.TipoPersona?.Id_Tipo_Persona === 3)
+          .map((relacion) => {
+            const estado = estados.find(e => e.Codigo_Estado === relacion.Estado);
+            return (
+              <tr key={relacion.Id} className="hover:bg-gray-50 transition">
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Identidad}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
+                </td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  {estado ? estado.Nombre_Estado : "Desconocido"}
+                </td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">
+                  <div className="flex justify-center gap-2">
+                    {permisos.Permiso_Actualizar === "1" && (
+                      <button
+                        type="button"
+                        onClick={() => handleEditTutor(relacion,3)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md"
+                      >
+                        <PencilSquareIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    {permisos.Permiso_Eliminar === "1" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRelacion(relacion.Id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })
+      ) : (
     <tr>
       <td colSpan="4" className="text-center border px-4 py-2">
         No hay relaciones disponibles.

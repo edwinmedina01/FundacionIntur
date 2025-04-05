@@ -44,7 +44,7 @@ const Persona = sequelize.define('tbl_persona', {
       type: DataTypes.STRING(100),
     },
     Identidad: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(14),
     },
     Creado_Por: {
       type: DataTypes.STRING(45),
@@ -69,7 +69,15 @@ const Persona = sequelize.define('tbl_persona', {
     }, 
     Direccion  : {
       type: DataTypes.STRING,
-    },   
+    },  
+    
+    // Campo virtual
+    NombreCompleto: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return `${this.Primer_Nombre} ${this.Segundo_Nombre || ''} ${this.Primer_Apellido} ${this.Segundo_Apellido || ''}`.trim();
+      }
+    } 
   }, {
     tableName: 'tbl_persona',
     timestamps: false,

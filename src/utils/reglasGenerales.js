@@ -138,57 +138,58 @@ Duracion: (min = 1, max = 60) => ({
     
 
 NombreCompuesto: (min = 10, max = 300) => ({
-    tipo: "string",
-    validaciones: [
-      {
-        label: `Debe contener entre ${min} y ${max} caracteres.`,
-        test: (valor) =>
-          typeof valor === "string" &&
-          valor.trim().length >= min &&
-          valor.trim().length <= max,
+  tipo: "string",
+  validaciones: [
+    {
+      label: `Debe contener entre ${min} y ${max} caracteres.`,
+      test: (valor) =>
+        typeof valor === "string" &&
+        valor.trim().length >= min &&
+        valor.trim().length <= max,
+    },
+    {
+      label: "Solo se permiten letras con acentos, espacios y la letra ñ (no números ni símbolos).",
+      test: (valor) =>
+        /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(valor),
+    },
+    {
+      label: "Debe contener al menos una vocal.",
+      test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor),
+    },
+    {
+      label: "No puede tener más de un espacio consecutivo.",
+      test: (valor) => !/\s{2,}/.test(valor),
+    },
+    {
+      label: "Cada palabra debe tener al menos una vocal o ser una sigla (ej. ONU, UTH).",
+      test: (valor) =>
+        valor
+          .trim()
+          .split(" ")
+          .every(
+            (palabra) =>
+              /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)
+          ),
+    },
+    {
+      label: "No puede ser una única letra repetida muchas veces.",
+      test: (valor) => !/^([A-Za-zÁÉÍÓÚáéíóúÑñ])\1{2,}$/.test(valor),
+    },
+    {
+      label: "No debe tener patrones repetitivos como 'ababab', 'aabbaabb' o repeticiones exageradas.",
+      test: (valor) => {
+        const palabras = valor.trim().split(/\s+/);
+        return !palabras.some((palabra) => {
+          const repetido = /^(.+)\1{1,}$/i.test(palabra); // ababab, areareare
+          const tripleLetra = /(.)\1{2,}/.test(palabra); // aaaa, eee
+          const alternancia = /^(..+)\1{1,}$/.test(palabra); // abab, cdcd
+          return repetido || tripleLetra || alternancia;
+        });
       },
-      {
-        label: "Solo se permiten letras, números y espacios.",
-        test: (valor) => /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s]+$/.test(valor),
-      },
-      {
-        label: "Debe contener al menos una vocal.",
-        test: (valor) => /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(valor),
-      },
-      {
-        label: "No puede tener más de un espacio consecutivo.",
-        test: (valor) => !/\s{2,}/.test(valor),
-      },
-      {
-        label: "Cada palabra debe contener al menos una vocal o ser una sigla (ej. ONU, UTH).",
-        test: (valor) =>
-          valor
-            .trim()
-            .split(" ")
-            .every(
-              (palabra) =>
-                /[AEIOUÁÉÍÓÚaeiouáéíóú]/.test(palabra) || /^[A-Z]{2,5}$/.test(palabra)
-            ),
-      },
-      {
-        label: "No puede ser una única letra repetida muchas veces.",
-        test: (valor) => !/^([A-Za-z])\1{2,}$/.test(valor),
-      },
-      {
-        label: "No debe tener patrones repetitivos como 'ababab', 'aabbaabb', o repeticiones exageradas.",
-        test: (valor) => {
-          const palabras = valor.trim().split(/\s+/);
-          return !palabras.some((palabra) => {
-            const repetido = /^(.+)\1{1,}$/i.test(palabra); // ababab, areareare
-            const tripleLetra = /(.)\1{2,}/.test(palabra); // aaaa, eee
-            const alternancia = /^(..+)\1{1,}$/.test(palabra); // abab, cdcd
-            return repetido || tripleLetra || alternancia;
-          });
-        },
-      },
-    ],
-  }),
-  
+    },
+  ],
+}),
+
   
     Descripciones: (min = 10, max = 300) => ({
         tipo: "string",
@@ -325,6 +326,70 @@ NombreCompuesto: (min = 10, max = 300) => ({
           test: (valor) => !/[.,;:!?]/.test(valor) 
         }
       ]
+    }),
+    
+    IdentidadOld: () => ({
+      tipo: "string",
+      validaciones: [
+        {
+          label: "Debe contener exactamente 13 dígitos.",
+          test: (valor) => /^\d{13}$/.test(valor),
+        },
+        {
+          label: "Solo debe contener números.",
+          test: (valor) => /^\d+$/.test(valor),
+        },
+        {
+          label: "No debe contener espacios ni guiones.",
+          test: (valor) => !/[-\s]/.test(valor),
+        }
+      ],
+    }),
+    Identidad: () => ({
+      tipo: "string",
+      validaciones: [
+        {
+          label: "Debe contener exactamente 13 dígitos.",
+          test: (valor) => /^\d{13}$/.test(valor),
+        },
+        {
+          label: "Solo debe contener números.",
+          test: (valor) => /^\d+$/.test(valor),
+        },
+        {
+          label: "No debe contener espacios ni guiones.",
+          test: (valor) => !/[-\s]/.test(valor),
+        },
+        {
+          label: "Los primeros dos dígitos deben estar entre 01 y 18 (código de departamento).",
+          test: (valor) => {
+            const depto = parseInt(valor.substring(0, 2), 10);
+            return depto >= 1 && depto <= 18;
+          },
+        },
+        {
+          label: "Los siguientes dos dígitos deben estar entre 01 y 28 (código de municipio común).",
+          test: (valor) => {
+            const muni = parseInt(valor.substring(2, 4), 10);
+            return muni >= 1 && muni <= 28; // puedes ajustar según catastro oficial
+          },
+        },
+        {
+          label: "Debe tener un año de nacimiento válido (entre 1900 y el año actual).",
+          test: (valor) => {
+            const anio = parseInt(valor.substring(4, 8), 10);
+            const anioActual = new Date().getFullYear();
+            return anio >= 1900 && anio <= anioActual;
+          },
+        },
+        {
+          label: "El correlativo debe ser de 5 dígitos y no puede ser todos ceros.",
+          test: (valor) => {
+            const correlativo = valor.substring(8);
+            return /^\d{5}$/.test(correlativo) && correlativo !== "00000";
+          },
+        },
+      ],
     }),
     
 
@@ -509,28 +574,19 @@ NombreCompuesto: (min = 10, max = 300) => ({
         ]
     }),
 
-    Direccion: (min = 5, max = 200) => ({
-        tipo: "string",
-        validaciones: [
-            { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
-    
-            { label: "Debe comenzar con una letra o número.", test: (valor) => /^[A-Za-z0-9]/.test(valor) },
-    
-            { label: "No debe tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
-    
-            { 
-                label: "Puede contener letras, números, comas, puntos, guiones, #, y acentos.", 
-                test: (valor) => /^[A-Za-z0-9áéíóúÁÉÍÓÚ\s.,#-]+$/.test(valor) 
-            },
-           // { label: "Debe contener al menos un número (ejemplo: número de casa o avenida).", test: (valor) => /\d/.test(valor) },
-    
-            { label: "Debe contener al menos una palabra con sentido (ejemplo: nombre de calle, avenida, barrio).", test: (valor) => /[A-Za-z]+/.test(valor) },
-    
-            { label: "No puede contener caracteres especiales como @, $, %, &, *.", test: (valor) => !/[@$%&*]/.test(valor) },
-    
-            { label: "Formato válido: Calle 5 #23-45, Av. Central 123, Barrio Los Pinos, etc.", test: (valor) => true }
-        ]
+    Direccion: (min = 5, max = 255) => ({
+      tipo: "string",
+      validaciones: [
+        { label: `Debe contener entre ${min} y ${max} caracteres.`, test: (valor) => valor.length >= min && valor.length <= max },
+        { label: "Debe comenzar con una letra o número.", test: (valor) => /^[A-Za-z0-9]/.test(valor) },
+        { label: "No debe tener más de un espacio consecutivo.", test: (valor) => !/\s{2,}/.test(valor) },
+        { label: "Puede contener letras, números, comas, puntos, guiones, #, y acentos.", test: (valor) => /^[A-Za-z0-9áéíóúÁÉÍÓÚ\s.,#-]+$/.test(valor) },
+        { label: "Debe contener al menos una palabra con sentido (ejemplo: nombre de calle, avenida, barrio).", test: (valor) => /[A-Za-z]+/.test(valor) },
+        { label: "No puede contener caracteres especiales como @, $, %, &, *.", test: (valor) => !/[@$%&*]/.test(valor) },
+        { label: "Formato válido: Calle 5 #23-45, Av. Central 123, Barrio Los Pinos, etc.", test: (valor) => true }
+      ]
     }),
+    
     
 
     // ✅ Código de estudiante (Ejemplo: EST-123456)

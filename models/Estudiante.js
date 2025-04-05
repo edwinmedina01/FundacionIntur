@@ -50,6 +50,10 @@ const Estudiante = sequelize.define('tbl_estudiante', {
       Id_Graduando: {
         type: DataTypes.INTEGER,
       },
+      foto_carnet: {
+        type: DataTypes.TEXT('medium'), // O 'long' si quieres más de 16 MB
+        allowNull: true,
+      },
     }, {
       tableName: 'tbl_estudiante',
       timestamps: false,

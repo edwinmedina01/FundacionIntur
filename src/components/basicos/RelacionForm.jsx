@@ -30,8 +30,10 @@ const RelacionForm = ({
         <div className="flex flex-col">
           <label htmlFor="Identidad" className="text-gray-700 font-medium">Identidad</label>
           <input
+          type="text"
             id="Identidad"
             name="Identidad"
+            typeof="text"
             placeholder="Número de Identidad"
             value={personaDataRelacion?.Identidad}
             onChange={handleChange}
@@ -41,7 +43,7 @@ const RelacionForm = ({
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor="Primer_Nombre" className="text-gray-700 font-medium">Nombre</label>
+          <label htmlFor="Primer_Nombre" className="text-gray-700 font-medium">Nombres</label>
           <input
             id="Primer_Nombre"
             name="Primer_Nombre"
@@ -54,7 +56,7 @@ const RelacionForm = ({
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor="Primer_Apellido" className="text-gray-700 font-medium">Apellido</label>
+          <label htmlFor="Primer_Apellido" className="text-gray-700 font-medium">Apellidos</label>
           <input
             id="Primer_Apellido"
             name="Primer_Apellido"
@@ -83,17 +85,24 @@ const RelacionForm = ({
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor="Direccion" className="text-gray-700 font-medium">Dirección</label>
-          <input
-            id="Direccion"
-            name="Direccion"
-            placeholder={`Dirección del ${tipoRelacion}`}
-            value={personaDataRelacion?.Direccion}
-            onChange={handleChange}
-            required
-            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 mt-2"
-          />
-        </div>
+  <label htmlFor="Direccion" className="text-gray-700 font-medium">Dirección</label>
+
+        <textarea
+    id="Direccion"
+    name="Direccion"
+    placeholder="Dirección"
+    value={personaDataRelacion?.Direccion || ''}
+    onChange={handleChange}
+    required
+    className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300 resize-none text-sm overflow-hidden"
+    style={{ minHeight: '2.5rem', lineHeight: '1.25rem' }}
+    onInput={(e) => {
+      e.target.style.height = 'auto'; // 🧼 Reset
+      e.target.style.height = `${e.target.scrollHeight}px`; // 📏 Ajuste
+    }}
+  />
+</div>
+
 
         <div className="flex flex-col">
           <label htmlFor="Estado" className="text-gray-700 font-medium">Estado</label>

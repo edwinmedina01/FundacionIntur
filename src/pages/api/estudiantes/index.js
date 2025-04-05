@@ -7,6 +7,7 @@ import Matricula from '../../../../models/Matricula';
 import Modalidad from '../../../../models/modalidad';
 import Grado from '../../../../models/grado';
 import Seccion from '../../../../models/seccion';
+import {deepSort} from '../../../utils/deepSort';
 
 
 
@@ -40,7 +41,11 @@ export default async function handler(req, res) {
           }
           return res.status(200).json(estudiante);
         } else {
+          
           const estudiantes = await Estudiante.findAll({
+            attributes: {
+              exclude: ['foto_carnet'], // 👈 esto oculta el campo base64
+            },
             include: [{ 
                 model: Persona, as: 'Persona' ,
                 include: [
@@ -92,9 +97,12 @@ export default async function handler(req, res) {
                 ]
               },
             ],
+          
           });
-          console.log(estudiantes);
-          return res.status(200).json(estudiantes);
+      //    console.log(estudiantes);
+        const estudiantesOrdenados = deepSort(estudiantes, 'Persona.Fecha_Creacion', false);
+        console.log(estudiantesOrdenados);
+          return res.status(200).json(estudiantesOrdenados);
         }
       } catch (error) {
         console.log(error);
