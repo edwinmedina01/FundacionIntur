@@ -27,7 +27,8 @@ export default async function handler(req, res) {
         LEFT JOIN tbl_persona pp ON e.Id_Persona = pp.Id_Persona  
         LEFT JOIN tbl_modalidad mo ON m.Id_Modalidad = mo.Id_Modalidad
         LEFT JOIN tbl_grado g ON m.Id_Grado = g.Id_Grado
-        LEFT JOIN tbl_seccion s ON m.Id_Seccion = s.Id_Seccion;
+        LEFT JOIN tbl_seccion s ON m.Id_Seccion = s.Id_Seccion
+        order by m.Fecha_Matricula DESC;
         `,
         {
           type: QueryTypes.SELECT,

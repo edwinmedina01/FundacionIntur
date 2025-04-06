@@ -17,7 +17,7 @@ import { saveAs } from 'file-saver';
 import SearchBar from '../components/basicos/SearchBar';
 import Pagination from '../components/basicos/Pagination';
 import RelacionForm from '../components/basicos/RelacionForm';
-import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilSquareIcon, TrashIcon,CheckIcon  } from '@heroicons/react/24/outline';
 import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../models/ReglasValidacionModelos";
 import { toast } from "react-toastify";
 const TutorPadreManagement = () => {
@@ -209,6 +209,70 @@ setPersonaDataRelacion((prevData) => ({
 }));
 };
 
+const handleDeletRelacion = async (id) => {
+  try {
+    
+ var res=   await axios.delete(`/api/relacion/${id}`);
+ if (res != null) {
+  fetchTutores();
+  toast.success("Registro eliminado", {
+    position: "top-center",
+    autoClose: 3000,  // Se cierra automáticamente después de 3 segundos
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "colored",
+    className: "bg-green-200 text-green-700",  // Fondo verde claro con texto verde
+    bodyClassName: "text-white",  // Color del texto dentro del toast
+    progressClassName: "bg-green-500",  // Barra de progreso verde
+  });
+}
+
+  } catch (error) {
+    console.error("Error al eliminar relacion", error);
+  }
+};
+
+
+const handleDeleteRelacion = (id) => {
+// Crear un toast personalizado con botones
+const confirmToast = (
+  <div className="flex flex-col text-black">
+    <p>¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+    <div className="flex space-x-2 mt-2">
+      <button 
+        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+        onClick={() => {
+          handleDeletRelacion(id); // Llamar la función para eliminar
+          toast.dismiss(); // Cerrar el toast
+          console.log(`Eliminando registro con ID: ${id}`);
+        }}
+      >
+       Confirmar <CheckIcon className="h-6 w-6 inline" />
+      </button>
+      <button 
+        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+        onClick={() => toast.dismiss()} // Cerrar el toast sin hacer nada
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+);
+
+// Mostrar el toast de confirmación
+toast.warning(confirmToast, {
+  position: "top-center",
+  autoClose: false,  // No se cierra automáticamente
+  hideProgressBar: true,
+  closeOnClick: false,  // No cierra el toast si se hace clic
+  pauseOnHover: true,
+  draggable: true,
+  theme: "colored",
+});
+};
+
 
 const handleCancelRelacion = () => {
 setPersonaDataRelacion((prevData) => ({
@@ -291,8 +355,7 @@ console.log("handlePersonaSubmit")
     
     closeModal("modalRelacion")
 
-    
- 
+
   
   setPersonaDataRelacion({
     Primer_Nombre: "",
@@ -344,33 +407,52 @@ console.log("handlePersonaSubmit")
       <table className="xls_style-excel-table">
         <thead>
           <tr>
+          <th>#</th>
+          <th>Acciones</th>
             <th>Identidad</th>
+            <th>Fecha Registro</th>
             <th>Nombre</th>
             <th>Teléfono</th>
             <th>Dirección</th>
             <th>Estudiante</th>
             <th>Estado</th>
-            <th>Acciones</th>
+       
           </tr>
         </thead>
         <tbody>
-          {currentItems.map(t => (
+          {currentItems.map((t,index)=> (
             <tr key={t.Id_Persona}>
+              <td>{index+1}</td>
+              <td className='xls_center'>
+                     <div className="flex justify-center gap-2">
+                       {permisos.Permiso_Actualizar === "1" && (
+                         <button
+                           onClick={() => handleEdit(t)}
+                                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                         >
+                           <PencilSquareIcon className="h-6 w-6" />
+                         </button>
+                       )}
+                       {permisos.Permiso_Eliminar === "1" && (
+                                             <button
+                                               type="button"
+                                               onClick={() => handleDeleteRelacion(t.Id_Relacion)}
+                                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                                             >
+                                               <TrashIcon className="h-5 w-5" />
+                                             </button>
+                                           )}
+                                           </div>
+                     </td>
               <td>{t.Identidad}</td>
+            
+              <td>{t.Fecha_Creacion}</td>
               <td>{t.Persona_Nombre} {t.Persona_Apellido}</td>
               <td>{t.Persona_Telefono}</td>
               <td>{t.Persona_Direccion}</td>
               <td>{t.Estudiante_Nombre} {t.Estudiante_Apellido}</td>
               <td>{estados.find(e => e.Codigo_Estado === t.Estado)?.Nombre_Estado || 'Desconocido'}</td>
-              <td>
-                   <button
-                                  onClick={() => handleEdit(t)}
-                                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                                >
-                                  <PencilSquareIcon className="h-6 w-6" />
-                                </button>
-                {/* <button onClick={() => { setFormData(t); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button> */}
-              </td>
+          
             </tr>
           ))}
         </tbody>

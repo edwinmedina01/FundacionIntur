@@ -4,6 +4,7 @@ import AuthContext from '../context/AuthContext';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from "next/image";
+import { setCookie, parseCookies } from 'nookies';  // Asegúrate de tener nookies importado
 
 
 const LoginForm = () => {
@@ -15,8 +16,81 @@ const LoginForm = () => {
     const router = useRouter();
 
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const respuesta = await axios.post('/api/auth/login', { email, password });
+    
+            // ✅ Imprimir toda la respuesta de la API para depuración
+            console.log('✅ Respuesta de la API:', respuesta);
+    
+            // Extraer datos correctamente
+            const { token, userId, role, primerLogin, nombrerol, ...otrosDatos } = respuesta.data;
+    
+            // ✅ Ver otros datos enviados por la API
+            console.log('📌 Otros datos recibidos:', otrosDatos);
+    
+            // Validar que `userId` y `token` existan
+            if (!userId || !token) {
+                throw new Error('userId o token no están presentes en la respuesta');
+            }
+    
+            // Guarda el token y el userId en el contexto
+            login(token, userId, role, nombrerol);
+    
+            if (!token) {
+                console.error("🚨 No se recibió token en la respuesta.");
+                return;
+            }
+    
+            console.log('Token:', token);
+    
+            // ✅ Guardar el token en `localStorage`
+            localStorage.setItem("token", token);
+    
+            // ✅ Guardar el token en una cookie
+          //  document.cookie = `token=${token}; path=/; max-age=3600; secure; sameSite=strict`; // max-age=3600 establece la duración de 1 hora
+    
+  // Guardamos el token en la cookie
+//   setCookie(null, 'token', token, {
+//     path: '/',
+//     maxAge: 43200, // 12 horas
+//     httpOnly: true, // No accesible desde JS
+//     sameSite: 'Strict',
+//     secure: process.env.NODE_ENV === 'production', // Solo seguro en producción
+//   });
+            setMensaje('✅ Login exitoso');
+    
+            // Si es `primerLogin`, limpiar el token antes de redirigir
+            if (primerLogin) {
+                sessionStorage.removeItem("token");
+                localStorage.removeItem("token");
+                router.push('/change-password');
+            } else {
+                router.push('/inicio');
+            }
+    
+        } catch (error) {
+            // ✅ Imprimir la respuesta completa en caso de error
+            console.error('🚨 Error en el login:', error);
+    
+            // Si no hay `error.response`, es un error de conexión
+            if (!error.response) {
+                setMensaje('❌ Error de conexión con el servidor');
+                return;
+            }
+    
+            // ✅ Capturar y mostrar respuesta en caso de error `403`
+            console.log('⚠️ Respuesta completa del error:', error);
+            let _error = error.response.data?.error || error.response.data?.error;
+    
+            // Establecer mensaje de error con base en la respuesta de la API
+            setMensaje(_error || `❌ Error en el login`);
+        }
+    };
+    
 
-const handleSubmit = async (e) => {
+const handleSubmitold2 = async (e) => {
         e.preventDefault();
         try {
             const respuesta = await axios.post('/api/auth/login', { email, password });

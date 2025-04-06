@@ -4,7 +4,7 @@ import { ArrowDownCircleIcon, UserPlusIcon, PencilSquareIcon } from '@heroicons/
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import AuthContext from '../context/AuthContext';
-import { ShieldExclamationIcon, TrashIcon,MagnifyingGlassIcon  } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon, TrashIcon,MagnifyingGlassIcon ,CheckIcon  } from '@heroicons/react/24/outline';
 import { obtenerEstados } from "../../src/utils/api"; // Importar la función
 import { deepSearch } from "../../src/utils/deepSearch"; 
 import { getBase64ImageFromUrl } from "../../src/utils/getBase64ImageFromUrl"; 
@@ -15,6 +15,7 @@ import Pagination from "../components/basicos/Pagination"
 import RelacionForm from "../components/basicos/RelacionForm"
 import  ModalGenerico  from "../utils/ModalGenerico";// Importar la función
 import { validarFormulario}  from '../utils/validaciones';
+import { exportToExcel } from "../utils/exportToExcel"; // Importar la función
 import { toast } from "react-toastify";
 import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../models/ReglasValidacionModelos";
 import useModal from "../hooks/useModal";
@@ -472,223 +473,117 @@ const handleSubmit = async (e) => {
   
   }
 
+  const handleExportBenefactores = async () => {
+    const headers = [
+   
 
-const handleExportold = async () => {
-  // 1️⃣ Crear un nuevo libro y hoja de Excel
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Benefactores");
-
-  // 2️⃣ Definir las columnas y encabezados
-  worksheet.columns = [
-    { header: "Identidad", key: "Identidad", width: 20 },
-    { header: "Nombre Completo", key: "Nombre", width: 30 },
-    { header: "Sexo", key: "Sexo", width: 15 },
-    { header: "Teléfono", key: "Telefono", width: 20 },
-    { header: "Dirección", key: "Direccion", width: 40 },
-  ];
-
-  // 3️⃣ Transformar los datos antes de agregarlos
-  const transformedBenefactores = Benefactores.map((Benefactor) => ({
-    Identidad: Benefactor.Identidad,
-    Nombre: `${Benefactor.Primer_Nombre} ${Benefactor.Primer_Apellido}`,
-    Sexo: Benefactor.Sexo === 1 ? "Masculino" : "Femenino",
-    Telefono: Benefactor.telefono,
-    Direccion: Benefactor.direccion,
-  }));
-
-  // 4️⃣ Agregar los datos a la hoja de cálculo
-  transformedBenefactores.forEach((Benefactor) => {
-    worksheet.addRow(Benefactor);
-  });
-
-  // 5️⃣ Aplicar estilos a los encabezados
-  worksheet.getRow(1).eachCell((cell) => {
-    cell.font = { bold: true };
-    cell.alignment = { horizontal: "center" };
-  });
-
-  // 6️⃣ Generar el archivo y descargarlo
-  const buffer = await workbook.xlsx.writeBuffer();
-  const fileBlob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-
-  saveAs(fileBlob, "Benefactores.xlsx");
-};
-
-const handleExport = async () => {
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Benefactores");
-
-  // 📌 **Obtener la Imagen en Base64**
-  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
-  const imageId = workbook.addImage({
-    base64: logoBase64,
-    extension: "png",
-  });
-
-  // 📌 **Insertar el Logo en la Esquina Izquierda**
-  worksheet.addImage(imageId, {
-    tl: { col: 0, row: 0 },
-    ext: { width: 120, height: 50 },
-  });
-
-  // 📌 **Insertar el Título en la Fila 1**
-  worksheet.mergeCells("B1", "G1");
-  worksheet.getCell("B1").value = "Reporte de Benefactores";
-  worksheet.getCell("B1").font = { bold: true, size: 16 };
-  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 **Fecha de Exportación en la Fila 2**
-  worksheet.mergeCells("B2", "G2");
-  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
-  worksheet.getCell("B2").font = { italic: true, size: 12 };
-  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 **Criterios de Búsqueda en la Fila 3**
-  const filterCriteria = Object.entries(searchQuery || {})
-    .filter(([_, value]) => value)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(", ") || "Sin filtros";
-
-  worksheet.mergeCells("B3", "G3");
-  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
-  worksheet.getCell("B3").font = { italic: true, size: 12 };
-  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 **Agregar una Fila Vacía en la Fila 4 para Separar los Encabezados**
-  worksheet.getRow(4).values = [];
-
-  // 📌 **Definir Encabezados desde la Fila 5**
-  const headers = [
-    { header: "Identidad", key: "Identidad", width: 20 },
-    { header: "Nombre Completo", key: "Nombre", width: 30 },
-    { header: "Sexo", key: "Sexo", width: 15 },
-    { header: "Teléfono", key: "Telefono", width: 20 },
-    { header: "Dirección", key: "Direccion", width: 40 },
-  ];
-
-  const headerRow = worksheet.getRow(5);
-  headerRow.values = headers.map((h) => h.header);
-  headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
-  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
-  headerRow.alignment = { horizontal: "center", vertical: "middle" };
-  headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
-
-  // 📌 **Ajustar el Ancho de las Columnas**
-  headers.forEach((col, index) => {
-    worksheet.getColumn(index + 1).width = col.width;
-  });
-
-  // 📌 **Filtrar Benefactores con deepSearch**
-  const filteredBenefactores = Benefactores.filter((benefactor) => deepSearch(benefactor, searchQuery));
- console.log("filteredBenefactores",filteredBenefactores)
-  // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
-  let rowIndex = 6;
-  filteredBenefactores.forEach((benefactor) => {
-    worksheet.getRow(rowIndex).values = [
-      benefactor.Identidad,
-      `${benefactor.Persona_Nombre} ${benefactor.Persona_Apellido}`,
-      benefactor.Sexo === 1 ? "Masculino" : "Femenino",
-      benefactor.Persona_Telefono || "-",
-      benefactor.Persona_Direccion || "-",
+      { header: "Identidad", key: "Identidad", width: 20 },
+      { header: "Fecha Registro", key: "Fecha_Creacion", width: 20 },
+      { header: "Nombre y Apellido", key: "NombreApellido", width: 30 },
+      { header: "Sexo", key: "Sexo", width: 10 },
+      { header: "Teléfono", key: "Telefono", width: 15 },
+      { header: "Dirección", key: "Direccion", width: 30 },
+      { header: "Identidad Est.", key: "Identidad_Estudiante", width: 20 },
+      { header: "Estudiante", key: "Estudiante", width: 30 },
+      { header: "Estado", key: "Estado", width: 20 },
     ];
-    worksheet.getRow(rowIndex).getCell(1).numFmt = "@"; // Primera columna (Identidad)
-    worksheet.getRow(rowIndex).getCell(1).alignment = { horizontal: "left" }; // Asegurar alineación izquierda
+  
+    const data = currentBenefactores.map((benefactor, index) => {
+      const estado = estados.find((e) => e.Codigo_Estado === benefactor.Estado)?.Nombre_Estado || "Desconocido";
+      const nombreApellido = `${benefactor.Persona_Nombre || ""} ${benefactor.Persona_Apellido || ""}`;
+      const estudianteNombre = `${benefactor.Estudiante_Nombre || ""} ${benefactor.Estudiante_Apellido || ""}`;
+  
+      return {
 
-    rowIndex++;
+        Identidad:""+ benefactor.Identidad || "-",
+        Fecha_Creacion: benefactor.Fecha_Creacion || "-",
+        NombreApellido: nombreApellido,
+        Sexo: benefactor.Sexo === 1 ? "Masculino" : benefactor.Sexo === 0 ? "Femenino" : "Desconocido",
+        Telefono: benefactor.Persona_Telefono || "-",
+        Direccion: benefactor.Persona_Direccion || "-",
+        Identidad_Estudiante:" "+ benefactor.Estudiante_Identidad || "-",
+        Estudiante: estudianteNombre,
+        Estado: estado,
+      };
+    });
+  
+    await exportToExcel({
+      fileName: "Benefactores.xlsx",
+      title: "Reporte de Benefactores",
+      headers,
+      data,
+      searchQuery, // Si tienes filtros que quieras aplicar
+    });
+  };
+  
+
+
+  const handleDeletRelacion = async (id) => {
+    try {
+      
+   var res=   await axios.delete(`/api/relacion/${id}`);
+   if (res != null) {
+    fetchBenefactores();
+    toast.success("Registro eliminado", {
+      position: "top-center",
+      autoClose: 3000,  // Se cierra automáticamente después de 3 segundos
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+      className: "bg-green-200 text-green-700",  // Fondo verde claro con texto verde
+      bodyClassName: "text-white",  // Color del texto dentro del toast
+      progressClassName: "bg-green-500",  // Barra de progreso verde
+    });
+  }
+
+    } catch (error) {
+      console.error("Error al eliminar relacion", error);
+    }
+  };
+
+
+const handleDeleteRelacion = (id) => {
+  // Crear un toast personalizado con botones
+  const confirmToast = (
+    <div className="flex flex-col text-black">
+      <p>¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+      <div className="flex space-x-2 mt-2">
+        <button 
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+          onClick={() => {
+            handleDeletRelacion(id); // Llamar la función para eliminar
+            toast.dismiss(); // Cerrar el toast
+            console.log(`Eliminando registro con ID: ${id}`);
+          }}
+        >
+         Confirmar <CheckIcon className="h-6 w-6 inline" />
+        </button>
+        <button 
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+          onClick={() => toast.dismiss()} // Cerrar el toast sin hacer nada
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+
+  // Mostrar el toast de confirmación
+  toast.warning(confirmToast, {
+    position: "top-center",
+    autoClose: false,  // No se cierra automáticamente
+    hideProgressBar: true,
+    closeOnClick: false,  // No cierra el toast si se hace clic
+    pauseOnHover: true,
+    draggable: true,
+    theme: "colored",
   });
-
-  // 📌 **Descargar el Archivo**
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-  saveAs(blob, "Benefactores.xlsx");
 };
 
-const handleExportv2 = async () => {
-  // 📌 Crear un nuevo libro y hoja de Excel
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Benefactores");
 
-  // 📌 Agregar el Logo en la esquina izquierda
-  const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
-  const imageId = workbook.addImage({ base64: logoBase64, extension: "png" });
-  worksheet.addImage(imageId, { tl: { col: 0, row: 0 }, ext: { width: 120, height: 50 } });
 
-  // 📌 Insertar el título
-  worksheet.mergeCells("B1", "H1");
-  worksheet.getCell("B1").value = "Reporte de Benefactores";
-  worksheet.getCell("B1").font = { bold: true, size: 16 };
-  worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 Fecha de Exportación
-  worksheet.mergeCells("B2", "H2");
-  worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
-  worksheet.getCell("B2").font = { italic: true, size: 12 };
-  worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 Criterios de búsqueda
-  const filterCriteria = Object.entries(searchQuery || {})
-    .filter(([_, value]) => value)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(", ") || "Sin filtros";
-
-  worksheet.mergeCells("B3", "H3");
-  worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
-  worksheet.getCell("B3").font = { italic: true, size: 12 };
-  worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
-
-  // 📌 Espacio antes de los encabezados
-  worksheet.getRow(4).values = [];
-
-  // 📌 Definir Encabezados en la fila 5
-  const headers = [
-    { header: "Identidad", key: "Identidad", width: 20 },
-    { header: "Nombre Completo", key: "Nombre", width: 30 },
-    { header: "Sexo", key: "Sexo", width: 15 },
-    { header: "Teléfono", key: "Telefono", width: 20 },
-    { header: "Dirección", key: "Direccion", width: 40 },
-    { header: "Estado", key: "Estado", width: 15 },  // Agregando Estado
-  ];
-
-  // 📌 Aplicar estilos a los encabezados
-  const headerRow = worksheet.getRow(5);
-  headerRow.values = headers.map((h) => h.header);
-  headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
-  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
-  headerRow.alignment = { horizontal: "center", vertical: "middle" };
-  headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
-
-  // 📌 Aplicar anchos de columna
-  headers.forEach((col, index) => {
-    worksheet.getColumn(index + 1).width = col.width;
-  });
-
-  // 📌 Transformar los datos antes de agregarlos
-  const transformedBenefactores = filteredBenefactores.map((Benefactor) => {
-    const estado = estados.find(e => e.Codigo_Estado === Benefactor.Estado)?.Nombre_Estado || "Desconocido";
-
-    return {
-      Identidad: Benefactor.Identidad ? String(Benefactor.Identidad) : "-",
-      Nombre: `${Benefactor.Primer_Nombre ?? "-"} ${Benefactor.Primer_Apellido ?? "-"}`,
-      Sexo: Benefactor.Sexo === 1 ? "Masculino" : Benefactor.Sexo === 0 ? "Femenino" : "Desconocido",
-      Telefono: Benefactor.Telefono ?? "-",
-      Direccion: Benefactor.Direccion ?? "-",
-      Estado: estado,
-    };
-  });
-
-  console.log("transformedBenefactores", transformedBenefactores);
-  // 📌 Agregar los datos a la hoja de cálculo (Desde fila 6)
-  transformedBenefactores.forEach((Benefactor) => {
-    worksheet.addRow(Benefactor);
-  });
-
-  // 📌 Descargar el archivo
-  const buffer = await workbook.xlsx.writeBuffer();
-  const fileBlob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-  saveAs(fileBlob, "Benefactores.xlsx");
-};
 
 
   if (!user) {
@@ -731,7 +626,7 @@ const handleExportv2 = async () => {
   handleClearSearch={handleClearSearch}
   showAddButton={false}
 
-  onExport={handleExport}
+  onExport={handleExportBenefactores}
 />
 
 
@@ -769,7 +664,11 @@ const handleExportv2 = async () => {
 <table className="xls_style-excel-table">
   <thead>
     <tr className="bg-blue-200 text-black uppercase text-sm font-semibold">
+      <th className="py-4 px-6  font-semibold text-left">#</th>
+      <th className="py-4 px-6  font-semibold text-left">Acciones</th>
       <th className="py-4 px-6  font-semibold text-left">Identidad</th>
+      <th className="py-4 px-6  font-semibold text-left">Fecha Registro</th>
+
       <th className="py-4 px-6  font-semibold text-left">Nombre y Apellido</th>
       <th className="py-4 px-6  font-semibold text-left">Sexo</th>
       <th className="py-4 px-6  font-semibold text-left">Telefono</th>
@@ -777,19 +676,42 @@ const handleExportv2 = async () => {
       <th className="py-4 px-6  font-semibold text-left">Identidad E.</th>
       <th className="py-4 px-6  font-semibold text-left">Estudiante</th>
       <th className="py-4 px-6  font-semibold text-left">Estado</th> {/* Nueva columna de Estado */}
-      <th className="py-4 px-6  font-semibold text-left">Acciones</th>
+ 
     </tr>
   </thead>
 
   <tbody>
     {Benefactores && Benefactores.length > 0 ? (
-      currentBenefactores.map((Benefactor) => {
+      currentBenefactores.map((Benefactor,index) => {
         // Buscar el estado correspondiente en el diccionario de estados
         const estado = estados.find(e => e.Codigo_Estado === Benefactor.Estado );
 
         return (
           <tr key={Benefactor.Id_Persona}>
+            <td >{index+1}</td>
+            <td className='xls_center'>
+            <div className="flex justify-center gap-2">
+              {permisos.Permiso_Actualizar === "1" && (
+                <button
+                  onClick={() => handleEdit(Benefactor)}
+                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
+                >
+                  <PencilSquareIcon className="h-6 w-6" />
+                </button>
+              )}
+              {permisos.Permiso_Eliminar === "1" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteRelacion(Benefactor.Id_Relacion)}
+                                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md"
+                                    >
+                                      <TrashIcon className="h-5 w-5" />
+                                    </button>
+                                  )}
+                                  </div>
+            </td>
             <td className="border px-4 py-2">{Benefactor.Identidad}</td>
+            <td className="border px-4 py-2">{Benefactor.Fecha_Creacion}</td>
             <td className="border px-4 py-2">{Benefactor.Persona_Nombre} {Benefactor.Persona_Apellido}</td>
             <td className="border px-4 py-2">
               {Benefactor.Sexo === 1
@@ -806,16 +728,7 @@ const handleExportv2 = async () => {
             {/* Mostrar el Estado con su Nombre correspondiente */}
             <td className="border px-4 py-2">{estado ? estado.Nombre_Estado : "Desconocido"}</td>
 
-            <td className='xls_center'>
-              {permisos.Permiso_Actualizar === "1" && (
-                <button
-                  onClick={() => handleEdit(Benefactor)}
-                  className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700"
-                >
-                  <PencilSquareIcon className="h-6 w-6" />
-                </button>
-              )}
-            </td>
+      
           </tr>
         );
       })

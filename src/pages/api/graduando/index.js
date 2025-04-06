@@ -1,6 +1,6 @@
 import Estudiante from '../../../../models/Estudiante';
 import Persona from '../../../../models/Persona';
-
+import {deepSort} from '../../../utils/deepSort';
 const Graduando = require('../../../../models/Graduando');
 
 export default async function handler(req, res) {
@@ -30,8 +30,15 @@ export default async function handler(req, res) {
 
 
         });
-        res.status(200).json(graduandos);
+      //  res.status(200).json(graduandos);
+        
+      //    console.log(estudiantes);
+      const estudiantesOrdenados = deepSort(graduandos, 'Fecha_Creacion', false);
+      console.log(estudiantesOrdenados);
+        return res.status(200).json(estudiantesOrdenados);
+        
       } catch (error) {
+        console.log("Error al obtener los graduandos")
         console.log(error)
         res.status(500).json({ error: 'Error al obtener los graduandos' });
       }

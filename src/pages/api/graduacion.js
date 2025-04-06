@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       let permisos;
       if (Id_Estudiante) {
         permisos = await sequelize.query(
-          `SELECT * FROM tbl_graduando WHERE Id_Estudiante = ?`,
+          `SELECT * FROM tbl_graduando WHERE Id_Estudiante = ? order by Fecha_Creacion DESC` ,
           { replacements: [rolId], type: QueryTypes.SELECT }
         );
       } else {

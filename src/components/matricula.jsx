@@ -149,34 +149,45 @@ const MatriculaManagement = () => {
       <table className="xls_style-excel-table">
         <thead>
           <tr>
+            
+          <th>#</th>
+          <th>Acciones</th>
             <th>Identidad</th>
+            <th>Fecha Matrícula</th>
             <th>Estudiante</th>
             <th>Modalidad</th>
             <th>Grado</th>
             <th>Sección</th>
-            <th>Fecha Matrícula</th>
+           
+           
             <th>Estado</th>
-            <th>Acciones</th>
+           
           </tr>
         </thead>
         <tbody>
-          {currentItems.map(m => (
+          {currentItems.map((m,index) => (
             <tr key={m.Id_Matricula}>
+              <td>{index+1}</td>
+              <td>
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === '1' && (
+                  <button         className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700" onClick={() => { setFormData(m); setIsEditing(true); showModal('modalAddMatricula'); }}><PencilSquareIcon className="h-5 w-5" /></button>
+                )}
+                {permisos.Permiso_Eliminar === '1' && (
+                  <button  className="bg-red-500 hover:bg-red-600 text-white  px-1 py-1 rounded-md" onClick={() => { setFormData(m); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button>
+                )}
+              </div>
+              </td>
               <td>{m.Identidad}</td>
+              <td>{m.Fecha_Matricula ? new Date(m.Fecha_Matricula).toISOString().split('T')[0] : 'No disponible'}</td>
+             
               <td>{m.Estudiante} {m.Primer_Apellido}</td>
+     
               <td>{m.Modalidad}</td>
               <td>{m.Grado}</td>
               <td>{m.Seccion}</td>
-              <td>{m.Fecha_Matricula ? new Date(m.Fecha_Matricula).toISOString().split('T')[0] : 'No disponible'}</td>
-              <td>{estados.find(e => e.Codigo_Estado === m.Estado)?.Nombre_Estado || 'Desconocido'}</td>
-              <td>
-                {permisos.Permiso_Actualizar === '1' && (
-                  <button onClick={() => { setFormData(m); setIsEditing(true); showModal('modalAddMatricula'); }}><PencilSquareIcon className="h-5 w-5" /></button>
-                )}
-                {permisos.Permiso_Eliminar === '1' && (
-                  <button onClick={() => { setFormData(m); showModal('modalConfirmacion'); }}><TrashIcon className="h-5 w-5" /></button>
-                )}
-              </td>
+            <td>{estados.find(e => e.Codigo_Estado === m.Estado)?.Nombre_Estado || 'Desconocido'}</td>
+  
             </tr>
           ))}
         </tbody>

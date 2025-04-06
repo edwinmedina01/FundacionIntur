@@ -350,34 +350,34 @@ NombreCompuesto: (min = 10, max = 300) => ({
       validaciones: [
         {
           label: "Debe contener exactamente 13 dígitos.",
-          test: (valor) => /^\d{13}$/.test(valor),
+          test: (valor) => /^\d{13}$/.test(String(valor)), // Convertir a string
         },
         {
           label: "Solo debe contener números.",
-          test: (valor) => /^\d+$/.test(valor),
+          test: (valor) => /^\d+$/.test(String(valor)), // Convertir a string
         },
         {
           label: "No debe contener espacios ni guiones.",
-          test: (valor) => !/[-\s]/.test(valor),
+          test: (valor) => !/[-\s]/.test(String(valor)), // Convertir a string
         },
         {
           label: "Los primeros dos dígitos deben estar entre 01 y 18 (código de departamento).",
           test: (valor) => {
-            const depto = parseInt(valor.substring(0, 2), 10);
+            const depto = parseInt(String(valor).substring(0, 2), 10); // Convertir a string
             return depto >= 1 && depto <= 18;
           },
         },
         {
           label: "Los siguientes dos dígitos deben estar entre 01 y 28 (código de municipio común).",
           test: (valor) => {
-            const muni = parseInt(valor.substring(2, 4), 10);
-            return muni >= 1 && muni <= 28; // puedes ajustar según catastro oficial
+            const muni = parseInt(String(valor).substring(2, 4), 10); // Convertir a string
+            return muni >= 1 && muni <= 28; // Puedes ajustar según catastro oficial
           },
         },
         {
           label: "Debe tener un año de nacimiento válido (entre 1900 y el año actual).",
           test: (valor) => {
-            const anio = parseInt(valor.substring(4, 8), 10);
+            const anio = parseInt(String(valor).substring(4, 8), 10); // Convertir a string
             const anioActual = new Date().getFullYear();
             return anio >= 1900 && anio <= anioActual;
           },
@@ -385,7 +385,7 @@ NombreCompuesto: (min = 10, max = 300) => ({
         {
           label: "El correlativo debe ser de 5 dígitos y no puede ser todos ceros.",
           test: (valor) => {
-            const correlativo = valor.substring(8);
+            const correlativo = String(valor).substring(8); // Convertir a string
             return /^\d{5}$/.test(correlativo) && correlativo !== "00000";
           },
         },

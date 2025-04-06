@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
@@ -6,7 +6,9 @@ import AuthContext from "../context/AuthContext";
 import { toast } from "react-toastify";
 import jwt from "jsonwebtoken";
 import Image from "next/image";
+import { destroyCookie } from 'nookies';  // Importar nookies para destruir cookies
 
+// Importación de íconos de Heroicons
 import {
   HomeIcon,
   AcademicCapIcon,
@@ -26,31 +28,98 @@ import {
 } from "@heroicons/react/24/outline"; // Importa íconos necesarios
 
 const Layout = ({ children }) => {
-
-
-
+  const [lastActivityTime, setLastActivityTime] = useState(Date.now());
+  const [token, setToken] = useState(null); // Inicializa el token como null
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
   const [menuWidth, setMenuWidth] = useState("w-80"); // Ancho inicial del menú
-const [contentMargin, setContentMargin] = useState("ml-80"); // Margen del contenido
+  const [contentMargin, setContentMargin] = useState("ml-80"); // Margen del contenido
 
-const toggleMenuWidth = () => {
-  if (menuWidth === "w-64") {
-    setMenuWidth("w-80");
-    setContentMargin("ml-80");
-  } else {
-    setMenuWidth("w-64");
-    setContentMargin("ml-64");
-  }
-};
+  // Función para verificar si el token está expirado
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+
+    const decoded = JSON.parse(atob(token.split('.')[1])); // Decodificar JWT
+    const expirationTime = decoded.exp * 1000; // Convertir el tiempo de expiración a milisegundos
+    return Date.now() > expirationTime;
+  };
+
+  // Comprobamos el token cada 20 minutos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isTokenExpired(token)) {
+        handleLogout("Token expirado. Por favor, autentíquese nuevamente."); // Si el token ha expirado, cerramos sesión
+      }
+    }, 20 * 60 * 1000); // 20 minutos
+
+    return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
+  }, [token]);
+
+  // Función para cerrar sesión
+  const handleLogout = async (message) => {
+
+
+    const respuesta = await axios.post('/api/auth/logout', {  });
+    
+    // ✅ Imprimir toda la respuesta de la API para depuración
+    console.log('✅ Respuesta de la API:', respuesta);
+
+   
+    localStorage.removeItem("token"); // Eliminar el token de localStorage
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax"; // Eliminar la cookie del token
+
+    toast.error(message || "Sesión cerrada por inactividad.", {
+      position: "top-right",
+      autoClose: false,  // Esto hace que el toast se quede en pantalla permanentemente
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+
+    router.push("/login"); // Redirigir al login
+  };
+
+  // Detectar inactividad (30 minutos)
+  useEffect(() => {
+    const resetInactivityTimer = () => setLastActivityTime(Date.now());
+
+    // Detectar movimiento del ratón y presionar teclas
+    document.addEventListener("mousemove", resetInactivityTimer);
+    document.addEventListener("keydown", resetInactivityTimer);
+
+    // Verificar si ha pasado 30 minutos de inactividad
+    const inactivityInterval = setInterval(() => {
+      if (Date.now() - lastActivityTime > 30 * 60 * 1000) { // 30 minutos de inactividad
+     
+        handleLogout("Sesión cerrada por inactividad."); // Si ha pasado más de 30 minutos, cerramos sesión
+        user=null; // Limpiar el usuario del contexto
+        alert("Sesión cerrada por inactividad.");
+      }
+    }, 1000); // Comprobamos cada segundo
+
+    return () => {
+      document.removeEventListener("mousemove", resetInactivityTimer);
+      document.removeEventListener("keydown", resetInactivityTimer);
+      clearInterval(inactivityInterval); // Limpiar el intervalo de inactividad al desmontar el componente
+    };
+  }, [lastActivityTime]);
+
+  // Usar useEffect para obtener el token desde localStorage cuando el componente se monta en el cliente
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Esto asegura que el código solo se ejecute en el cliente
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }
+  }, []);
 
   useEffect(() => {
-      if (!loading && !user) {
-          router.replace("/");
-      }
-      else{
-        console.log(user)
-      }
+    if (!loading && !user) {
+      router.replace("/");
+    }
   }, [user, loading, router]);
 
   // if (loading) {
@@ -199,22 +268,18 @@ useEffect(() => {
     // }
   };
 
-  const handleLogout = async () => {
-    try {
-      localStorage.removeItem("token");
-              // Eliminar la cookie del token correctamente
-      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax";
 
-      await axios.post("/api/auth/logout");
-      
-      router.push("/");
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
 if (!isLoaded) {
-    return null; // O podrías mostrar un spinner de carga mientras se obtiene el valor de localStorage
+  return <div>Cargando...</div>;
   }
+
+
+
+  if (!user) {
+    return <div>No tienes permisos para ver esta página. Redirigiendo...</div>;
+  }
+
+
   return (
     <div className="flex min-h-screen bg-blue-50">
       {/* Menú Lateral */}

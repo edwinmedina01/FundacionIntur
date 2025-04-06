@@ -19,6 +19,7 @@ import { saveAs } from 'file-saver';
 import SearchBar from '../components/basicos/SearchBar';
 import Pagination from '../components/basicos/Pagination';
 import Select from 'react-select';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 
 const GraduandoForm = () => {
@@ -180,32 +181,50 @@ const GraduandoForm = () => {
       <table className="xls_style-excel-table">
       <thead className="bg-slate-200">
       <tr>
+            <th>#</th>
+            <th>Acciones</th>
             <th>ID</th>
             <th>Identidad</th>
+            <th>Fecha de Creación</th>
             <th>Nombre Completo</th>
             <th>Año</th>
             <th>Fecha de Inicio</th>
             <th>Fecha de Finalización</th>
             <th>Estado</th>
-            <th>Fecha de Creación</th>
-            <th>Acciones</th>
+ 
+          
           </tr>
         </thead>
         <tbody>
-          {currentItems.map(g => (
+          {currentItems.map((g,index) => (
             <tr key={g.Id_Graduando}>
-              <td>{g.Id_Graduando}</td>
+        
+              <td>{index+1}</td>
+              <div className="flex justify-center gap-2">
+    <button
+      className="px-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      onClick={() => { setFormData(g); setIsEditing(true); showModal('modalAddRow'); }}
+    >
+      <PencilSquareIcon className="h-5 w-5" />
+    </button>
+    <button
+      className="bg-red-500 hover:bg-red-600 text-white px-1 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400"
+      onClick={() => { setFormData(g); showModal('modalConfirmacion'); }}
+    >
+      <TrashIcon className="h-5 w-5" />
+    </button>
+  </div>
+  <td>{g.Id_Graduando}</td>
               <td>{g.Estudiante.Persona.Identidad}</td>
+              <td>{g.Fecha_Creacion}</td>
               <td>{g.Estudiante.Persona.Primer_Nombre} {g.Estudiante.Persona.Primer_Apellido}</td>
               <td>{g.Anio}</td>
               <td>{g.Fecha_Inicio}</td>
               <td>{g.Fecha_Final}</td>
               <td>{estados.find(e => e.Codigo_Estado === g.Estado)?.Nombre_Estado || 'Desconocido'}</td>
-              <td>{g.Fecha_Creacion}</td>
-              <td>
-                <button                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"onClick={() => { setFormData(g); setIsEditing(true); showModal('modalAddRow'); }}>Editar</button>
-                <button                   className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"onClick={() => { setFormData(g); showModal('modalConfirmacion'); }}>Eliminar</button>
-              </td>
+    
+
+
             </tr>
           ))}
           {filteredGraduandos.length === 0 && (

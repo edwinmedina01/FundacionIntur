@@ -101,7 +101,7 @@ export default async function handler(req, res) {
           });
       //    console.log(estudiantes);
         const estudiantesOrdenados = deepSort(estudiantes, 'Persona.Fecha_Creacion', false);
-        console.log(estudiantesOrdenados);
+     //   console.log(estudiantesOrdenados);
           return res.status(200).json(estudiantesOrdenados);
         }
       } catch (error) {

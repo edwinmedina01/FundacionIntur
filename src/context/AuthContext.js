@@ -49,7 +49,9 @@ export const AuthProvider = ({ children }) => {
           if (router.pathname !== '/'&&router.pathname!=="/forgot-password"&&router.pathname!=="/resetpassword" ) {
     
             router.replace('/');
-            alert("No tiene permisos")
+            
+           // alert("No tiene permisos")
+
         }
         
         }

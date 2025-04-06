@@ -118,8 +118,8 @@ console.log("Rol del usuario:", nombreRol);
     //     ip: ip,
     //     fecha: ahora,
     // });
-
-    console.log(SECRET_KEY)
+  //  console.log("SECRET_KEY")
+  //  console.log(SECRET_KEY)
     // Crear el token incluyendo los campos requeridos TEST
     const token = jwt.sign(
         { 
@@ -131,18 +131,21 @@ console.log("Rol del usuario:", nombreRol);
             nombrerol: usuario.Rol.Rol,
         }, 
         SECRET_KEY, 
-        { expiresIn: '1h' }
+        { expiresIn: '12h' }
     );
 
-    // const serialized = serialize('token', token, {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === 'production',
-    //     sameSite: 'strict',
-    //     maxAge: 3600, 
-    //     path: '/',
-    // });
+    console.log("Token generado:", token); // Mostrar el token en consola
+// Serializar el token en la cookie
+const serialized = serialize('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 43200, // 12 horas en segundos
+    path: '/',
+  });
 
-    // res.setHeader('Set-Cookie', serialized);
+  // Enviar la cookie con el token
+  res.setHeader('Set-Cookie', serialized);
     console.log(token)
     res.status(200).json({ token, role: usuario.Id_Rol, primerLogin: usuario.Primer_Login, userId: usuario.Id_Usuario, nombrerol: usuario.Rol.Rol });
 }
