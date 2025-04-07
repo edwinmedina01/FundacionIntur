@@ -8,9 +8,10 @@ export default async function handler(req, res) {
     // Obtener municipios con su nombre de departamento
     try {
       const municipios = await sequelize.query(
-        `SELECT m.Id_Municipio, m.Id_Departamento, m.Nombre_Municipio, d.Nombre_Departamento, m.Estado
+        `SELECT m.Fecha_Creacion, m.Id_Municipio, m.Id_Departamento, m.Nombre_Municipio, d.Nombre_Departamento, m.Estado
          FROM tbl_municipio m
-         JOIN tbl_departamento d ON m.Id_Departamento = d.Id_Departamento`,
+         JOIN tbl_departamento d ON m.Id_Departamento = d.Id_Departamento
+         order by m.Fecha_creacion desc`,
         {
           type: QueryTypes.SELECT,
         }
@@ -28,12 +29,13 @@ export default async function handler(req, res) {
     if (!Id_Departamento || !Nombre_Municipio) {
       return res.status(400).json({ error: 'Faltan datos para crear el municipio' });
     }
-
+  
     try {
+      // Insertar el nuevo municipio con las fechas de creación y modificación
       await sequelize.query(
-        'INSERT INTO tbl_municipio (Id_Departamento, Nombre_Municipio,Estado) VALUES (?, ?, ?)',
+        'INSERT INTO tbl_municipio (Id_Departamento, Nombre_Municipio, Estado, Fecha_Creacion, Fecha_Modificacion) VALUES (?, ?, ?, NOW(), NOW())',
         {
-          replacements: [Id_Departamento, Nombre_Municipio,Estado],
+          replacements: [Id_Departamento, Nombre_Municipio, Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -44,18 +46,19 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar un municipio existente
-    const { Id_Municipio, Id_Departamento, Nombre_Municipio ,Estado} = req.body;
+    const { Id_Municipio, Id_Departamento, Nombre_Municipio, Estado } = req.body;
     
     // Validar que los datos requeridos estén presentes
     if (!Id_Municipio || !Id_Departamento || !Nombre_Municipio) {
       return res.status(400).json({ error: 'Faltan datos para actualizar el municipio' });
     }
-
+  
     try {
+      // Actualizar el municipio, incluyendo el estado y la fecha de modificación
       await sequelize.query(
-        'UPDATE tbl_municipio SET Id_Departamento = ?, Nombre_Municipio = ?,  Estado = ? WHERE Id_Municipio = ?',
+        'UPDATE tbl_municipio SET Id_Departamento = ?, Nombre_Municipio = ?, Estado = ?, Fecha_Modificacion = NOW() WHERE Id_Municipio = ?',
         {
-          replacements: [Id_Departamento, Nombre_Municipio,Estado, Id_Municipio],
+          replacements: [Id_Departamento, Nombre_Municipio, Estado, Id_Municipio],
           type: QueryTypes.UPDATE,
         }
       );
@@ -64,7 +67,8 @@ export default async function handler(req, res) {
       console.error('Error al actualizar el municipio:', error);
       res.status(500).json({ error: 'Error al actualizar el municipio' });
     }
-  } else if (req.method === 'DELETE') {
+  }
+   else if (req.method === 'DELETE') {
     // Eliminar un municipio
     const { Id_Municipio } = req.body;
     

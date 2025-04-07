@@ -183,7 +183,7 @@ const MatriculaForm = ({ formData, isEditing, setIsEditing, onClose, fetchMatric
 
       <div className="flex justify-end space-x-4">
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">{isEditing ? 'Actualizar' : 'Guardar'}</button>
-        <button type="button" className="bg-gray-300 text-black px-4 py-2 rounded" onClick={onClose}>Cancelar</button>
+        <button type="button" className="bg-red-600 text-white px-4 py-2 rounded" onClick={onClose}>Cancelar</button>
       </div>
     </form>
   );

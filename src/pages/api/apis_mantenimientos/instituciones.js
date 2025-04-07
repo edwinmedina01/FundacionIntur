@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     // Obtener instituciones
     try {
-      const instituciones = await sequelize.query('SELECT * FROM tbl_instituto', {
+      const instituciones = await sequelize.query('SELECT * FROM tbl_instituto order by Fecha_Creacion desc', {
         type: QueryTypes.SELECT,
       });
       res.status(200).json(instituciones);

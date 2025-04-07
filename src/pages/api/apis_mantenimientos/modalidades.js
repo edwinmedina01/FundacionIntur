@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const modalidades = await sequelize.query(
-        'SELECT * FROM tbl_modalidad WHERE Estado <> 3',
+        'SELECT * FROM tbl_modalidad WHERE Estado <> 3 order by Fecha_Creacion desc ',   
         { type: QueryTypes.SELECT }
       );
       res.status(200).json(modalidades);

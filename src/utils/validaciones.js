@@ -44,7 +44,7 @@ export const validarFormulario = (formData, reglasValidacion, formularioId = nul
 
             if (reglas.validaciones) {
                 reglas.validaciones.forEach(({ label, test }) => {
-                    if (!test(valor)) {
+                    if (!test(valor,formData)) {
                         errores.push(label);
                     }
                 });

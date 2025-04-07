@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/database'); // Ajusta la ruta según tu configuración
 const Estudiante = require('./Estudiante');
-const Graduando = sequelize.define('Graduando', {
+const Graduando = sequelize.define('tbl_graduando', {
   Id_Graduando: {
     type: DataTypes.INTEGER,
     primaryKey: true,

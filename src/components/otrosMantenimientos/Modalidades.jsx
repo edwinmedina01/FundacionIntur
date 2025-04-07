@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext,useCallback  } from 'react';
 import axios from 'axios';
 
 import { useRouter } from 'next/router';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon ,PencilSquareIcon,TrashIcon  } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -101,48 +101,6 @@ const handleClearSearch = () => {
   // };
 
 
-  const exportToExcelold = async () => {
-    // 1️⃣ Crear un nuevo libro y hoja de Excel
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Modalidades");
-  
-    // 2️⃣ Definir las columnas y encabezados
-    worksheet.columns = [
-      { header: "ID", key: "ID", width: 10 },
-      { header: "Nombre", key: "Nombre", width: 30 },
-      { header: "Descripción", key: "Descripcion", width: 40 },
-      { header: "Duración", key: "Duracion", width: 15 },
-      { header: "Horario", key: "Horario", width: 20 },
-    ];
-  
-    // 3️⃣ Transformar los datos antes de agregarlos
-    const exportData = currentModalidades.map((modalidad) => ({
-      ID: modalidad.Id_Modalidad,
-      Nombre: modalidad.Nombre,
-      Descripcion: modalidad.Descripcion,
-      Duracion: modalidad.Duracion,
-      Horario: modalidad.Horario,
-    }));
-  
-    // 4️⃣ Agregar los datos a la hoja de cálculo
-    exportData.forEach((modalidad) => {
-      worksheet.addRow(modalidad);
-    });
-  
-    // 5️⃣ Aplicar estilos a los encabezados
-    worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-      cell.alignment = { horizontal: "center" };
-    });
-  
-    // 6️⃣ Generar el archivo y descargarlo
-    const buffer = await workbook.xlsx.writeBuffer();
-    const fileBlob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-  
-    saveAs(fileBlob, "Modalidades.xlsx");
-  };
 
   
 
@@ -680,62 +638,72 @@ if (!permisos) {
 
 
 {/* Tabla de modalidades */}
+
+{/* Tabla de modalidades */}
 <table className="xls_style-excel-table">
   <thead className="bg-slate-200">
     <tr>
-      <th className="py-4 px-6 text-left">Id Modalidad</th>
-      <th className="py-4 px-20 text-left">Nombre</th>
-      <th className="py-4 px-16 text-left">Descripción</th>
-      <th className="py-4 px-6 text-left">Duración (meses)</th>
-      <th className="py-4 px-6 text-left">Hora de Inicio</th>
-      <th className="py-4 px-6 text-left">Hora Final</th>
-      <th className="py-4 px-16 text-left">Estado</th>
-      <th className="py-4 px-6 text-center">Acciones</th>
+      <th>#</th>
+      <th>Acciones</th>
+      <th>Id Modalidad</th>
+      <th>Nombre</th>
+      <th>Fecha de Creación</th> {/* Nombre de la columna actualizado */}
+      <th>Descripción</th>
+      <th>Duración (meses)</th>
+      <th>Hora de Inicio</th>
+      <th>Hora Final</th>
+      <th>Estado</th>
     </tr>
   </thead>
   {permisos?.Permiso_Consultar === "1" && (
     <tbody>
-      {currentModalidades.map((modalidad) => {
+      {currentModalidades.map((modalidad, index) => {
         const estadoDescripcion = estados.find(
           (estado) => estado.Codigo_Estado === modalidad.Estado
         )?.Nombre_Estado || "Desconocido";
 
+        const fechaCreacion = modalidad.Fecha_Creacion || "Fecha no disponible"; // Si no trae la fecha, coloca un valor por defecto
+
         return (
           <tr key={modalidad.Id_Modalidad} className="border-b hover:bg-gray-100 transition duration-300">
-            <td className="py-4 px-6">{modalidad.Id_Modalidad}</td>
-            <td className="py-4 px-6"><strong>{modalidad.Nombre}</strong></td>
-            <td className="py-4 px-6">{modalidad.Descripcion}</td>
-            <td className="py-4 px-6">{modalidad.Duracion}</td>
-            <td className="py-4 px-6">{modalidad.Hora_Inicio}</td>
-            <td className="py-4 px-6">{modalidad.Hora_Final}</td>
-            <td className="py-4 px-6">{estadoDescripcion}</td>
-            <td className="py-4 px-6 flex justify-center space-x-2">
-              {permisos.Permiso_Actualizar === "1" && (
-                <button
-                  onClick={() => handleEdit(modalidad)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-                >
-                  Editar
-                </button>
-              )}
-              {permisos.Permiso_Eliminar === "1" && (
-                <button
-                  onClick={() => {
-                    setFormData(modalidad);
-                    showModal("modalConfirmacion");
-                  }}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-                >
-                  X
-                </button>
-              )}
+            <td >{index + 1}</td>
+            <td >
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEdit(modalidad)}
+                    className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => {
+                      setFormData(modalidad);
+                      showModal("modalConfirmacion");
+                    }}
+                    className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
             </td>
+            <td >{modalidad.Id_Modalidad}</td>
+            <td >{modalidad.Nombre}</td>
+            <td >{fechaCreacion}</td> {/* Aquí se muestra la Fecha_Creacion */}
+            <td >{modalidad.Descripcion}</td>
+            <td >{modalidad.Duracion}</td>
+            <td >{modalidad.Hora_Inicio}</td>
+            <td >{modalidad.Hora_Final}</td>
+            <td >{estadoDescripcion}</td>
           </tr>
         );
       })}
       {filteredModalidades.length === 0 && (
         <tr>
-          <td colSpan="8" className="py-4 text-center text-gray-500">
+          <td colSpan="10" className="py-4 text-center text-gray-500">
             ❌ No se encontraron modalidades con los criterios de búsqueda
           </td>
         </tr>

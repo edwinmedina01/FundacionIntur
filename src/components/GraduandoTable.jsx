@@ -92,7 +92,7 @@ const GraduandoForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errores = validarFormulario(formData, reglasValidacionGraduando);
-    if (errores.length > 0) return toast.error(errores.join('\n'));
+    if (errores.length > 0) return;// toast.error(errores.join('\n'));
 
     try {
       if (isEditing) {

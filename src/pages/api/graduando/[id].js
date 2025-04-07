@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 const Graduando = require('../../../../models/Graduando');
 export default async function handler(req, res) {
   const { method } = req;
-  const { id ,Id_Estudiante } = req.query;
+  const { id ,Id_Estudiante,Id_Graduando } = req.query;
 
 
 
@@ -23,14 +23,24 @@ export default async function handler(req, res) {
 
     case 'PUT':
       try {
-        const [updated] = await Graduando.update(req.body, {
-          where: { Id_Graduando: id },
-        });
+        console.log('ID:', id);
+        const [updated] = await Graduando.update(
+          {
+            ...req.body,  // Los demás campos a actualizar
+            Fecha_Modificacion: new Date(),  // Establecer la fecha de modificación al momento actual
+          },
+          {
+            where: { Id_Graduando: id },
+          }
+        );
+        
+        console.log('Updated:', updated); // Log the updated value for debugging
         if (!updated) {
           return res.status(404).json({ error: 'Graduando no encontrado para actualizar' });
         }
         res.status(200).json({ message: 'Graduando actualizado correctamente' });
       } catch (error) {
+        console.error(error); // Log the error for debugging
         res.status(400).json({ error: 'Error al actualizar el graduando' });
       }
       break;

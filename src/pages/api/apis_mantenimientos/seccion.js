@@ -19,6 +19,7 @@ export default async function handler(req, res) {
           s.Modificado_Por
         FROM tbl_seccion s
         INNER JOIN tbl_grado g ON s.Id_Grado = g.Id_Grado
+        order by s.Fecha_Creacion desc
         `,
         {
           type: QueryTypes.SELECT,
@@ -31,12 +32,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nueva sección
-    const { Nombre_Seccion, Id_Grado , Estado} = req.body;
+    const { Nombre_Seccion, Id_Grado, Estado } = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado, Estado) VALUES (?, ? , ?)', 
+        'INSERT INTO tbl_seccion (Nombre_Seccion, Id_Grado, Estado, Fecha_Creacion, Fecha_Modificacion) VALUES (?, ?, ?, NOW(), NOW())', 
         {
-          replacements: [Nombre_Seccion, Id_Grado,Estado],
+          replacements: [Nombre_Seccion, Id_Grado, Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -47,13 +48,13 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar una sección
-    const { Id_Seccion, Nombre_Seccion, Id_Grado,Estado } = req.body;
+    const { Id_Seccion, Nombre_Seccion, Id_Grado, Estado } = req.body;
     try {
       // Actualizar la sección utilizando los parámetros recibidos
       await sequelize.query(
-        'UPDATE tbl_seccion SET Nombre_Seccion = ?, Id_Grado = ?,  Estado = ? WHERE Id_Seccion = ?', 
+        'UPDATE tbl_seccion SET Nombre_Seccion = ?, Id_Grado = ?, Estado = ?, Fecha_Modificacion = NOW() WHERE Id_Seccion = ?', 
         {
-          replacements: [Nombre_Seccion, Id_Grado, Estado ,Id_Seccion],
+          replacements: [Nombre_Seccion, Id_Grado, Estado, Id_Seccion],
           type: QueryTypes.UPDATE,
         }
       );
@@ -62,7 +63,8 @@ export default async function handler(req, res) {
       console.error('Error al actualizar la sección:', error);
       res.status(500).json({ error: 'Error al actualizar la sección' });
     }
-  } else if (req.method === 'DELETE') {
+  }
+   else if (req.method === 'DELETE') {
     // Eliminar una sección
     const { Id_Seccion } = req.body;
     try {

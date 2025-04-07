@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon,TrashIcon,PencilSquareIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -287,58 +287,77 @@ const SeccionManagement = () => {
         confirmText="Eliminar"
         confirmColor="bg-red-600 hover:bg-red-700"
       />
-
 <table className="xls_style-excel-table">
   <thead className="bg-slate-200">
     <tr>
-    <th className=" text-left">Item</th>
-      <th className=" text-left">Nombre Sección</th>
-      <th className=" text-left">Id</th>
-      <th className=" text-left">Grado</th>
-      <th className=" text-left">Estado</th> {/* Nueva columna */}
-      <th className=" center">Acciones</th>
+      <th>#</th> {/* Número de Registro */}
+      <th>Acciones</th> {/* Botones de Acción */}
+      <th>Nombre Sección</th> {/* Nombre de la Sección */}
+      <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>ID</th> {/* ID de la Sección */}
+      <th>Grado</th> {/* Grado asociado */}
+      <th>Estado</th> {/* Estado */}
     </tr>
   </thead>
   {permisos?.Permiso_Consultar === "1" && (
     <tbody>
-      {currentSecciones.map((seccion,index) => (
-        <tr key={seccion.Id_Seccion}>
-          <td className="">{index+1}</td>
-          <td className="">{seccion.Nombre_Seccion}</td>
-          <td className="">{seccion.Id_Seccion}</td>
-          <td className="">{seccion.Nombre_Grado}</td>
+      {currentSecciones.map((seccion, index) => {
+        const estadoDescripcion =
+          estados.find((estado) => estado.Codigo_Estado === seccion.Estado)?.Nombre_Estado || "Desconocido";
+        
+        return (
+          <tr key={seccion.Id_Seccion} className="border-b hover:bg-gray-100 transition duration-300">
+            {/* # */}
+            <td>{index + 1}</td> {/* Número de Registro */}
 
-          {/* 📌 Mostrar el estado con su descripción */}
-          <td className="">
-            {estados.find((estado) => estado.Codigo_Estado === seccion.Estado)?.Nombre_Estado || "Desconocido"}
-          </td>
+            {/* Acciones */}
+            <td>
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEdit(seccion)}
+                    className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => {
+                      setFormData(seccion);
+                      showModal("modalConfirmacion");
+                    }}
+                    className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            </td>
 
-          <td className="py-4 px-6 flex justify-center space-x-2">
-            {permisos.Permiso_Actualizar === "1" && (
-              <button
-                onClick={() => handleEdit(seccion)}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 ml-2"
-              >
-                Editar
-              </button>
-            )}
-            {permisos.Permiso_Eliminar === "1" && (
-              <button
-                onClick={() => {
-                  setFormData(seccion);
-                  showModal("modalConfirmacion");
-                }}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 ml-2"
-              >
-                X
-              </button>
-            )}
-          </td>
-        </tr>
-      ))}
+            {/* Nombre Sección */}
+            <td>{seccion.Nombre_Seccion}</td> {/* Nombre de la Sección */}
+
+            {/* Fecha de Creación */}
+            <td>{seccion.Fecha_Creacion}</td> {/* Fecha de Creación */}
+
+            {/* ID */}
+            <td>{seccion.Id_Seccion}</td> {/* ID de la Sección */}
+
+            {/* Grado */}
+            <td>{seccion.Nombre_Grado}</td> {/* Nombre del Grado */}
+
+            {/* Estado */}
+            <td>
+              {estadoDescripcion} {/* Descripción del estado */}
+            </td>
+          </tr>
+        );
+      })}
     </tbody>
   )}
 </table>
+
 
 
       <Pagination

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon,PencilSquareIcon,TrashIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -240,33 +240,80 @@ const AreaManagement = () => {
         confirmColor="bg-red-600 hover:bg-red-700"
       />
 
-      <table className="xls_style-excel-table">
-        <thead className="bg-slate-200">
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Responsable</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th>#</th> {/* Número de Registro */}
+      <th>Acciones</th> {/* Botones de Acción */}
+      <th>ID</th> {/* ID del Área */}
+      <th>Nombre</th> {/* Nombre del Área */}
+      <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>Tipo</th> {/* Tipo del Área */}
+      <th>Responsable</th> {/* Responsable del Área */}
+      <th>Estado</th> {/* Estado del Área */}
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentAreas.map((a, index) => {
+        const estadoDescripcion =
+          estados.find((estado) => estado.Codigo_Estado === a.Estado)?.Nombre_Estado || "Desconocido";
+
+        const fechaCreacion = a.Fecha_Creacion || "Fecha no disponible"; // Si no trae la fecha, coloca un valor por defecto
+
+        return (
+          <tr key={a.Id_Area} className="border-b hover:bg-gray-100 transition duration-300">
+            {/* # */}
+            <td>{index + 1}</td> {/* Número de Registro */}
+
+            {/* Acciones */}
+            <td>
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEdit(a)}
+                    className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => {
+                      setFormData(a);
+                      showModal("modalConfirmacion");
+                    }}
+                    className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            </td>
+
+            {/* ID */}
+            <td>{a.Id_Area}</td> {/* ID del Área */}
+
+            {/* Nombre */}
+            <td>{a.Nombre_Area}</td> {/* Nombre del Área */}
+
+            {/* Fecha de Creación */}
+            <td>{fechaCreacion}</td> {/* Fecha de Creación */}
+
+            {/* Tipo */}
+            <td>{a.Tipo_Area}</td> {/* Tipo del Área */}
+
+            {/* Responsable */}
+            <td>{a.Responsable_Area}</td> {/* Responsable del Área */}
+
+            {/* Estado */}
+            <td>{estadoDescripcion}</td> {/* Estado del Área */}
           </tr>
-        </thead>
-        <tbody>
-          {permisos?.Permiso_Consultar === "1" && currentAreas.map((a) => (
-            <tr key={a.Id_Area}>
-              <td>{a.Id_Area}</td>
-              <td>{a.Nombre_Area}</td>
-              <td>{a.Tipo_Area}</td>
-              <td>{a.Responsable_Area}</td>
-              <td>{estados.find((e) => e.Codigo_Estado === a.Estado)?.Nombre_Estado || "Desconocido"}</td>
-              <td className="py-4 px-6 flex justify-center space-x-2">
-                {permisos?.Permiso_Actualizar === "1" && <button onClick={() => handleEdit(a)} className="btn-editar">Editar</button>}
-                {permisos?.Permiso_Eliminar === "1" && <button onClick={() => { setFormData(a); showModal("modalConfirmacion"); }} className="btn-eliminar">X</button>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        );
+      })}
+    </tbody>
+  )}
+</table>
 
       <Pagination
         currentPage={currentPage}

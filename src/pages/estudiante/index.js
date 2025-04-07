@@ -28,7 +28,7 @@ import { validarFormulario } from "../../utils/validaciones";
 //import ModalGeneral from '../../utils/ModalGeneral'; // 👈 esto suele arreglarlo si el .js no lo resuelve implícitamente
 
 
-import { reglasValidacionEstudiante, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
+import { reglasValidacionEstudiante, reglasValidacionGraduando, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
 const EstudiantesCrud = () => {
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [estados, setEstados] = useState([]);
@@ -531,7 +531,7 @@ function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY
 
 
 
-  const handleCancelRelacion = () => {
+  const handleCancelRelacion = (tipo) => {
     setPersonaDataRelacion((prevData) => ({
       ...prevData,
       Primer_Nombre: "",
@@ -545,46 +545,14 @@ function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY
       Creado_Por: "",
       Id_Departamento: 0,
       Id_Municipio: 0,
-      esNuevo: true,
-      Id_Tipo_Persona:1,
-      Estado:1,
       Direccion: "",
       Telefono: "",
-      Estado
-    }));
-    setPersonaData({
-      Primer_Nombre: "",
-      Segundo_Nombre: "",
-      Primer_Apellido: "",
-      Segundo_Apellido: "",
-      Sexo: "",
-      Fecha_Nacimiento: "",
-      Lugar_Nacimiento: "",
-      Identidad: "",
-      Creado_Por: "", 
-      Id_Departamento: "",
-      Id_Municipio: "",
-      Id_Tipo_Persona:1,
-      Estado:1
-    });
-
-    setGraduacion({
-      Anio: '',
-      Fecha_Inicio: '',
-      Fecha_Final: '',
-      Creado_Por: '',
-      Estudiante: null,
-      Id_Estudiante:null
-    });
-    
-    setEstudianteData({
-      Id_Beneficio: "",
-      Id_Area: "",
-      Id_Instituto: "",
-      Creado_Por: "",
-      Relaciones: [],
+      esNuevo: true,
       
-    });
+
+    }));
+    
+    
   };
 
   const [personaDataRelacion, setPersonaDataRelacion] = useState({
@@ -700,6 +668,7 @@ const [benefactorData, setBenefactorData] = useState({
 const nuevoTutor= (tipo=1)=>{
 
   setPersonaDataRelacion( {
+    Id_Estudiante:estudianteData.Id_Estudiante,
     Primer_Nombre: "",
     Segundo_Nombre: "",
     Primer_Apellido: "",
@@ -716,15 +685,15 @@ const nuevoTutor= (tipo=1)=>{
     Id_Tipo_Persona:tipo,
     Estado:1,
     Estudiante:estudianteData,
-    Id_estudiante:idEstudiante
+  
 
 
   })
 
-  personaDataRelacion.Estudiante.Persona=personaData;
-  personaDataRelacion.Id_Tipo_Persona=tipo;
+ // personaDataRelacion.Estudiante.Persona=personaData;
+  //personaDataRelacion.Id_Tipo_Persona=tipo;
 
-  setTimeout(() => {
+
     switch (tipo) {
       case 2:
      //   showModal("modalRelacion");
@@ -735,8 +704,7 @@ const nuevoTutor= (tipo=1)=>{
     //    showModal("modalRelacionBenefactor");
         break;
     }
-  }, 50); // 
- 
+
 
 }
 
@@ -847,15 +815,6 @@ const editGraduacion= ()=>{
   };
 
     
-  const fetchGraduacionold = async () => {
-    try {
-      const response = await axios.get('/api/graduandos?Id_Estudiante=123');
-      setGraduacion(response.data);
-    } catch (error) {
-
-      console.error("Error al obtener estudiantes", error);
-    }
-  };
 
 
 
@@ -1265,6 +1224,19 @@ const handleSubmitGraduacion = async (e) => {
     graduacion.Id_Estudiante=selectedStudent.Id_Estudiante;
     graduacion.Estado=Number(graduacion.Estado);
 
+
+    
+    const errores2 = validarFormulario(graduacion, reglasValidacionGraduando,"formGraduacion");
+
+    if (errores2.length > 0) {
+   
+      console.log("validarFormulario Estudiante");
+   //   console.log(estudianteData);
+    //  toast.error(errores2.join("\n"), error);
+      return;
+    }
+
+
     if (!isEditing){
 
       
@@ -1322,6 +1294,7 @@ const handleSubmitGraduacion = async (e) => {
 
    // setGraduandos(response.data);
   } catch (error) {
+    console.error('Error al crear un graduando:', error);
     toast.error('Error al crear un graduando:', error);
   }
 };
@@ -2006,7 +1979,26 @@ if (!permisos) {
           estados={estados}
         />
 </ModalGenerico> 
-
+<ModalGenerico
+  id="modalGraduacion"
+  isOpen={modals["modalGraduacion"]}
+  onClose={() => closeModal("modalGraduacion")}
+  titulo={personaDataRelacion?.esNuevo ? "Agregar Graduación" : "Actualizar Graduación"}
+  tamano="max-w-4xl"
+>
+  <GraduacionForm
+    personaData={personaData}
+    graduacion={graduacion}
+    handleChange={handleChange}
+    handleSubmitGraduacion={handleSubmitGraduacion}
+    isEditing={isEditingGraduacion}
+    permisos={permisos}
+    closeModal={closeModal}  // Se pasa closeModal aquí
+    resetForm={resetForm}  // Se pasa resetForm aquí
+    shouldReset={false}  // Si deseas resetear el formulario al cerrar
+    estados={estados}
+  />
+</ModalGenerico>
 
 <div>
 <div className="flex justify-between items-center mb-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon,PencilSquareIcon ,TrashIcon  } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -223,51 +223,71 @@ const GradoManagement = () => {
         confirmText="Eliminar"
         confirmColor="bg-red-600 hover:bg-red-700"
       />
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th>#</th> {/* Número de Registro */}
+      <th>Acciones</th> {/* Botones de Acción */}
+      <th>Nombre</th> {/* Nombre */}
+      <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>Descripción</th> {/* Descripción */}
+      <th>Nivel Académico</th> {/* Nivel Académico */}
+      <th>Duración</th> {/* Duración */}
+      <th>Cantidad de Materias</th> {/* Cantidad de Materias */}
+      <th>Estado</th> {/* Estado */}
+    </tr>
+  </thead>
+  <tbody>
+    {currentGrados.map((g, index) => {
+      const estadoDescripcion =
+        estados.find((e) => e.Codigo_Estado === g.Estado)?.Nombre_Estado || "Desconocido";
 
-      <table className="xls_style-excel-table">
-        <thead className="bg-slate-200">
-          <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Nivel Académico</th>
-            <th>Duración</th>
-            <th>Cantidad de Materias</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentGrados.map((g) => {
-            const estadoDescripcion = estados.find((e) => e.Codigo_Estado === g.Estado)?.Nombre_Estado || "Desconocido";
-            return (
-              <tr key={g.Id_Grado}>
-                <td>{g.Nombre}</td>
-                <td>{g.Descripcion}</td>
-                <td>{g.Nivel_Academico}</td>
-                <td>{g.Duracion}</td>
-                <td>{g.Cantidad_Materias}</td>
-                <td>{estadoDescripcion}</td>
-                <td className="flex gap-2">
-                  {permisos?.Permiso_Actualizar === "1" && (
-                    <button onClick={() => handleEdit(g)} className="btn-editar">Editar</button>
-                  )}
-                  {permisos?.Permiso_Eliminar === "1" && (
-                    <button
-                      onClick={() => {
-                        setFormData(g);
-                        showModal("modalConfirmacion");
-                      }}
-                      className="btn-eliminar"
-                    >
-                      X
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      return (
+        <tr key={g.Id_Grado} className="hover:bg-gray-100 transition duration-300">
+          <td>{index + 1}</td> {/* Número de Registro */}
+          <td className="flex justify-center gap-2"> {/* Botones de Acción */}
+            {permisos?.Permiso_Actualizar === "1" && (
+              <button
+                onClick={() => handleEdit(g)}
+                className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <PencilSquareIcon className="h-5 w-5" />
+              </button>
+            )}
+            {permisos?.Permiso_Eliminar === "1" && (
+              <button
+                onClick={() => {
+                  setFormData(g);
+                  showModal("modalConfirmacion");
+                }}
+                className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                <TrashIcon className="h-5 w-5" />
+              </button>
+            )}
+          </td>
+          <td>{g.Nombre}</td> {/* Nombre */}
+          <td>{g.Fecha_Creacion}</td> {/* Fecha de Creación */}
+          <td>{g.Descripcion}</td> {/* Descripción */}
+          <td>{g.Nivel_Academico}</td> {/* Nivel Académico */}
+          <td>{g.Duracion}</td> {/* Duración */}
+          <td>{g.Cantidad_Materias}</td> {/* Cantidad de Materias */}
+          <td>{estadoDescripcion}</td> {/* Estado */}
+        </tr>
+      );
+    })}
+    {filteredGrados.length === 0 && (
+      <tr>
+        <td colSpan="9" className="py-4 text-center text-gray-500">
+          ❌ No se encontraron grados con los criterios de búsqueda
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
+
+
       <ModalGenerico
   id="modalAddGrado"
   isOpen={modals["modalAddGrado"]}

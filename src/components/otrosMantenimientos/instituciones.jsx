@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon,PencilSquareIcon ,TrashIcon  } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -254,37 +254,89 @@ const InstitucionManagement = () => {
         confirmColor="bg-red-600 hover:bg-red-700"
       />
 
-      <table className="xls_style-excel-table">
-        <thead className="bg-slate-200">
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Dirección</th>
-            <th>Teléfono</th>
-            <th>Correo</th>
-            <th>Director</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th>#</th> {/* Número de Registro */}
+      <th>Acciones</th> {/* Botones de Acción */}
+      <th>ID</th> {/* ID del Instituto */}
+      <th>Nombre</th> {/* Nombre del Instituto */}
+      <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>Dirección</th> {/* Dirección del Instituto */}
+      <th>Teléfono</th> {/* Teléfono del Instituto */}
+      <th>Correo</th> {/* Correo del Instituto */}
+      <th>Director</th> {/* Nombre del Director */}
+      <th>Estado</th> {/* Estado del Instituto */}
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentInstituciones.map((i, index) => {
+        const estadoDescripcion =
+          estados.find((estado) => estado.Codigo_Estado === i.Estado)?.Nombre_Estado || "Desconocido";
+
+        const fechaCreacion = i.Fecha_Creacion || "Fecha no disponible"; // Si no trae la fecha, coloca un valor por defecto
+        
+        return (
+          <tr key={i.Id_Instituto} className="border-b hover:bg-gray-100 transition duration-300">
+            {/* # */}
+            <td>{index + 1}</td> {/* Número de Registro */}
+
+            {/* Acciones */}
+            <td>
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEdit(i)}
+                    className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => {
+                      setFormData(i);
+                      showModal("modalConfirmacion");
+                    }}
+                    className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            </td>
+
+            {/* ID */}
+            <td>{i.Id_Instituto}</td> {/* ID del Instituto */}
+
+            {/* Nombre */}
+            <td>{i.Nombre_Instituto}</td> {/* Nombre del Instituto */}
+
+            {/* Fecha de Creación */}
+            <td>{fechaCreacion}</td> {/* Fecha de Creación */}
+
+            {/* Dirección */}
+            <td>{i.Direccion}</td> {/* Dirección del Instituto */}
+
+            {/* Teléfono */}
+            <td>{i.Telefono}</td> {/* Teléfono del Instituto */}
+
+            {/* Correo */}
+            <td>{i.Correo}</td> {/* Correo del Instituto */}
+
+            {/* Director */}
+            <td>{i.Director}</td> {/* Director del Instituto */}
+
+            {/* Estado */}
+            <td>{estadoDescripcion}</td> {/* Estado del Instituto */}
           </tr>
-        </thead>
-        <tbody>
-          {currentInstituciones.map((i) => (
-            <tr key={i.Id_Instituto}>
-              <td>{i.Id_Instituto}</td>
-              <td>{i.Nombre_Instituto}</td>
-              <td>{i.Direccion}</td>
-              <td>{i.Telefono}</td>
-              <td>{i.Correo}</td>
-              <td>{i.Director}</td>
-              <td>{estados.find((e) => e.Codigo_Estado === i.Estado)?.Nombre_Estado || 'Desconocido'}</td>
-              <td className="flex gap-2">
-                {permisos.Permiso_Actualizar === "1" && <button onClick={() => handleEdit(i)} className="btn-editar">Editar</button>}
-                {permisos.Permiso_Eliminar === "1" && <button onClick={() => { setFormData(i); showModal("modalConfirmacion") }} className="btn-eliminar">X</button>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        );
+      })}
+    </tbody>
+  )}
+</table>
+
 
       <Pagination
         currentPage={currentPage}

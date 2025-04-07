@@ -201,7 +201,7 @@ useEffect(() => {
     return () => clearInterval(intervalId); // Limpiar intervalo al desmontar
   }, [user]);
 
-  console.log("Estado actual del usuario en el contexto:", user);
+  //console.log("Estado actual del usuario en el contexto:", user);
 
   if(!user){
 

@@ -7,12 +7,24 @@ const GraduacionForm = ({
   handleSubmitGraduacion,
   isEditing,
   permisos,
+  closeModal,
   resetForm,
+  shouldReset, // Recibes el control de reset
   estados
 }) => {
+
+  // Esta función maneja el cierre del modal y el reset
+  const handleCloseForm = () => {
+    // Si debe hacer un reset, ejecutamos la función resetForm, si no solo cerramos el modal
+    if (shouldReset) {
+      resetForm();  // Resetear los valores si es necesario
+    }
+    closeModal("modalGraduacion"); // Cierra el modal
+  };
+
   return (
     <div>
-      <form onSubmit={handleSubmitGraduacion}>
+      <form onSubmit={handleSubmitGraduacion} id="formGraduacion">
         {/* Nombre Completo Estudiante */}
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -122,7 +134,7 @@ const GraduacionForm = ({
           {/* Botón de Cancelar */}
           <button
             type="button"
-            onClick={resetForm}
+            onClick={handleCloseForm}  // Se ejecutará al hacer clic
             className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
             Cancelar

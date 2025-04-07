@@ -92,6 +92,74 @@ export const reglasValidacionModalidadold = {
 
  // Estado: { tipo: "int", requerido: false, opciones: [0, 1] }, // 0 = Inactivo, 1 = Activo
 };
+export const reglasValidacionGraduando = {
+  Anio: {
+    ...reglasGenerales.SoloNumeros(2000, 2050),  // Año de graduación debe ser un valor válido
+    requerido: true,
+    validaciones: [
+      {
+        label: "El año de graduación debe ser igual o posterior al año de inicio.",
+        test: (valor, formData) => {
+          const fechaInicio = new Date(formData.Fecha_Inicio);
+          const añoGraduacion = Number(valor);  // Convertir el año de graduación a número
+          return añoGraduacion >= fechaInicio.getFullYear(); // El año de graduación debe ser mayor o igual al año de inicio
+        },
+      },
+      {
+        label: "El año de graduación debe ser igual o posterior al año de finalización.",
+        test: (valor, formData) => {
+          const fechaFinal = new Date(formData.Fecha_Final);
+          const añoGraduacion = Number(valor);  // Convertir el año de graduación a número
+          return añoGraduacion >= fechaFinal.getFullYear(); // El año de graduación debe ser mayor o igual al año de finalización
+        },
+      },
+      {
+        label: "El año de graduación no puede ser mayor al año actual más 1.",
+        test: (valor) => {
+          const fechaActual = new Date();
+          const proximoAño = fechaActual.getFullYear() + 1;
+          const añoGraduacion = Number(valor);
+          return añoGraduacion <= proximoAño; // El año de graduación no puede ser mayor al año actual + 1
+        },
+      },
+    ],
+  },
+  Fecha_Inicio: {
+    requerido: true,
+    validaciones: [
+      {
+        label: "La fecha de inicio debe ser posterior al 1 de enero de 2000.",
+        test: (valor) => {
+          const fechaMinima = new Date('2000-01-01');
+          return new Date(valor) >= fechaMinima;
+        },
+      },
+    ],
+  },
+  Fecha_Final: {
+    requerido: true,
+    validaciones: [
+      {
+        label: "La fecha de finalización debe ser posterior a la fecha de inicio.",
+        test: (valor, formData) => {
+          const fechaInicio = new Date(formData.Fecha_Inicio);
+          const fechaFinal = new Date(valor);
+          return fechaFinal > fechaInicio;  // La fecha de finalización debe ser posterior a la de inicio
+        },
+      },
+      {
+        label: "La diferencia entre la fecha de inicio y la fecha de finalización no debe ser menor a un año.",
+        test: (valor, formData) => {
+          const fechaInicio = new Date(formData.Fecha_Inicio);
+          const fechaFinal = new Date(valor);
+          const diffTime = Math.abs(fechaFinal - fechaInicio);
+          const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365);  // Diferencia en años
+          return diffYears >= 1;  // La diferencia entre las fechas debe ser de al menos 1 año
+        },
+      },
+    ],
+  },
+};
 
 
 
@@ -325,10 +393,6 @@ export const reglasValidacionUsuario = {
   //Modificado_Por: { tipo: "int", requerido: false }, // ✅ Puede ser nulo si no se ha modificado
   //Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false }, // ✅ Puede ser nulo si no se ha modificado
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
-};
-export const reglasValidacionGraduando = {
- 
   Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };
 

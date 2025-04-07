@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon,TrashIcon,PencilSquareIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../../context/AuthContext';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -324,53 +324,85 @@ const LineaBeneficioManagement = () => {
         confirmColor="bg-red-600 hover:bg-red-700"
       />
 
-      <table className="xls_style-excel-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Monto</th>
-            <th>Responsable</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+<table className="xls_style-excel-table">
+  <thead className="bg-slate-200">
+    <tr>
+      <th>#</th> {/* Número de Registro */}
+      <th>Acciones</th> {/* Botones de Acción */}
+      <th>ID</th> {/* ID del Beneficio */}
+      <th>Nombre</th> {/* Nombre del Beneficio */}
+      <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>Tipo</th> {/* Tipo de Beneficio */}
+      <th>Monto</th> {/* Monto del Beneficio */}
+      <th>Responsable</th> {/* Responsable del Beneficio */}
+      <th>Estado</th> {/* Estado del Beneficio */}
+    </tr>
+  </thead>
+  {permisos?.Permiso_Consultar === "1" && (
+    <tbody>
+      {currentBeneficios.map((beneficio, index) => {
+        const estadoDescripcion = estados.find(
+          (estado) => estado.Codigo_Estado === beneficio.Estado
+        )?.Nombre_Estado || "Desconocido";
 
-        <tbody>
-          {currentBeneficios.map((beneficio) => {
-            const estado = estados.find((e) => e.Codigo_Estado === beneficio.Estado);
-            return (
-              <tr key={beneficio.Id_Beneficio}>
-                <td>{beneficio.Id_Beneficio}</td>
-                <td>{beneficio.Nombre_Beneficio}</td>
-                <td>{beneficio.Tipo_Beneficio}</td>
-                <td>{beneficio.Monto_Beneficio}</td>
-                <td>{beneficio.Responsable_Beneficio}</td>
-                <td>{estado ? estado.Nombre_Estado : 'Desconocido'}</td>
-                <td className="flex gap-2">
-                  {permisos?.Permiso_Actualizar === '1' && (
-                    <button onClick={() => handleEdit(beneficio)} className="btn-editar">
-                      Editar
-                    </button>
-                  )}
-                  {permisos?.Permiso_Eliminar === '1' && (
-                    <button
-                      onClick={() => {
-                        setFormData(beneficio);
-                        showModal('modalConfirmacion');
-                      }}
-                      className="btn-eliminar"
-                    >
-                      Eliminar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        const fechaCreacion = beneficio.Fecha_Creacion || "Fecha no disponible"; // Si no trae la fecha, coloca un valor por defecto
+
+        return (
+          <tr key={beneficio.Id_Beneficio} className="border-b hover:bg-gray-100 transition duration-300">
+            {/* # */}
+            <td>{index + 1}</td> {/* Número de Registro */}
+
+            {/* Acciones */}
+            <td>
+              <div className="flex justify-center gap-2">
+                {permisos.Permiso_Actualizar === "1" && (
+                  <button
+                    onClick={() => handleEdit(beneficio)}
+                    className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <PencilSquareIcon className="h-5 w-5" />
+                  </button>
+                )}
+                {permisos.Permiso_Eliminar === "1" && (
+                  <button
+                    onClick={() => {
+                      setFormData(beneficio);
+                      showModal("modalConfirmacion");
+                    }}
+                    className="bg-red-500 text-white px-1 py-1 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            </td>
+
+            {/* ID */}
+            <td>{beneficio.Id_Beneficio}</td> {/* ID del Beneficio */}
+
+            {/* Nombre */}
+            <td>{beneficio.Nombre_Beneficio}</td> {/* Nombre del Beneficio */}
+
+            {/* Fecha de Creación */}
+            <td>{fechaCreacion}</td> {/* Fecha de Creación */}
+
+            {/* Tipo */}
+            <td>{beneficio.Tipo_Beneficio}</td> {/* Tipo de Beneficio */}
+
+            {/* Monto */}
+            <td>{beneficio.Monto_Beneficio}</td> {/* Monto del Beneficio */}
+
+            {/* Responsable */}
+            <td>{beneficio.Responsable_Beneficio}</td> {/* Responsable del Beneficio */}
+
+            {/* Estado */}
+            <td>{estadoDescripcion}</td> {/* Estado del Beneficio */}
+          </tr>
+        );
+      })}
+    </tbody>
+  )}
+</table>
 
       <Pagination
         currentPage={currentPage}

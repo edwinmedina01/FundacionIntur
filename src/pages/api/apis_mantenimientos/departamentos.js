@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     // Obtener departamentos
     try {
-      const departamentos = await sequelize.query('SELECT * FROM tbl_departamento', {
+      const departamentos = await sequelize.query('SELECT * FROM tbl_departamento order by fecha_creacion desc', {
         type: QueryTypes.SELECT,
       });
       res.status(200).json(departamentos);
@@ -13,15 +13,15 @@ export default async function handler(req, res) {
       console.error('Error al obtener los departamentos:', error);
       res.status(500).json({ error: 'Error al obtener los departamentos' });
     }
-  } else if (req.method === 'POST') {
+  }  else if (req.method === 'POST') {
     // Crear un nuevo departamento
     const { Nombre_Departamento } = req.body;
-
+  
     // Validar que el nombre del departamento esté presente
     if (!Nombre_Departamento) {
       return res.status(400).json({ error: 'Falta el nombre del departamento' });
     }
-
+  
     try {
       // Verificar si ya existe el departamento con el mismo nombre
       const existingDepartamento = await sequelize.query(
@@ -31,14 +31,14 @@ export default async function handler(req, res) {
           type: QueryTypes.SELECT,
         }
       );
-
+  
       if (existingDepartamento.length > 0) {
         return res.status(400).json({ error: 'El departamento ya existe' });
       }
-
+  
       // Si no existe, insertar el nuevo departamento
       await sequelize.query(
-        'INSERT INTO tbl_departamento (Nombre_Departamento) VALUES (?)',
+        'INSERT INTO tbl_departamento (Nombre_Departamento, Fecha_Creacion, Fecha_Modificacion) VALUES (?, NOW(), NOW())',
         {
           replacements: [Nombre_Departamento],
           type: QueryTypes.INSERT,
@@ -51,18 +51,19 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar un departamento existente
-    const { Id_Departamento, Nombre_Departamento } = req.body;
-
+    const { Id_Departamento, Nombre_Departamento,Estado  } = req.body;
+  
     // Validar que los datos requeridos estén presentes
     if (!Id_Departamento || !Nombre_Departamento) {
       return res.status(400).json({ error: 'Faltan datos para actualizar el departamento' });
     }
-
+  
     try {
+      // Actualizar el departamento y modificar la fecha de modificación
       await sequelize.query(
-        'UPDATE tbl_departamento SET Nombre_Departamento = ? WHERE Id_Departamento = ?',
+        'UPDATE tbl_departamento SET Nombre_Departamento = ?, Estado = ?, Fecha_Modificacion = NOW() WHERE Id_Departamento = ?',
         {
-          replacements: [Nombre_Departamento, Id_Departamento],
+          replacements: [Nombre_Departamento, Estado, Id_Departamento],
           type: QueryTypes.UPDATE,
         }
       );
@@ -71,7 +72,8 @@ export default async function handler(req, res) {
       console.error('Error al actualizar el departamento:', error);
       res.status(500).json({ error: 'Error al actualizar el departamento' });
     }
-  } else if (req.method === 'DELETE') {
+  }
+  else if (req.method === 'DELETE') {
     // Eliminar un departamento
     const { Id_Departamento } = req.body;
 
