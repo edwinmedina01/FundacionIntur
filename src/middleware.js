@@ -1,15 +1,11 @@
-// src/middleware.js
 import { NextResponse } from 'next/server';
 
 export async function middleware(req) {
   // Obtener el token de las cookies
-  //const token = req.cookies.get('token'); 
-  //const token = req.cookies.token;  // Usamos directamente req.cookies.token
   const token = req.cookies.get('token')?.value; // Obtener el token de las cookies
-
   const baseUrl = req.nextUrl.origin;  // Esto nos da la URL base (http://localhost:3000 o la URL de producción)
-  
-    console.log("🔹 Token recibido en el middleware:", token);  // Mostrar el token en consola
+
+  console.log("🔹 Token recibido en el middleware:", token);  // Mostrar el token en consola
   console.log("middleware");
 
   // Si la solicitud es a una ruta de la API que no es de autenticación (api/auth), entonces validar el token
@@ -49,7 +45,24 @@ export async function middleware(req) {
 
 // Configuración del middleware
 export const config = {
-    runtime: 'experimental-edge', // Usa el runtime experimental para Edge
+  runtime: 'experimental-edge', // Usa el runtime experimental para Edge
 
   matcher: '/api/:path*',  // Aplica solo a las rutas de la API
 };
+
+// Configuración de cabeceras de seguridad
+export function addSecurityHeaders(response) {
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); // HSTS
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN'); // X-Frame-Options
+  response.headers.set('X-Content-Type-Options', 'nosniff'); // X-Content-Type-Options
+  response.headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none';"); // Content Security Policy
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin'); // Referrer Policy
+  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=()'); // Permissions Policy
+  return response;
+}
+
+// Configuración del middleware para incluir cabeceras de seguridad
+export async function middlewareWithHeaders(req) {
+  const response = await middleware(req);
+  return addSecurityHeaders(response);
+}
