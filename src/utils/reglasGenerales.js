@@ -37,6 +37,7 @@ export const reglasGenerales = {
         ]
     }),
 
+    
     // ✅ Nivel Académico (Ejemplo: "TERCER CICLO", "SEGUNDO DE CARRERA")
     NivelAcademico: (min = 3, max = 60) => ({ ...reglasGenerales.TextoLibre(min, max) }),
 
@@ -484,22 +485,18 @@ NombreCompuesto: (min = 10, max = 300) => ({
         ]
     }),
     Porcentaje: (min = 0, max = 100) => ({
-        tipo: "decimal",
-        validaciones: [
-            { 
-                label: `Debe ser un valor numérico entre ${min} y ${max}, con o sin el símbolo '%'.`, 
-                test: (valor) => /^(\d{1,2}(\.\d{1,2})?|100(\.00?)?)%?$/.test(valor.trim()) 
-            },
-            { 
-                label: `El valor debe estar entre ${min} y ${max}.`, 
-                test: (valor) => {
-                    const numero = parseFloat(valor.replace('%', ''));
-                    return !isNaN(numero) && numero >= min && numero <= max;
-                }
-            }
-        ]
+      tipo: "decimal",
+      validaciones: [
+        { 
+          label: `Debe ser un valor numérico entre ${min} y ${max}.`, 
+          test: (valor) => {
+            const numero = parseFloat(valor);
+            return !isNaN(numero) && numero >= min && numero <= max && Number(valor) === numero; // Aseguramos que es un número y no texto
+          }
+        }
+      ]
     }),
-
+    
     // ✅ Teléfono (Formato internacional)
     Telefono: () => ({
         tipo: "string",

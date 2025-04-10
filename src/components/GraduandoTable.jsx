@@ -123,14 +123,15 @@ const GraduandoForm = () => {
 
   const handleExportGraduandos = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
-      { header: "Identidad", key: "Identidad", width: 20 },
-      { header: "Nombre Completo", key: "Nombre", width: 40 },
+    //  { header: "ID", key: "ID", width: 10 },
+      { header: "Identidad", key: "Identidad", width: 10 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 15 },
+      { header: "Nombre Completo", key: "Nombre", width: 30 },
       { header: "Año", key: "Anio", width: 10 },
       { header: "Fecha de Inicio", key: "Fecha_Inicio", width: 18 },
       { header: "Fecha de Finalización", key: "Fecha_Final", width: 18 },
       { header: "Estado", key: "Estado", width: 20 },
-      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
+
     ];
   
     const data = filteredGraduandos.map((graduando) => {
@@ -183,7 +184,7 @@ const GraduandoForm = () => {
       <tr>
             <th>#</th>
             <th>Acciones</th>
-            <th>ID</th>
+            {/* <th>ID</th> */}
             <th>Identidad</th>
             <th>Fecha de Creación</th>
             <th>Nombre Completo</th>
@@ -214,7 +215,7 @@ const GraduandoForm = () => {
       <TrashIcon className="h-5 w-5" />
     </button>
   </div>
-  <td>{g.Id_Graduando}</td>
+  {/* <td>{g.Id_Graduando}</td> */}
               <td>{g.Estudiante.Persona.Identidad}</td>
               <td>{g.Fecha_Creacion}</td>
               <td>{g.Estudiante.Persona.Primer_Nombre} {g.Estudiante.Persona.Primer_Apellido}</td>

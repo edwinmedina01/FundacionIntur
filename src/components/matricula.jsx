@@ -77,13 +77,15 @@ const MatriculaManagement = () => {
 
   const handleExportMatriculas = async () => {
     const headers = [
-      { header: "ID Matrícula", key: "ID", width: 15 },
+   //   { header: "ID Matrícula", key: "ID", width: 15 },
+
       { header: "Identidad", key: "Identidad", width: 20 },
+      { header: "Fecha Matrícula", key: "Fecha_Matricula", width: 20 },
       { header: "Estudiante", key: "Estudiante", width: 30 },
       { header: "Modalidad", key: "Modalidad", width: 20 },
       { header: "Grado", key: "Grado", width: 15 },
       { header: "Sección", key: "Seccion", width: 15 },
-      { header: "Fecha Matrícula", key: "Fecha_Matricula", width: 20 },
+
       { header: "Estado", key: "Estado", width: 20 },
     ];
   

@@ -136,13 +136,15 @@ const DepartamentoManagement = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
+      // { header: "ID", key: "ID", width: 10 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Estado", key: "Estado", width: 15 },
     ];
     const data = departamentos.map((d) => ({
-      ID: d.Id_Departamento,
+      // ID: d.Id_Departamento,
       Nombre: d.Nombre_Departamento,
+      Fecha_Creacion: d.Fecha_Creacion || "Fecha no disponible",
       Estado: estados.find((e) => e.Codigo_Estado === d.Estado)?.Nombre_Estado || "Desconocido",
     }));
     await exportToExcel({
@@ -225,7 +227,7 @@ const DepartamentoManagement = () => {
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Departamento */}
+      {/* <th>ID</th> ID del Departamento */}
       <th>Nombre</th> {/* Nombre del Departamento */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
       <th>Estado</th> {/* Estado del Departamento */}
@@ -270,7 +272,7 @@ const DepartamentoManagement = () => {
             </td>
 
             {/* ID */}
-            <td>{d.Id_Departamento}</td> {/* ID del Departamento */}
+            {/* <td>{d.Id_Departamento}</td> ID del Departamento */}
 
             {/* Nombre */}
             <td>{d.Nombre_Departamento}</td> {/* Nombre del Departamento */}

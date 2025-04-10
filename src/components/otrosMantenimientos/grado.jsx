@@ -166,20 +166,24 @@ const GradoManagement = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
+      // { header: "ID", key: "ID", width: 10 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 15 },
       { header: "Descripción", key: "Descripcion", width: 40 },
       { header: "Nivel Académico", key: "Nivel_Academico", width: 25 },
       { header: "Duración", key: "Duracion", width: 15 },
       { header: "Cantidad de Materias", key: "Cantidad_Materias", width: 25 },
+      { header: "Estado", key: "Estado", width: 20 },
     ];
     const data = filteredGrados.map((g) => ({
       ID: g.Id_Grado,
       Nombre: g.Nombre,
+      Fecha_Creacion: g.Fecha_Creacion,
       Descripcion: g.Descripcion,
       Nivel_Academico: g.Nivel_Academico,
       Duracion: g.Duracion,
       Cantidad_Materias: g.Cantidad_Materias,
+      Estado: estados.find((e) => e.Codigo_Estado === g.Estado)?.Nombre_Estado || "Desconocido",
     }));
     await exportToExcel({ fileName: 'Grados.xlsx', title: 'Reporte de Grados', headers, data, searchQuery });
   };

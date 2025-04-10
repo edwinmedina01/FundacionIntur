@@ -69,6 +69,22 @@ export const exportToExcel = async ({ fileName, title, headers, data, searchQuer
         // Ajustar alineación en la columna de ID si es necesario
         row.getCell(1).alignment = { horizontal: "center" };
         row.getCell(2).alignment = { horizontal: "center" };
+
+
+        headers.forEach((col, i) => {
+            row.getCell(i + 1).alignment = { vertical: "top", wrapText: true };
+          });
+
+        modifiedHeaders.forEach((col, i) => {
+            const cell = row.getCell(i + 1);
+            const columnWidth = worksheet.getColumn(i + 1).width; // Obtener el ancho de la columna
+      
+            // Si el tamaño del texto excede el ancho de la columna, aplicar wrapText
+            if (cell.value && typeof cell.value === 'string' && cell.value.length > columnWidth) {
+              cell.alignment = { wrapText: true, vertical: "top" };
+            }
+          });
+
         rowIndex++; 
     });
 

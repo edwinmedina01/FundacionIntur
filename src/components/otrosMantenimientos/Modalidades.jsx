@@ -104,123 +104,13 @@ const handleClearSearch = () => {
 
   
 
-const exportToExcelv1 = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Modalidades");
 
-    // 📌 **Obtener la Imagen en Base64**
-    const logoBase64 = await getBase64ImageFromUrl("/img/intur.png");
-    const imageId = workbook.addImage({
-        base64: logoBase64,
-        extension: "png",
-    });
-
-    // 📌 **Insertar el Logo en la Esquina Izquierda**
-    worksheet.addImage(imageId, {
-        tl: { col: 0, row: 0 }, // Posición en la celda A1
-        ext: { width: 120, height: 50 }, // Tamaño del logo
-    });
-
-    // 📌 **Insertar el Título en la Fila 1**
-    worksheet.mergeCells("B1", "K1");
-    worksheet.getCell("B1").value = "Reporte de Modalidades";
-    worksheet.getCell("B1").font = { bold: true, size: 16 };
-    worksheet.getCell("B1").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Fecha de Exportación en la Fila 2**
-    worksheet.mergeCells("B2", "K2");
-    worksheet.getCell("B2").value = `Fecha de Exportación: ${new Date().toLocaleDateString("es-ES")}`;
-    worksheet.getCell("B2").font = { italic: true, size: 12 };
-    worksheet.getCell("B2").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Criterios de Búsqueda en la Fila 3**
-    const filterCriteria = Object.entries(searchQuery || {})
-        .filter(([_, value]) => value)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(", ") || "Sin filtros";
-
-    worksheet.mergeCells("B3", "K3");
-    worksheet.getCell("B3").value = `Criterios de Búsqueda: ${filterCriteria}`;
-    worksheet.getCell("B3").font = { italic: true, size: 12 };
-    worksheet.getCell("B3").alignment = { horizontal: "center", vertical: "middle" };
-
-    // 📌 **Agregar una Fila Vacía en la Fila 4 para Separar los Encabezados**
-    worksheet.getRow(4).values = [];
-
-    // 📌 **Definir Encabezados desde la Fila 5**
-    const headers = [
-        { header: "ID", key: "ID", width: 10 },
-        { header: "Nombre", key: "Nombre", width: 30 },
-        { header: "Descripción", key: "Descripcion", width: 40 },
-        { header: "Duración", key: "Duracion", width: 15 },
-        { header: "Horario", key: "Horario", width: 20 },
-    ];
-
-    // 📌 **Estilizar los Encabezados en la Fila 5**
-    const headerRow = worksheet.getRow(5);
-    headerRow.values = headers.map((h) => h.header);
-    headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
-    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "007ACC" } };
-    headerRow.alignment = { horizontal: "center", vertical: "middle" };
-    headerRow.border = { top: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }, bottom: { style: "thin" } };
-
-    // 📌 **Definir Anchos de Columna**
-    headers.forEach((col, index) => {
-        worksheet.getColumn(index + 1).width = col.width;
-    });
-
-    // 📌 **Filtrar Modalidades con deepSearch**
-    const filteredModalidades = currentModalidades.filter((modalidad) => deepSearch(modalidad, searchQuery));
-
-    // 📌 **Agregar Datos al Excel (A partir de la fila 6)**
-    let rowIndex = 6;
-    filteredModalidades.forEach((modalidad) => {
-        worksheet.getRow(rowIndex).values = [
-            modalidad.Id_Modalidad,
-            modalidad.Nombre,
-            modalidad.Descripcion,
-            modalidad.Duracion || "-",
-            modalidad.Horario || "-",
-        ];
-        rowIndex++;
-    });
-
-    // 📌 **Descargar el Archivo**
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    saveAs(blob, "Reporte_Modalidades.xlsx");
-};
-
-const handleExportModalidadesOld = async () => {
-  const headers = [
-    { header: "ID", key: "ID", width: 10 },
-    { header: "Nombre", key: "Nombre", width: 30 },
-    { header: "Descripción", key: "Descripcion", width: 40 },
-    { header: "Duración", key: "Duracion", width: 15 },
-    { header: "Horario", key: "Horario", width: 20 },
-  ];
-
-  const data = currentModalidades.map((modalidad) => ({
-    ID: modalidad.Id_Modalidad,
-    Nombre: modalidad.Nombre,
-    Descripcion: modalidad.Descripcion,
-    Duracion: modalidad.Duracion || "-",
-    Horario: modalidad.Horario || "-",
-  }));
-
-  await exportToExcel({
-    fileName: "Modalidades.xlsx",
-    title: "Reporte de Modalidades",
-    headers,
-    data,
-    searchQuery, // Se usa para mostrar los filtros aplicados
-  });
-};
 
 const handleExportModalidades = async () => {
   const headers = [
-    { header: "ID", key: "ID", width: 10 },
+    //{ header: "ID", key: "ID", width: 10 },
     { header: "Nombre", key: "Nombre", width: 30 },
+    { header: "Fecha de Creación", key: "Fecha_Creacion", width: 15 },
     { header: "Descripción", key: "Descripcion", width: 40 },
     { header: "Duración (Meses)", key: "Duracion", width: 18 },
     { header: "Hora Inicio", key: "Hora_Inicio", width: 18 },
@@ -234,6 +124,7 @@ const handleExportModalidades = async () => {
     return {
       ID: modalidad.Id_Modalidad,
       Nombre: modalidad.Nombre,
+      Fecha_Creacion: modalidad.Fecha_Creacion,
       Descripcion: modalidad.Descripcion,
       Duracion: modalidad.Duracion || "-",
       Hora_Inicio: modalidad.Hora_Inicio || "-",
@@ -645,7 +536,7 @@ if (!permisos) {
     <tr>
       <th>#</th>
       <th>Acciones</th>
-      <th>Id Modalidad</th>
+      {/* <th>Id Modalidad</th> */}
       <th>Nombre</th>
       <th>Fecha de Creación</th> {/* Nombre de la columna actualizado */}
       <th>Descripción</th>
@@ -690,7 +581,7 @@ if (!permisos) {
                 )}
               </div>
             </td>
-            <td >{modalidad.Id_Modalidad}</td>
+            {/* <td >{modalidad.Id_Modalidad}</td> */}
             <td >{modalidad.Nombre}</td>
             <td >{fechaCreacion}</td> {/* Aquí se muestra la Fecha_Creacion */}
             <td >{modalidad.Descripcion}</td>

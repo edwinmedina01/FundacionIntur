@@ -144,6 +144,7 @@ const TutorPadreManagement = () => {
     const headers = [
       { header: 'Identidad', key: 'Identidad', width: 20 },
       { header: 'Nombre', key: 'Nombre', width: 30 },
+      { header: "Fecha Registro", key: "Fecha_Creacion", width: 20 },
       { header: 'Teléfono', key: 'Telefono', width: 20 },
       { header: 'Dirección', key: 'Direccion', width: 40 },
       { header: 'Estudiante', key: 'Estudiante', width: 30 },
@@ -155,6 +156,7 @@ const TutorPadreManagement = () => {
   
       return {
         Identidad: " "+t.Identidad,
+        Fecha_Creacion: t.Fecha_Creacion,
         Nombre: `${t.Persona_Nombre} ${t.Persona_Apellido}`,
         Telefono: t.Persona_Telefono,
         Direccion: t.Persona_Direccion,

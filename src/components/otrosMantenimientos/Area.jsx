@@ -146,8 +146,9 @@ const AreaManagement = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
+   //   { header: "ID", key: "ID", width: 10 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Tipo", key: "Tipo", width: 20 },
       { header: "Responsable", key: "Responsable", width: 30 },
       { header: "Estado", key: "Estado", width: 15 },
@@ -155,6 +156,7 @@ const AreaManagement = () => {
     const data = filteredAreas.map((a) => ({
       ID: a.Id_Area,
       Nombre: a.Nombre_Area,
+      Fecha_Creacion: a.Fecha_Creacion ? new Date(a.Fecha_Creacion).toLocaleDateString("es-ES") : "Fecha no disponible",
       Tipo: a.Tipo_Area,
       Responsable: a.Responsable_Area,
       Estado: estados.find(e => e.Codigo_Estado === a.Estado)?.Nombre_Estado || "Desconocido",
@@ -245,7 +247,7 @@ const AreaManagement = () => {
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Área */}
+      {/* <th>ID</th> ID del Área */}
       <th>Nombre</th> {/* Nombre del Área */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
       <th>Tipo</th> {/* Tipo del Área */}
@@ -292,7 +294,7 @@ const AreaManagement = () => {
             </td>
 
             {/* ID */}
-            <td>{a.Id_Area}</td> {/* ID del Área */}
+            {/* <td>{a.Id_Area}</td> ID del Área */}
 
             {/* Nombre */}
             <td>{a.Nombre_Area}</td> {/* Nombre del Área */}

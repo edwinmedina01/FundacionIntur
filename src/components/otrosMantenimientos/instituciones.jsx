@@ -153,19 +153,23 @@ const InstitucionManagement = () => {
     const headers = [
       { header: "ID", key: "ID", width: 10 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Dirección", key: "Direccion", width: 40 },
       { header: "Teléfono", key: "Telefono", width: 15 },
       { header: "Correo", key: "Correo", width: 30 },
       { header: "Director", key: "Director", width: 25 },
+      { header: "Estado", key: "Estado", width: 20 }
     ];
 
     const data = currentInstituciones.map((i) => ({
       ID: i.Id_Instituto,
       Nombre: i.Nombre_Instituto,
+      Fecha_Creacion: i.Fecha_Creacion ? new Date(i.Fecha_Creacion).toLocaleDateString("es-ES") : "Fecha no disponible",
       Direccion: i.Direccion,
       Telefono: i.Telefono,
       Correo: i.Correo,
-      Director: i.Director
+      Director: i.Director,
+      Estado: estados.find((estado) => estado.Codigo_Estado === i.Estado)?.Nombre_Estado || "Desconocido"
     }));
 
     await exportToExcel({
@@ -259,7 +263,7 @@ const InstitucionManagement = () => {
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Instituto */}
+      {/* <th>ID</th> ID del Instituto */}
       <th>Nombre</th> {/* Nombre del Instituto */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
       <th>Dirección</th> {/* Dirección del Instituto */}
@@ -308,7 +312,7 @@ const InstitucionManagement = () => {
             </td>
 
             {/* ID */}
-            <td>{i.Id_Instituto}</td> {/* ID del Instituto */}
+            {/* <td>{i.Id_Instituto}</td> ID del Instituto */}
 
             {/* Nombre */}
             <td>{i.Nombre_Instituto}</td> {/* Nombre del Instituto */}

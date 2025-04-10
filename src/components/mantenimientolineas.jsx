@@ -38,13 +38,13 @@ const LineaBeneficioManagement = () => {
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const beneficiosPerPage = 8;
+  const [beneficiosPerPage, setItemsPerPage] = useState(5); // Ítems por página, ahora es dinámico
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrado de beneficios por Nombre_Beneficio
-  const filteredBeneficios = beneficios.filter(beneficio =>
-    beneficio.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+
+const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
 
   // Lógica de paginación
   const indexOfLastBeneficio = currentPage * beneficiosPerPage;
@@ -70,16 +70,18 @@ const LineaBeneficioManagement = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
+      // { header: "ID", key: "ID", width: 10 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Tipo", key: "Tipo", width: 20 },
       { header: "Monto", key: "Monto", width: 15 },
       { header: "Responsable", key: "Responsable", width: 30 },
     ];
   
     const data = filteredBeneficios.map((beneficio) => ({
-      ID: beneficio.Id_Beneficio,
+      // ID: beneficio.Id_Beneficio,
       Nombre: beneficio.Nombre_Beneficio,
+      Fecha_Creacion: beneficio.Fecha_Creacion || "Fecha no disponible",
       Tipo: beneficio.Tipo_Beneficio,
       Monto: beneficio.Monto_Beneficio,
       Responsable: beneficio.Responsable_Beneficio,
@@ -346,7 +348,7 @@ const LineaBeneficioManagement = () => {
             required
             className="mb-4 p-3 w-full border rounded"
           />
-          <label>Monto del Beneficio:</label>
+          <label>Monto del Beneficio(%):</label>
           <input
             type="text"
             name="Monto_Beneficio"
@@ -413,11 +415,11 @@ const LineaBeneficioManagement = () => {
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Beneficio */}
+      {/* <th>ID</th> ID del Beneficio */}
       <th>Nombre</th> {/* Nombre del Beneficio */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
       <th>Tipo</th> {/* Tipo de Beneficio */}
-      <th>Monto</th> {/* Monto del Beneficio */}
+      <th>Monto(%) </th> {/* Monto del Beneficio */}
       <th>Responsable</th> {/* Responsable del Beneficio */}
       <th>Estado</th> {/* Estado del Beneficio */}
     </tr>
@@ -462,7 +464,7 @@ const LineaBeneficioManagement = () => {
             </td>
 
             {/* ID */}
-            <td>{beneficio.Id_Beneficio}</td> {/* ID del Beneficio */}
+            {/* <td>{beneficio.Id_Beneficio}</td> ID del Beneficio */}
 
             {/* Nombre */}
             <td>{beneficio.Nombre_Beneficio}</td> {/* Nombre del Beneficio */}
@@ -496,6 +498,7 @@ const LineaBeneficioManagement = () => {
         setPage={setCurrentPage}
         prevPage={prevPage}
         nextPage={nextPage}
+        setItemsPerPage={setItemsPerPage}
       />
     </div>
   );

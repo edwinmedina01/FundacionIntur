@@ -478,8 +478,9 @@ const handleSubmit = async (e) => {
    
 
       { header: "Identidad", key: "Identidad", width: 20 },
+      { header: "Nombre y Apellido", key: "NombreApellido", width: 40 },
       { header: "Fecha Registro", key: "Fecha_Creacion", width: 20 },
-      { header: "Nombre y Apellido", key: "NombreApellido", width: 30 },
+
       { header: "Sexo", key: "Sexo", width: 10 },
       { header: "Teléfono", key: "Telefono", width: 15 },
       { header: "Dirección", key: "Direccion", width: 30 },

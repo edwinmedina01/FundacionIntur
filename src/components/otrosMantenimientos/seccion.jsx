@@ -152,15 +152,18 @@ const SeccionManagement = () => {
   const handleExport = async () => {
     const headers = [
    //   { header: "Item", key: "Item", width: 10 },
-      { header: "Nombre Sección", key: "Nombre_Seccion", width: 30 },
+      { header: "Nombre Sección", key: "Nombre_Seccion", width: 20 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Id", key: "Id_Seccion", width: 10 },
       { header: "Grado", key: "Nombre_Grado", width: 25 },
       { header: "Estado", key: "Estado", width: 15 },
+     
     ];
   
     const data = currentSecciones.map((seccion, index) => ({
     //  Item: index + 1,
       Nombre_Seccion: seccion.Nombre_Seccion,
+      Fecha_Creacion: seccion.Fecha_Creacion,
       Id_Seccion: seccion.Id_Seccion,
       Nombre_Grado: seccion.Nombre_Grado || "-", // puedes ajustar según tu modelo
       Estado:

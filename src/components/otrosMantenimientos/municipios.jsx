@@ -166,18 +166,20 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "ID", width: 10 },
+      // { header: "ID", key: "ID", width: 10 },
       { header: "Departamento", key: "Departamento", width: 25 },
       { header: "Nombre", key: "Nombre", width: 30 },
+      { header: "Fecha de Creación", key: "Fecha_Creacion", width: 20 },
       { header: "Estado", key: "Estado", width: 15 },
     ];
     const data = filteredMunicipios.map((m) => ({
       ID: m.Id_Municipio,
       Departamento: m.Nombre_Departamento,
       Nombre: m.Nombre_Municipio,
+      Fecha_Creacion: m.Fecha_Creacion || "Fecha no disponible",
       Estado: m.Estado === 1 ? "Activo" : "Inactivo",
     }));
-    await exportToExcel({ fileName: 'Municipios.xlsx', title: 'Reporte de Municipios', headers, data });
+    await exportToExcel({ fileName: 'Municipios.xlsx', title: 'Reporte de Municipios', headers, data, searchQuery });
   };
 
   if (!user) return <p>Cargando usuario...</p>;
@@ -283,10 +285,11 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Municipio */}
-      <th>Departamento</th> {/* Nombre del Departamento */}
+      {/* <th>ID</th> ID del Municipio */}
+
       <th>Municipio</th> {/* Nombre del Municipio */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
+      <th>Departamento</th> {/* Nombre del Departamento */}
       <th>Estado</th> {/* Estado del Municipio */}
     </tr>
   </thead>
@@ -327,16 +330,18 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
             </td>
 
             {/* ID */}
-            <td>{m.Id_Municipio}</td> {/* ID del Municipio */}
+            {/* <td>{m.Id_Municipio}</td> ID del Municipio */}
 
             {/* Departamento */}
-            <td>{m.Nombre_Departamento}</td> {/* Nombre del Departamento */}
+         
 
             {/* Municipio */}
             <td>{m.Nombre_Municipio}</td> {/* Nombre del Municipio */}
+          
 
             {/* Fecha de Creación */}
             <td>{fechaCreacion}</td> {/* Fecha de Creación */}
+            <td>{m.Nombre_Departamento}</td> {/* Nombre del Departamento */}
 
             {/* Estado */}
             <td>{estadoDescripcion}</td> {/* Estado del Municipio */}

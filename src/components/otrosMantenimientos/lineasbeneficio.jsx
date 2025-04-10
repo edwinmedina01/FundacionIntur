@@ -13,7 +13,7 @@ import { obtenerEstados } from '../../utils/api';
 import { exportToExcel } from '../../utils/exportToExcel';
 import SearchBar from '../../components/basicos/SearchBar';
 import Pagination from '../../components/basicos/Pagination';
-
+import { deepSearch } from "../../utils/deepSearch";
 const LineaBeneficioManagement = () => {
   const { user } = useContext(AuthContext);
   const { modals, showModal, closeModal } = useModal();
@@ -76,9 +76,13 @@ const LineaBeneficioManagement = () => {
     fetchPermisos();
   }, [user]);
 
-  const filteredBeneficios = beneficios.filter((beneficio) =>
-    beneficio.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredBeneficios = beneficios.filter((beneficio) =>
+  //   beneficio.Nombre_Beneficio.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+
+  
+  const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
+  
 
   const indexOfLastBeneficio = currentPage * beneficiosPerPage;
   const indexOfFirstBeneficio = indexOfLastBeneficio - beneficiosPerPage;
@@ -186,8 +190,9 @@ const LineaBeneficioManagement = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: 'ID', key: 'ID', width: 10 },
+      // { header: 'ID', key: 'ID', width: 10 },
       { header: 'Nombre', key: 'Nombre', width: 30 },
+      { header: 'Fecha de Creación', key: 'Fecha_Creacion', width: 20 },
       { header: 'Tipo', key: 'Tipo', width: 20 },
       { header: 'Monto', key: 'Monto', width: 15 },
       { header: 'Responsable', key: 'Responsable', width: 30 },
@@ -195,15 +200,16 @@ const LineaBeneficioManagement = () => {
     ];
 
     const data = beneficios.map((b) => ({
-      ID: b.Id_Beneficio,
+      // ID: b.Id_Beneficio,
       Nombre: b.Nombre_Beneficio,
+      Fecha_Creacion: b.Fecha_Creacion || 'Fecha no disponible',
       Tipo: b.Tipo_Beneficio,
       Monto: b.Monto_Beneficio,
       Responsable: b.Responsable_Beneficio,
       Estado: b.Estado === '1' ? 'Activo' : 'Inactivo',
     }));
 
-    await exportToExcel({ fileName: 'Beneficios.xlsx', title: 'Reporte de Beneficios', headers, data });
+    await exportToExcel({ fileName: 'Beneficios.xlsx', title: 'Reporte de Beneficios', headers, data ,searchQuery});
   };
 
   if (!user) return <p>Cargando usuario...</p>;
@@ -329,7 +335,7 @@ const LineaBeneficioManagement = () => {
     <tr>
       <th>#</th> {/* Número de Registro */}
       <th>Acciones</th> {/* Botones de Acción */}
-      <th>ID</th> {/* ID del Beneficio */}
+      {/* <th>ID</th> ID del Beneficio */}
       <th>Nombre</th> {/* Nombre del Beneficio */}
       <th>Fecha de Creación</th> {/* Fecha de Creación */}
       <th>Tipo</th> {/* Tipo de Beneficio */}
@@ -378,7 +384,7 @@ const LineaBeneficioManagement = () => {
             </td>
 
             {/* ID */}
-            <td>{beneficio.Id_Beneficio}</td> {/* ID del Beneficio */}
+            {/* <td>{beneficio.Id_Beneficio}</td> ID del Beneficio */}
 
             {/* Nombre */}
             <td>{beneficio.Nombre_Beneficio}</td> {/* Nombre del Beneficio */}
