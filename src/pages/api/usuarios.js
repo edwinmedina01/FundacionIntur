@@ -104,7 +104,7 @@ const usuarios = await sequelize.query(
 
             // Verificar si el correo ya existe
     const existingEmail = await sequelize.query(
-      'SELECT * FROM tbl_usuario WHERE Correo = ?',
+      'SELECT * FROM tbl_usuario WHERE Correo = ? and Id_EstadoUsuario <> 3',
       { replacements: [Correo], type: QueryTypes.SELECT }
     );
 

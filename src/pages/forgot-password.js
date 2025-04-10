@@ -4,6 +4,7 @@ import axios from "axios";
 import { validatePasswordDetails } from "../utils/passwordValidator"; // Importar validación de contraseña
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
 import { useRouter } from 'next/router';
+import { toast, ToastContainer } from 'react-toastify';
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -47,8 +48,8 @@ const ForgotPassword = () => {
     } catch (error) {
 
      // setMensaje(error.response?.data?.error || "Error al obtener preguntas.");
-      setError("Error al obtener preguntas: "+error.response?.data?.mensaje  );
-      
+   //   setError("Error al obtener preguntas: "+error.response?.data?.mensaje  );
+      toast.error("Error al obtener preguntas: "+error.response?.data?.mensaje );
     }
   };
 
@@ -74,7 +75,8 @@ const ForgotPassword = () => {
       setQuestionsLoaded(true);
       setShowPasswordFields(true);
     } catch (error) {
-      setMensaje("❌ Respuestas incorrectas. Inténtalo de nuevo.");
+      //setMensaje("❌ Respuestas incorrectas. Inténtalo de nuevo.");
+      toast.error("Respuestas incorrectas. Inténtalo de nuevo.");
     }
   };
 
@@ -110,10 +112,11 @@ const ForgotPassword = () => {
 
       if (response.ok) {
         setSuccess('Contraseña actualizada exitosamente');
+              toast.success('Contraseña actualizada exitosamente');
         setError('');
-        // setTimeout(() => {
-        //   router.push("/login"); // Reemplaza con la ruta correcta de tu login
-        // }, 3000);
+        setTimeout(() => {
+          router.push("/login"); // Reemplaza con la ruta correcta de tu login
+        }, 3000);
       } else {
         const data = await response.json();
         setError(data.message || 'Hubo un error al actualizar la contraseña');

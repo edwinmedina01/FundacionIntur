@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { validatePasswordDetails } from "../utils/passwordValidator";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // Importación correcta para Heroicons v2
-
+import { toast, ToastContainer } from 'react-toastify';
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -37,7 +37,7 @@ export default function ChangePassword() {
 
 
     // Validar nueva contraseña con las reglas definidas
-    const validationResults = validatePasswordDetails(newPassword);
+    const validationResults = validatePasswordDetails(newPassword,confirmPassword,currentPassword);
     setPasswordValidation(validationResults);
 
     // Si alguna regla no se cumple, mostrar mensaje y salir
