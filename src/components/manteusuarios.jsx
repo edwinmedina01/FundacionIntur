@@ -402,7 +402,7 @@ const handleSubmit = async (e) => {
     const errores = validarFormulario(formData, reglasValidacionUsuario);
 
     if (errores.length > 0) {
-      toast.error("⚠️ Corrige los siguientes errores:\n" + errores.join("\n"));
+      toast.error("⚠️ Corrige los siguientes errores:\n" )//+ errores.join("\n"));
       return;
     }
 
@@ -1140,7 +1140,7 @@ if (!permisos) {
             <tr>
               <th className="py-4 px-6 text-left">Item</th>
               <th className="py-4 px-6 text-left">Usuario</th>
-              <th className="py-4 px-6 text-left">ID</th>
+              <th className="py-4 px-6 text-left">Fecha Registro</th>
               <th className="py-4 px-6 text-left">Nombre</th>
               <th className="py-4 px-6 text-left">Correo</th>
               <th className="py-4 px-6 text-left">Rol</th>
@@ -1182,7 +1182,7 @@ if (!permisos) {
                     <td className="border-b border-gray-200 p-2">
                       {user.Usuario}
                     </td>
-                    <td className="py-4 px-6">{user.Id_Usuario }</td>
+                    <td className="py-4 px-6">{user.Fecha_Creacion }</td>
                     <td className="border-b border-gray-200 p-2">
                       {user.Nombre_Usuario}
                     </td>

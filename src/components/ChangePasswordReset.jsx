@@ -51,6 +51,7 @@ const ForgotPassword = () => {
   const handleValidateSecurityAnswers = async (e) => {
     e.preventDefault();
     try {
+      
       const response = await axios.post("/api/auth/restablecer/validar-respuestas", {
         idUsuario,
         respuestas: preguntas.map((p) => ({

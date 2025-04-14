@@ -30,8 +30,9 @@ import { validarFormulario } from "../../utils/validaciones";
 
 
 import { reglasValidacionEstudiante, reglasValidacionGraduando, reglasValidacionPersona ,reglasValidacionRelacion} from "../../../models/ReglasValidacionModelos";
+import { set } from "nprogress";
 const EstudiantesCrud = () => {
-  //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+  //const {  showModal, closeModal } = useModal(); // Hook para manejar modales
   const [estados, setEstados] = useState([]);
   // const [modals, setModals] = useState({
   //   modalConfirmacion: false,Estudian
@@ -39,19 +40,24 @@ const EstudiantesCrud = () => {
   //   modalEliminarBenefactor: false,
   // });
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingmatricula, setIsEditingmatricula] = useState(false);
   const [isEditingGraduacion, setIsEditinggraduacion] = useState(false);
   const openModal = (modalKey) => {
    // setModals(prev => ({ ...prev, [modalKey]: true }));
   };
-  const [modalPendiente, setModalPendiente] = useState(null);
-  const [matricula, setMatricula] = useState(null);  // Estado para almacenar la matrícula
 
+
+    
+
+  const [modalPendiente, setModalPendiente] = useState(null);
+
+  //const [currentMatricula, setCurrentMatricula] = useState(null);
   
   //const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
-
+  const [modalidades, setModalidades] = useState([]);
   const [fotoActual, setFotoActual] = useState(null);
-  const [fotoBase64, setFotoBase64] = useState(null);
+  // const [fotoBase64, setFotoBase64] = useState(null);
 
   // const closeModal = (modalKey) => {
   //   setModals(prev => ({ ...prev, [modalKey]: false }));
@@ -104,6 +110,7 @@ const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene pe
 }, []); // 🔥 Se ejecu
 
 
+ const [filteredSecciones, setFilteredSecciones] = useState([]);  // Secciones filtradas por grado
 
 
 const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
@@ -115,6 +122,7 @@ const nextStep = () => {
 const prevStep = () => {
   if (currentStep > 1) setCurrentStep(currentStep - 1);
 };
+
 
 
 // Contenido de cada paso
@@ -155,8 +163,9 @@ const prevStep = () => {
       const data = await response.json();
 
       // Almacenamos los datos de la matrícula
-      setMatricula(data);
+      setMatriculaLocal(data);
     } catch (err) {
+      setMatriculaLocal( {Id_Estudiante: idEstudiante, Id_Grado:0} ); // Si hay un error, lo almacenamos
       setError(err.message);  // Si hay un error, lo almacenamos
     } finally {
      // setLoading(false);  // Finaliza el proceso de carga
@@ -165,164 +174,7 @@ const prevStep = () => {
 
 
  
-  const handleExportToPDFv1 = () => {
-    const doc = new jsPDF();
-    doc.setFont("times", "normal");
-    doc.setFontSize(18);
-  
-    const fechaImpresion = new Date().toLocaleDateString();
-    doc.text(`FICHA ESTUDIANTIL`, 71, 20);
-    doc.addImage('/img/intur.png', 'PNG', 10, 10, 40, 15);
-  
-    if (fotoActual) {
-      doc.addImage(fotoActual, 'JPEG', 170, 10, 30, 30);
-    } else {
-      doc.rect(170, 10, 30, 30);
-      doc.setFontSize(10);
-      doc.text("Foto", 180, 25);
-    }
-  
-    doc.setFontSize(12);
-    doc.setFont("times", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 71, 40);
-    doc.setFont("times", "normal");
-  
-    let y = 60;
-  
-    const agregarCampo = (label, value) => {
-      doc.text(label, 20, y);
-      doc.text(value || "N/A", 71, y);
-      doc.line(70, y + 2, 185, y + 2);
-      y += 10;
-    };
-  
-    agregarCampo("Primer Nombre:", personaData.Primer_Nombre);
-    agregarCampo("Primer Apellido:", personaData.Primer_Apellido);
-    agregarCampo("Segundo Nombre:", personaData.Segundo_Nombre);
-    agregarCampo("Segundo Apellido:", personaData.Segundo_Apellido);
-    agregarCampo("Número de Identidad:", personaData.Identidad);
-    agregarCampo("Sexo:", personaData.Sexo === "1" ? "Masculino" : "Femenino");
-    agregarCampo("Fecha de Nacimiento:", personaData.Fecha_Nacimiento);
-    agregarCampo("Lugar de Nacimiento:", personaData.Lugar_Nacimiento);
-  
-    const departamentoNombre = departamentos.find(d => d.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-    agregarCampo("Departamento:", departamentoNombre);
-  
-    const municipioNombre = municipios.find(m => m.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-    agregarCampo("Municipio:", municipioNombre);
-  
-    // 📌 Dirección con ajuste automático de línea
-    doc.text("Dirección:", 20, y);
-    const direccionDividida = doc.splitTextToSize(personaData.Direccion, 110);
-    doc.text(direccionDividida, 71, y);
-    y += direccionDividida.length * 6;
-    doc.line(70, y, 185, y);
-    y += 8;
-  
-    agregarCampo("Teléfono:", personaData.Telefono);
-  
-    const areaNombre = areas.find(area => area.Id_Area === estudianteData.Id_Area)?.Nombre_Area || "Desconocido";
-    agregarCampo("Área:", areaNombre);
-  
-    const institutoNombre = institutos.find(inst => inst.Id_Instituto === estudianteData.Id_Instituto)?.Nombre_Instituto || "Desconocido";
-    agregarCampo("Instituto:", institutoNombre);
-  
-    const beneficioNombre = beneficios.find(b => b.Id_Beneficio === estudianteData.Id_Beneficio)?.Nombre_Beneficio || "Desconocido";
-    agregarCampo("Beneficio:", beneficioNombre);
-  
-    const estadoTexto = personaData.Estado === "1" ? "Activo" : "Inactivo";
-    agregarCampo("Estado:", estadoTexto);
-  
-    // ➕ Página nueva
-    doc.addPage();
-    doc.setFontSize(12);
-    doc.setFont("times", "bold");
-    doc.text("TUTORES", 71, 20);
-    doc.setFont("times", "normal");
-  
-    doc.setFontSize(11);
-    doc.setFont("times", "bold");
-    doc.text("Identidad", 20, 40);
-    doc.text("Nombre", 60, 40);
-    doc.text("Telefono", 90, 40);
-    doc.text("Dirección", 140, 40);
-    doc.line(20, 42, 200, 42);
-  
 
-
- // ➕ Página nueva
- doc.addPage();
- doc.setFontSize(12);
- doc.setFont("times", "bold");
- doc.text("MATRÍCULA", 71, 20);
- doc.setFont("times", "normal");
-
- // Agregar los datos de matrícula
- if (estudianteData.Matricula) {
-   doc.setFontSize(11);
-   doc.text("Modalidad", 20, 40);
-   doc.text("Grado", 60, 40);
-   doc.text("Sección", 100, 40);
-   doc.text("Fecha de Matrícula", 140, 40);
-   doc.line(20, 42, 200, 42);
-
-   // Mostrar los detalles de la matrícula
-   let currentY = 50;
-   doc.text(estudianteData.Matricula.Modalidad || "Desconocido", 20, currentY);
-   doc.text(estudianteData.Matricula.Grado || "Desconocido", 60, currentY);
-   doc.text(estudianteData.Matricula.Seccion || "Desconocido", 100, currentY);
-   doc.text(estudianteData.Matricula.Fecha_Matricula || "Desconocido", 140, currentY);
-   currentY += 10;
- } else {
-   // Si no hay matrícula, mostrar un mensaje
-   doc.setFontSize(12);
-   doc.text("Este alumno aún no está matriculado", 20, 40);
- }
-
-
-    let currentY = 50;
-
-// TUTORES (Id_Tipo_Persona === 2)
-doc.setFont("times", "normal");
-currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, currentY);
-    doc.setFontSize(12);
-    doc.setFont("times", "bold");
-    doc.text("BENEFACTORES", 70, currentY + 10);
-    doc.setFont("times", "normal");
-  
-    doc.setFontSize(11);
-    doc.setFont("times", "bold");
-    doc.text("Identidad", 20, currentY + 20);
-    doc.text("Nombre", 60, currentY + 20);
-    doc.text("Telefono", 90, currentY + 20);
-    doc.text("Dirección", 140, currentY + 20);
-    doc.line(20, currentY + 22, 200, currentY + 22);
-    currentY += 30;
-    doc.setFont("times", "normal");
-    currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 3, currentY);
-  
-    currentY += 20;
-    doc.setFont(undefined, 'bold');
-    doc.text("Información de Graduación", 20, currentY);
-    currentY += 10;
-    doc.setFont(undefined, 'normal');
-  
-    doc.text("Año", 20, currentY);
-    doc.text("Inicio", 60, currentY);
-    doc.text("Finalización", 100, currentY);
-    doc.text("Estado", 150, currentY);
-    currentY += 8;
-  
-    const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
-    doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
-    doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
-    doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
-    doc.text(estadoGraduacion, 150, currentY);
-    currentY += 20;
-  
-    doc.save("Ficha_Estudiantil.pdf");
-  };
-  
 
 
 
@@ -392,11 +244,12 @@ currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, cur
   
     y += 10;
   
-    if (estudianteData.Matricula) {
-      agregarCampo("Modalidad:", estudianteData.Matricula.Modalidad || "Desconocido");
-      agregarCampo("Grado:", estudianteData.Matricula.Grado || "Desconocido");
-      agregarCampo("Sección:", estudianteData.Matricula.Seccion || "Desconocido");
-      agregarCampo("Fecha de Matrícula:", estudianteData.Matricula.Fecha_Matricula || "Desconocido");
+    console.log("matriculaLocal",matriculaLocal)
+ if (matriculaLocal) {
+      agregarCampo("Modalidad:", matriculaLocal.Modalidad || "Desconocido");
+      agregarCampo("Grado:", matriculaLocal.Grado || "Desconocido");
+      agregarCampo("Sección:", matriculaLocal.Seccion || "Desconocido");
+      agregarCampo("Fecha de Matrícula:", matriculaLocal.Fecha_Matricula || "Desconocido");
     } else {
       doc.setFontSize(12);
       doc.text("Este alumno aún no está matriculado.", 20, y);
@@ -464,275 +317,10 @@ currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, cur
     doc.save("Ficha_Estudiantil.pdf");
   };
   
-const handleExportToPDFv3 = () => {
-  const doc = new jsPDF();
-  doc.setFont("times", "normal");
-  doc.setFontSize(18);
-
-  const fechaImpresion = new Date().toLocaleDateString();
-  doc.text("Fundación Intur", 20, 15);
-  doc.text("FICHA ESTUDIANTIL", 70, 30);
-  doc.text(`AÑO LECTIVO: 2020 - 2021`, 70, 35);
-
-  doc.addImage("/img/intur.png", "PNG", 150, 5, 40, 20);
-
-  // Verificar si existe la foto del estudiante
-  if (fotoActual) {
-    doc.addImage(fotoActual, "JPEG", 170, 30, 30, 30);
-  } else {
-    doc.rect(170, 30, 30, 30);
-    doc.setFontSize(10);
-    doc.text("Foto", 180, 45);
-  }
-
-  doc.setFontSize(12);
-  doc.setFont("times", "bold");
-  doc.text("DATOS DEL ESTUDIANTE", 20, 50);
-  doc.setFont("times", "normal");
-
-  let y = 60;
-
-  // Función para agregar los campos
-  const agregarCampo = (label, value) => {
-    doc.text(label, 20, y);
-    doc.text(value || "N/A", 60, y);
-    doc.line(60, y + 2, 200, y + 2);
-    y += 10;
-  };
-
-  agregarCampo("Apellidos y Nombres:", `${personaData.Primer_Apellido} ${personaData.Segundo_Apellido}, ${personaData.Primer_Nombre} ${personaData.Segundo_Nombre}`);
-  agregarCampo("Número de Identidad:", personaData.Identidad);
-  agregarCampo("Sexo:", personaData.Sexo === "1" ? "Masculino" : "Femenino");
-  agregarCampo("Fecha de Nacimiento:", personaData.Fecha_Nacimiento);
-  agregarCampo("Lugar de Nacimiento:", personaData.Lugar_Nacimiento);
-
-  // Dirección con ajuste automático de línea
-  doc.text("Dirección:", 20, y);
-  const direccionDividida = doc.splitTextToSize(personaData.Direccion, 110);
-  doc.text(direccionDividida, 60, y);
-  y += direccionDividida.length * 6;
-  doc.line(60, y, 200, y);
-  y += 8;
-
-  agregarCampo("Teléfono:", personaData.Telefono);
-
-  // Departamento y municipio
-  const departamentoNombre = departamentos.find(d => d.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-  agregarCampo("Departamento:", departamentoNombre);
-
-  const municipioNombre = municipios.find(m => m.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-  agregarCampo("Municipio:", municipioNombre);
-
-  // Matrícula
-  doc.setFont("times", "bold");
-  doc.text("MATRÍCULA", 20, y);
-  doc.setFont("times", "normal");
-
-  y += 10;
-
-  if (estudianteData.Matricula) {
-    agregarCampo("Modalidad:", estudianteData.Matricula.Modalidad || "Desconocido");
-    agregarCampo("Grado:", estudianteData.Matricula.Grado || "Desconocido");
-    agregarCampo("Sección:", estudianteData.Matricula.Seccion || "Desconocido");
-    agregarCampo("Fecha de Matrícula:", estudianteData.Matricula.Fecha_Matricula || "Desconocido");
-  } else {
-    doc.setFontSize(12);
-    doc.text("Este alumno aún no está matriculado.", 20, y);
-    y += 10;
-  }
-
-  // TUTORES (Id_Tipo_Persona === 2)
-  doc.setFont("times", "bold");
-  doc.text("TUTORES", 20, y + 15);
-  doc.setFont("times", "normal");
-
-  doc.setFontSize(11);
-  doc.setFont("times", "bold");
-  doc.text("Identidad", 20, y + 25);
-  doc.text("Nombre", 60, y + 25);
-  doc.text("Teléfono", 100, y + 25);
-  doc.text("Dirección", 140, y + 25);
-  doc.line(20, y + 27, 200, y + 27);
-
-  let currentY = y + 35;
-  currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, currentY);
-
-  // BENEFACTORES
-  doc.setFontSize(12);
-  doc.setFont("times", "bold");
-  doc.text("BENEFACTORES", 20, currentY + 10);
-  doc.setFont("times", "normal");
-
-  doc.setFontSize(11);
-  doc.setFont("times", "bold");
-  doc.text("Identidad", 20, currentY + 20);
-  doc.text("Nombre", 60, currentY + 20);
-  doc.text("Teléfono", 100, currentY + 20);
-  doc.text("Dirección", 140, currentY + 20);
-  doc.line(20, currentY + 22, 200, currentY + 22);
-  currentY += 30;
-  doc.setFont("times", "normal");
-  currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 3, currentY);
-
-  // Información de Graduación
-  currentY += 20;
-  doc.setFont(undefined, 'bold');
-  doc.text("Información de Graduación", 20, currentY);
-  currentY += 10;
-  doc.setFont(undefined, 'normal');
-
-  doc.text("Año", 20, currentY);
-  doc.text("Inicio", 60, currentY);
-  doc.text("Finalización", 100, currentY);
-  doc.text("Estado", 150, currentY);
-  currentY += 8;
-
-  const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
-  doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
-  doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
-  doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
-  doc.text(estadoGraduacion, 150, currentY);
-  currentY += 20;
-
-  // Guardar el PDF
-  doc.save("Ficha_Estudiantil.pdf");
-};
 
 
 
-  const handleExportToPDFv2 = () => {
-    const doc = new jsPDF();
-    doc.setFont("times", "normal");
-    doc.setFontSize(18);
-  
-    const fechaImpresion = new Date().toLocaleDateString();
-    doc.text("Escuela de Educación Básica N° 462 \"Cerro del Carmen\"", 20, 15);
-    doc.text("FICHA ESTUDIANTIL", 70, 30);
-    doc.text(`AÑO LECTIVO: 2020 - 2021`, 70, 35);
-  
-    doc.addImage("/img/intur.png", "PNG", 150, 5, 40, 20);
-  
-    if (fotoActual) {
-      doc.addImage(fotoActual, "JPEG", 170, 30, 30, 30);
-    } else {
-      doc.rect(170, 30, 30, 30);
-      doc.setFontSize(10);
-      doc.text("Foto", 180, 45);
-    }
-  
-    doc.setFontSize(12);
-    doc.setFont("times", "bold");
-    doc.text("DATOS DEL ESTUDIANTE", 20, 50);
-    doc.setFont("times", "normal");
-  
-    let y = 60;
-  
-    // Función para agregar los campos
-    const agregarCampo = (label, value) => {
-      doc.text(label, 20, y);
-      doc.text(value || "N/A", 60, y);
-      doc.line(60, y + 2, 200, y + 2);
-      y += 10;
-    };
-  
-    agregarCampo("Apellidos y Nombres:", `${personaData.Primer_Apellido} ${personaData.Segundo_Apellido}, ${personaData.Primer_Nombre} ${personaData.Segundo_Nombre}`);
-    agregarCampo("Número de Identidad:", personaData.Identidad);
-    agregarCampo("Sexo:", personaData.Sexo === "1" ? "Masculino" : "Femenino");
-    agregarCampo("Fecha de Nacimiento:", personaData.Fecha_Nacimiento);
-    agregarCampo("Lugar de Nacimiento:", personaData.Lugar_Nacimiento);
-  
-    // Dirección con ajuste automático de línea
-    doc.text("Dirección:", 20, y);
-    const direccionDividida = doc.splitTextToSize(personaData.Direccion, 110);
-    doc.text(direccionDividida, 60, y);
-    y += direccionDividida.length * 6;
-    doc.line(60, y, 200, y);
-    y += 8;
-  
-    agregarCampo("Teléfono:", personaData.Telefono);
-  
-    // Departamento y municipio
-    const departamentoNombre = departamentos.find(d => d.Id_Departamento === personaData.Id_Departamento)?.Nombre_Departamento || "Desconocido";
-    agregarCampo("Departamento:", departamentoNombre);
-  
-    const municipioNombre = municipios.find(m => m.Id_Municipio === personaData.Id_Municipio)?.Nombre_Municipio || "Desconocido";
-    agregarCampo("Municipio:", municipioNombre);
-  
-    // Matrícula
-    doc.setFont("times", "bold");
-    doc.text("MATRÍCULA", 20, y);
-    doc.setFont("times", "normal");
-  
-    y += 10;
-  
-    if (estudianteData.Matricula) {
-      agregarCampo("Modalidad:", estudianteData.Matricula.Modalidad || "Desconocido");
-      agregarCampo("Grado:", estudianteData.Matricula.Grado || "Desconocido");
-      agregarCampo("Sección:", estudianteData.Matricula.Seccion || "Desconocido");
-      agregarCampo("Fecha de Matrícula:", estudianteData.Matricula.Fecha_Matricula || "Desconocido");
-    } else {
-      doc.text("Este alumno aún no está matriculado.", 20, y);
-      y += 10;
-    }
-  
-    // TUTORES (Id_Tipo_Persona === 2)
-    doc.setFont("times", "bold");
-    doc.text("TUTORES", 20, y + 15);
-    doc.setFont("times", "normal");
-  
-    doc.setFontSize(11);
-    doc.setFont("times", "bold");
-    doc.text("Identidad", 20, y + 25);
-    doc.text("Nombre", 60, y + 25);
-    doc.text("Teléfono", 100, y + 25);
-    doc.text("Dirección", 140, y + 25);
-    doc.line(20, y + 27, 200, y + 27);
-  
-    let currentY = y + 35;
-    currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 2, currentY);
-  
-    // BENEFACTORES
-    doc.setFontSize(12);
-    doc.setFont("times", "bold");
-    doc.text("BENEFACTORES", 20, currentY + 10);
-    doc.setFont("times", "normal");
-  
-    doc.setFontSize(11);
-    doc.setFont("times", "bold");
-    doc.text("Identidad", 20, currentY + 20);
-    doc.text("Nombre", 60, currentY + 20);
-    doc.text("Teléfono", 100, currentY + 20);
-    doc.text("Dirección", 140, currentY + 20);
-    doc.line(20, currentY + 22, 200, currentY + 22);
-    currentY += 30;
-    doc.setFont("times", "normal");
-    currentY = renderRelacionesPorTipoPersona(doc, estudianteData.Relaciones, 3, currentY);
-  
-    // Información de Graduación
-    currentY += 20;
-    doc.setFont(undefined, 'bold');
-    doc.text("Información de Graduación", 20, currentY);
-    currentY += 10;
-    doc.setFont(undefined, 'normal');
-  
-    doc.text("Año", 20, currentY);
-    doc.text("Inicio", 60, currentY);
-    doc.text("Finalización", 100, currentY);
-    doc.text("Estado", 150, currentY);
-    currentY += 8;
-  
-    const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
-    doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
-    doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
-    doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
-    doc.text(estadoGraduacion, 150, currentY);
-    currentY += 20;
-  
-    // Guardar el PDF
-    doc.save("Ficha_Estudiantil.pdf");
-  };
-  
-  
+
 
 function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY) {
   relaciones?.forEach((relacion) => {
@@ -768,9 +356,24 @@ function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY
 }
 
   
-
  
 
+
+// useEffect(() => {
+//   if (matriculaLocal.Id_Grado!=0) {
+   
+//     const seccionesFiltradas = secciones.filter(
+//       seccion => seccion.Id_Grado === Number( form.Id_Grado)
+//     );
+
+//     setFilteredSecciones(seccionesFiltradas);
+    
+//     // Resetear la sección seleccionada si no es compatible
+//     if (matriculaLocal.Id_Seccion && !seccionesFiltradas.some(s => s.Id_Seccion === Number( matriculaLocal.Id_Seccion))) {
+//       setForm(prev => ({ ...prev, Id_Seccion: '' }));
+//     }
+//   } 
+// }, [matriculaLocal?.Id_Grado]);
 
 
 
@@ -856,10 +459,47 @@ const [benefactorData, setBenefactorData] = useState({
       fetchBeneficios();
       fetchDepartamentos();
       fetchMatricula();
+ 
       fetchPermisos(user.rol);
 
     }
   }, [user]);
+
+
+  const [grados, setGrados] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+
+
+  const fetchGrados = async () => {
+    const res = await fetch('/api/apis_mantenimientos/grado');
+    const data = await res.json();
+    setGrados(data);
+  };
+
+  
+  const fetchModalidades = async () => {
+    const res = await fetch('/api/apis_mantenimientos/modalidades');
+    const data = await res.json();
+    setModalidades(data);
+  };
+
+
+
+  const fetchSecciones = async () => {
+    const res = await fetch('/api/apis_mantenimientos/seccion');
+    const data = await res.json();
+    setSecciones(data);
+    // Filtrar secciones por grado  
+    if (matriculaLocal?.Id_Grado!=0) {
+    setFilteredSecciones(data.filter(seccion => seccion.Id_Grado === Number( matriculaLocal?.Id_Grado)));
+     }
+      else{
+    setFilteredSecciones(data);
+    }
+  };
+  
+
+
 
   const fetchEstudiantes = async () => {
     try {
@@ -908,6 +548,33 @@ const [benefactorData, setBenefactorData] = useState({
 
   }
 
+      
+const openMatricula= (tipo=1)=>{
+  fetchModalidades();
+  fetchGrados();
+  fetchSecciones();
+
+  if(!matriculaLocal?.Id_Matricula){
+    setMatriculaLocal({
+      Id_Estudiante:estudianteData.Id_Estudiante,
+     
+      esNuevo:true,
+    })
+    setIsEditingmatricula(false);
+
+  }
+  else{ 
+    setIsEditingmatricula(true);
+
+  }
+;
+  showModal("modalAddMatriculas");
+
+
+ 
+
+
+}
 
 const nuevoTutor= (tipo=1)=>{
 
@@ -933,6 +600,8 @@ const nuevoTutor= (tipo=1)=>{
 
 
   })
+
+
 
  // personaDataRelacion.Estudiante.Persona=personaData;
   //personaDataRelacion.Id_Tipo_Persona=tipo;
@@ -1773,6 +1442,90 @@ switch (tipo) {
     return fullText.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+
+// Dentro de EstudiantesCrud.js
+const [matriculaLocal, setMatriculaLocal] = useState({
+  Id_Estudiante: '',
+  Id_Matricula: null,
+  Id_Modalidad: '',
+  Id_Grado: 0,      // ← Asegúrate que existe
+  Id_Seccion: '',    // ← Asegúrate que existe
+  Fecha_Matricula: new Date().toISOString().split('T')[0],
+  Estado:1
+});
+// Abrir modal (edición o nuevo)
+const openMatriculaModal = () => {
+  if (matriculaLocal) {
+   // setMatriculaLocal(matriculaExistente);
+    setIsEditingmatricula(true);
+  } else {
+    setMatriculaLocal({
+      ...matriculaLocal,
+      Id_Estudiante: idEstudiante,
+      Fecha_Matricula: new Date().toISOString().split('T')[0],
+      Estado: '1'
+    });
+  }
+  showModal('modalAddMatriculas');
+};
+
+const handleMatriculaChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "Id_Grado") {
+    // Primero actualiza el estado con el nuevo grado y resetea la sección
+    setMatriculaLocal(prev => ({
+      ...prev,
+      Id_Grado: value,
+      Id_Seccion: ""
+    }));
+
+    // Filtra usando el VALUE directamente
+    const nuevasSecciones = secciones.filter(
+      seccion => seccion.Id_Grado === Number(value)
+    );
+    setFilteredSecciones(nuevasSecciones);
+  } else {
+    // Para otros campos, solo actualiza el valor correspondiente
+    setMatriculaLocal(prev => ({ ...prev, [name]: value }));
+  }
+};
+
+// Enviar formulario
+const handleMatriculaSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const url = isEditingmatricula 
+      ? `/api/matriculas` 
+      : '/api/matriculas';
+    
+    const method = isEditingmatricula ? 'PUT' : 'POST';
+    
+    const body = {
+      ...matriculaLocal,
+      Creado_Por: user?.Id_Usuario,
+      Modificado_Por: user?.Id_Usuario
+    };
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) throw new Error('Error al guardar');
+
+    fetchMatricula(); // Actualizar lista
+    closeModal('modalAddMatriculas');
+    toast.success(isEditingmatricula ? 'Matrícula actualizada' : 'Matrícula creada');
+    
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
+
+
   // Renderizado
 if (!user) {
   return <p>Cargando usuario...</p>;
@@ -2071,6 +1824,9 @@ if (!permisos) {
     </table>
 
 
+{/* { estudianteData.Id_Estudiant ?(   ) : ( <div></div>) } */}
+
+
     <div className="flex justify-between items-center mb-4">
   <h2 className="text-2xl font-semibold text-gray-700">
     <strong>Tutores</strong>
@@ -2335,28 +2091,17 @@ if (!permisos) {
   </h2>
 
   <button
-    onClick={() => setModalPendiente('modalAddMatricula')} // Función para editar la matrícula
+   // onClick={() =>  setModalPendiente("modalAddMatricula")} // Función para editar la matrícula  
+    onClick={() => openMatricula(3)}
+
+
     type="button"
-    className="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-blue-700"
+    className="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
   >
     + Matrícula
   </button>
 </div>
 
-   <ModalGenerico
-        id="modalAddMatricula"
-        isOpen={modals['modalAddMatricula']}
-        onClose={() => closeModal('modalAddMatricula')}
-        titulo={isEditing ? 'Editar Matrícula' : 'Agregar Matrícula'}
-      >
-        <MatriculaForm
-          formData={matricula}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          onClose={() => closeModal('modalAddMatricula')}
-          
-        />
-      </ModalGenerico>
 
 <table className="xls_style-excel-table">
   <thead className="bg-gray-100">
@@ -2368,14 +2113,24 @@ if (!permisos) {
     </tr>
   </thead>
   <tbody>
-    <tr className="text-center hover:bg-gray-50">
-      <td className="border px-4 py-2">{matricula?.Modalidad || "Desconocido"}</td>
-      <td className="border px-4 py-2">{matricula?.Grado || "Desconocido"}</td>
-      <td className="border px-4 py-2">{matricula?.Seccion || "Desconocido"}</td>
+    {matriculaLocal?
+    (
+<tr className="text-center hover:bg-gray-50" >
+      <td className="border px-4 py-2">{matriculaLocal?.Modalidad || "Desconocido"}</td>
+      <td className="border px-4 py-2">{matriculaLocal?.Grado || "Desconocido"}</td>
+      <td className="border px-4 py-2">{matriculaLocal?.Seccion || "Desconocido"}</td>
       <td className="border px-4 py-2">
-        {matricula?.Fecha_Matricula || "Desconocido"}
+        {matriculaLocal?.Fecha_Matricula || "Desconocido"}
       </td>
     </tr>
+
+    ):(
+      <tr>
+        <td colSpan="4" className="text-center border px-4 py-2">
+          No hay información de matrícula disponible.
+        </td>
+      </tr>
+    )} 
   </tbody>
 </table>
 
@@ -2430,10 +2185,139 @@ if (!permisos) {
 
 
 
-        </form>
 
+  </form>
 
-         
+    
+<ModalGenerico
+  key={`matricula-modal-${matriculaLocal?.Id_Matricula || 'new'}`} // Clave única para forzar reinicio
+  id="modalAddMatriculas"
+  isOpen={modals['modalAddMatriculas']}
+  onClose={() => {
+    closeModal('modalAddMatriculas');
+    setTimeout(() => {
+   
+    }, 300); // Esperar a que termine la animación
+  }}
+  titulo={isEditingmatricula ? 'Editar Matrícula' : 'Agregar Matrícula'}
+>
+<form onSubmit={handleMatriculaSubmit} className="space-y-4">
+    {/* Campo Estudiante (solo lectura si está editando) */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Estudiante</label>
+      <input
+        type="text"
+        className="w-full border p-2 rounded bg-gray-100"
+        value={`${selectedStudent?.Persona?.Identidad || ''} - ${selectedStudent?.Persona?.Primer_Nombre || ''} ${selectedStudent?.Persona?.Primer_Apellido || ''}`}
+        readOnly
+      />
+    </div>
+
+    {/* Campo Modalidad */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Modalidad</label>
+      <select
+        name="Id_Modalidad"
+        value={matriculaLocal?.Id_Modalidad}
+        onChange={handleMatriculaChange}
+        className="w-full border p-2 rounded"
+        required
+      >
+        <option value="">Seleccione...</option>
+        {modalidades.map(m => (
+          <option key={m.Id_Modalidad} value={m.Id_Modalidad}>
+            {m.Nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Campo Grado */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Grado</label>
+      <select
+        name="Id_Grado"
+        value={matriculaLocal?.Id_Grado}
+        onChange={handleMatriculaChange}
+        className="w-full border p-2 rounded"
+        required
+      >
+        <option value="">Seleccione...</option>
+        {grados.map(g => (
+          <option key={g.Id_Grado} value={g.Id_Grado}>
+            {g.Nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Campo Sección */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Sección</label>
+      <select
+        name="Id_Seccion"
+        value={matriculaLocal?.Id_Seccion}
+        onChange={handleMatriculaChange}
+        className="w-full border p-2 rounded"
+        required
+      >
+        <option value="">Seleccione...</option>
+        {filteredSecciones.map(s => (
+          <option key={s.Id_Seccion} value={s.Id_Seccion}>
+            {s.Nombre_Seccion}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Campo Fecha Matrícula */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Fecha Matrícula</label>
+      <input
+        type="date"
+        name="Fecha_Matricula"
+        value={matriculaLocal?.Fecha_Matricula}
+        onChange={handleMatriculaChange}
+        className="w-full border p-2 rounded"
+        required
+      />
+    </div>
+
+    {/* Campo Estado */}
+    <div className="flex flex-col">
+      <label className="text-gray-700">Estado</label>
+      <select
+        name="Estado"
+        value={matriculaLocal?.Estado}
+        onChange={handleMatriculaChange}
+        className="w-full border p-2 rounded"
+        required
+      >
+        <option value="1">Activo</option>
+        <option value="0">Inactivo</option>
+      </select>
+    </div>
+
+    {/* Botones */}
+    <div className="flex justify-end space-x-4 pt-4">
+      <button
+        type="button"
+        onClick={() => closeModal('modalAddMatriculas')}
+        className="px-4 py-2 bg-red-500 text-white rounded"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+        onClick={handleMatriculaSubmit}
+      >
+        {isEditingmatricula ? 'Actualizar' : 'Guardar'}
+      </button>
+    </div>
+    </form>
+</ModalGenerico>
+     
 
 
             

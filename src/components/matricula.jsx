@@ -217,6 +217,7 @@ const MatriculaManagement = () => {
           setIsEditing={setIsEditing}
           onClose={() => closeModal('modalAddMatricula')}
           fetchMatriculas={fetchMatriculas}
+          Usuario={user?.Id_Usuario}
         />
       </ModalGenerico>
 

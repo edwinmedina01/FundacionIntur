@@ -239,7 +239,7 @@ export const reglasValidacionMatricula = {
   Modificado_Por: { tipo: "int", requerido: false },
   Fecha_Modificacion: { ...reglasGenerales.Fecha(), requerido: false },
 
-  Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
+  //Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // 0 = Inactivo, 1 = Activo
 };
 
 
@@ -395,4 +395,6 @@ export const reglasValidacionUsuario = {
 
   Estado: { tipo: "int", requerido: false, opciones: [0, 1] } // ✅ 0 = Inactivo, 1 = Activo
 };
+
+
 

@@ -132,7 +132,7 @@ const ManejoObjetos = () => {
 
   const handleExport = async () => {
     const headers = [
-      { header: "ID", key: "Id_Objeto", width: 10 },
+      // { header: "ID", key: "Id_Objeto", width: 10 },
       { header: "Nombre", key: "Objeto", width: 30 },
       { header: "Descripción", key: "Descripcion", width: 40 },
       { header: "Tipo", key: "Tipo_Objeto", width: 20 },
@@ -140,7 +140,7 @@ const ManejoObjetos = () => {
     ];
 
     const data = filteredObjetos.map((obj) => ({
-      Id_Objeto: obj.Id_Objeto,
+      // Id_Objeto: obj.Id_Objeto,
       Objeto: obj.Objeto,
       Descripcion: obj.Descripcion,
       Tipo_Objeto: obj.Tipo_Objeto,
@@ -211,7 +211,7 @@ const ManejoObjetos = () => {
 <table className="xls_style-excel-table">
           <thead className="bg-slate-200">
             <tr>
-              <th className="">Id Objeto</th>
+              <th className="">#</th>
               <th className="">Nombre</th>
               <th className="">Descripción</th>
               <th className="">Tipo</th>
@@ -221,9 +221,9 @@ const ManejoObjetos = () => {
           </thead>
           {permisos?.Permiso_Consultar === "1" && (
           <tbody>
-            {currentObjetos.map((objeto) => (
+            {currentObjetos.map((objeto,index) => (
               <tr key={objeto.Id_Objeto} className="border-b hover:bg-gray-100">
-                <td className="py-4 px-6">{objeto.Id_Objeto}</td>
+                <td className="py-4 px-6">{index+1}</td>
                 <td className="py-4 px-6">
                   <strong>{objeto.Objeto}</strong>
                 </td>

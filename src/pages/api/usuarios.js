@@ -66,7 +66,7 @@ export default async function handler(req, res) {
            FROM tbl_usuario u
            LEFT JOIN tbl_estado_usuario e ON u.Id_EstadoUsuario = e.Id_EstadoUsuario
            WHERE (u.Usuario = ? OR u.Correo = ?)
-           ${esSuperUsuario ? '' : 'AND u.Correo <> ?'}`,
+           ${esSuperUsuario ? '' : 'AND u.Correo <> ?'} order by u.Fecha_Creacion DESC`,
           { 
             replacements: esSuperUsuario ? [usuario, correo] : [usuario, correo, superuserEmail], 
             type: QueryTypes.SELECT 
@@ -79,8 +79,8 @@ export default async function handler(req, res) {
 const usuarios = await sequelize.query(
   `SELECT u.*, e.Descripcion AS EstadoDisplay
    FROM tbl_usuario u
-   LEFT JOIN tbl_estado_usuario e ON u.Id_EstadoUsuario = e.Id_EstadoUsuario
-   ${esSuperUsuario ? '' : 'WHERE u.Correo <> ?'}`,
+   LEFT JOIN tbl_estado_usuario e ON u.Id_EstadoUsuario = e.Id_EstadoUsuario 
+   ${esSuperUsuario ? '' : 'WHERE u.Correo <> ?'}   order by u.Fecha_Creacion DESC`,
   { replacements: esSuperUsuario ? [] : [superuserEmail], type: QueryTypes.SELECT }
 );
 
@@ -88,6 +88,8 @@ const usuarios = await sequelize.query(
       res.status(200).json(usuarios);
     } 
     else if (req.method === 'POST') {
+
+      
       const { Id_Rol, Id_EstadoUsuario, Usuario, Nombre_Usuario, Contrasena, Correo, Creado_Por } = req.body;
   
       try {

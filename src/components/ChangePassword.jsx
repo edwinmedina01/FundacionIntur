@@ -58,7 +58,15 @@ export default function ChangePassword() {
 
       if (response.ok) {
         setSuccess('Contraseña actualizada exitosamente');
-        router.push('/inicio');
+        setError('');
+      //  router.push('/login');
+
+    // Espera de 3 segundos antes de redirigir al login
+    setTimeout(() => {
+      router.push('/login'); // Redirige al login después de 3 segundos
+      setError('');
+    }, 3000); // 3000 ms = 3 segundos
+        
         setError('');
       } else {
         const data = await response.json();
