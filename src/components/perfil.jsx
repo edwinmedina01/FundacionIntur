@@ -21,6 +21,8 @@ const Profile = () => {
     const [showPassword2, setShowPassword2] = useState(false);
     const [showPasswordcurrent , setcurrentShowPassword] = useState(false);
     const [mostrarPreguntas, setMostrarPreguntas] = useState(false);
+    const [yaTienePreguntas, setYaTienePreguntas] = useState(false);
+
     const router = useRouter();
  //   const [message, setMessage] = useState('');
 
@@ -30,13 +32,30 @@ const Profile = () => {
         if (response.ok) {
             const data = await response.json();
             setProfile(data);
+            fetchPreguntas(data); // Llama a la función para obtener las preguntas de seguridad
         } else {
             console.error('Error al obtener el perfil');
         }
     };
 
     fetchProfile();
-}, []);
+
+}, [user]);
+
+const [preguntas, setPreguntas] = useState([]);
+
+const fetchPreguntas = async (data) => {
+  const res = await axios.post("/api/auth/obtener-preguntas", { username: data.nombre });
+  
+  if (res.data.yaTienePreguntas) {
+    toast.warning("Ya configuraste tus preguntas. No se pueden modificar.");
+    setYaTienePreguntas(res.data.yaTienePreguntas);
+    return;
+  }
+  
+
+  setPreguntas(res.data.preguntas);
+};
 
 
 const handlePasswordChange = (e) => {
@@ -136,9 +155,17 @@ const handleCopyEmail = () => {
         </button>
 
         {mostrarPreguntas && (
-          <div className="mt-6">
-            <PreguntasSeguridad idUsuario={profile.id} onSave={() => setMostrarPreguntas(false)} />
-          </div>
+  <div className="mt-6">
+  {yaTienePreguntas ? (
+    <div className="bg-yellow-100 text-yellow-800 p-4 rounded-md text-center font-semibold">
+      ⚠️ Ya configuraste tus preguntas de seguridad.  
+      <br />No se pueden modificar.
+    </div>
+  ) : (
+    <PreguntasSeguridad idUsuario={profile.id} onSave={() => setMostrarPreguntas(false)} />
+  )}
+</div>
+
         )}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-10 border-t border-gray-200 pt-10">
         {/* Columna de Detalles del Perfil */}

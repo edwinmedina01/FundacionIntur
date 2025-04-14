@@ -43,6 +43,8 @@ export default async function handler(req, res) {
       }
 
       res.status(200).json({
+        yaTienePreguntas: preguntasUsuario.length > 0, // 🧠 ESTO es TODO
+
         idUsuario: usuario.Id_Usuario,
         preguntas: preguntasUsuario.map((pu) => ({
           idPregunta: pu.Id_Pregunta,
