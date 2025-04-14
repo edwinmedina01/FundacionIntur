@@ -98,7 +98,7 @@ export default function FotoCarnetUpload({ idEstudiante,onFotoActualizada}) {
   
 
 
-  const guardarFoto = async () => {
+  const guardarFotoOld = async () => {
     if (!capturaPrevia) return;
     const limpio = capturaPrevia.replace(/^data:image\/\w+;base64,/, '');
     setFotoBase64(limpio);
@@ -112,6 +112,24 @@ export default function FotoCarnetUpload({ idEstudiante,onFotoActualizada}) {
 
     cerrarModal();
   };
+  const guardarFoto = async () => {
+    if (!capturaPrevia) return;
+  
+    const limpio = capturaPrevia.replace(/^data:image\/\w+;base64,/, '');
+    setFotoBase64(limpio);
+  
+    await fetch('/api/estudiantes/FotoCarnet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idEstudiante, imagen: capturaPrevia }),
+    });
+  
+    // ⚠️ Aquí avisás al padre con la imagen nueva COMPLETA (no limpia)
+    onFotoActualizada?.(capturaPrevia);
+  
+    cerrarModal();
+  };
+  
 
   const seleccionarArchivo = (e) => {
     const file = e.target.files[0];
@@ -122,6 +140,7 @@ export default function FotoCarnetUpload({ idEstudiante,onFotoActualizada}) {
       const base64 = reader.result;
       const limpio = base64.replace(/^data:image\/\w+;base64,/, '');
       setFotoBase64(limpio);
+      onFotoActualizada?.(base64); 
       await fetch('/api/estudiantes/FotoCarnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
