@@ -263,7 +263,7 @@ const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ Id_Beneficio }),
+        body: JSON.stringify({ Id_Beneficio, Modificado_Por: user.id }),
       });
 
       if (!response.ok) {

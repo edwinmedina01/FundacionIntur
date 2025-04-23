@@ -314,7 +314,7 @@ const handleSubmit = async (e) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ Id_Modalidad }),
+        body: JSON.stringify({ Id_Modalidad,Modificado_Por: user.id }),
       });
 
       if (!response.ok) {

@@ -265,7 +265,7 @@ const handleSubmit = async (e) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ Id_Permiso }),
+        body: JSON.stringify({ Id_Permiso, Modificado_Por: user.id }), // Enviar el ID del permiso a eliminar
       });
 
       if (!response.ok) {

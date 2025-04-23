@@ -147,7 +147,7 @@ const InstitucionManagement = () => {
   };
 
   const handleDelete = async (Id_Instituto) => {
-    await axios.delete('/api/apis_mantenimientos/instituciones', { data: { Id_Instituto } });
+    await axios.delete('/api/apis_mantenimientos/instituciones', { data: { Id_Instituto, Modificado_Por:user.id } });
     toast.error("Institución eliminada exitosamente");
     fetchInstituciones();
     resetForm();

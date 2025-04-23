@@ -82,7 +82,7 @@ const router = useRouter();
         return;
       }
   
-      const response = await axios.get('/api/roles', {
+      const response = await axios.get('/api/apis_mantenimientos/roles', {
         headers: {
           Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
         },

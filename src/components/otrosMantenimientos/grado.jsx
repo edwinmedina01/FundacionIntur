@@ -159,7 +159,7 @@ const GradoManagement = () => {
   const handleDelete = async (Id_Grado) => {
     try {
       await axios.delete('/api/apis_mantenimientos/grado', {
-        data: { Id_Grado },
+        data: { Id_Grado, Modificado_Por: user.id },
       });
       toast.error("Grado eliminado exitosamente");
       fetchGrados();

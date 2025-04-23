@@ -92,6 +92,9 @@ const ManejoObjetos = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errores = validarFormulario(formData, reglasValidacion);
+    formData.Creado_Por = user.id;
+    formData.Modificado_Por = user.id;
+ 
     if (errores.length > 0) return;
 
     try {
@@ -120,7 +123,7 @@ const ManejoObjetos = () => {
   const handleDelete = async (Id_Objeto) => {
     try {
       await axios.delete("/api/objetos", {
-        data: { Id_Objeto },
+        data: { Id_Objeto, Modificado_Por: user.id },
       });
       toast.error("Objeto eliminado exitosamente");
       fetchObjetos();

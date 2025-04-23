@@ -132,7 +132,7 @@ const DepartamentoManagement = () => {
   };
 
   const handleDelete = async (Id_Departamento) => {
-    await axios.delete('/api/apis_mantenimientos/departamentos', { data: { Id_Departamento } });
+    await axios.delete('/api/apis_mantenimientos/departamentos', { data: { Id_Departamento , Modificado_Por:user.id} });
     toast.error("Departamento eliminado exitosamente");
     fetchDepartamentos();
     resetForm();

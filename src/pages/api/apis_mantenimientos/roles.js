@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'; 
-import { registrarBitacora } from '../../utils/bitacoraHelper';
+import { registrarBitacora } from '../../../utils/bitacoraHelper';
 
-const sequelize = require('../../../database/database');
+const sequelize = require('../../../../database/database');
 const { QueryTypes } = require('sequelize');
 
 const SECRET_KEY = process.env.JWT_SECRET || "clave_secreta"; 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
            FROM tbl_roles r
            INNER JOIN tbl_diccionario_estados e 
              ON r.Estado = e.Codigo_Estado 
-           WHERE e.Tabla_Referencia = 'GENÉRICO'  and r.Estado = 1
+           WHERE e.Tabla_Referencia = 'GENÉRICO'  
              AND r.Rol <> ? order by r.Fecha_Creacion desc`,
           { 
             replacements: [ROL_SUPERUSUARIO], 

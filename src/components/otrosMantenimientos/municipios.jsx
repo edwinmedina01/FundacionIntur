@@ -91,7 +91,7 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
 
   const fetchDepartamentos = async () => {
     try {
-      const response = await axios.get('/api/apis_mantenimientos/departamentos');
+      const response = await axios.get('/api/departamentos');
       setDepartamentos(response.data);
     } catch (err) {
       toast.error("Error al cargar departamentos");
@@ -152,7 +152,7 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
   const handleDelete = async (Id_Municipio) => {
     try {
       await axios.delete('/api/apis_mantenimientos/municipios', {
-        data: { Id_Municipio },
+        data: { Id_Municipio ,Modificado_Por: user.id },
       });
       fetchMunicipios();
       resetForm();

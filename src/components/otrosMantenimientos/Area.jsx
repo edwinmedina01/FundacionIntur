@@ -142,7 +142,7 @@ const AreaManagement = () => {
   };
 
   const handleDelete = async (Id_Area) => {
-    await axios.delete('/api/apis_mantenimientos/area', { data: { Id_Area } });
+    await axios.delete('/api/apis_mantenimientos/area', { data: { Id_Area , Modificado_Por:user.id} });
     toast.error("Área eliminada exitosamente");
     fetchAreas();
     resetForm();
