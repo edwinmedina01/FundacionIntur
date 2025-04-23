@@ -26,12 +26,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     // Crear nuevo grado
-    const { Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias,Estado } = req.body;
+    const { Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias } = req.body;
     try {
       await sequelize.query(
-        'INSERT INTO tbl_grado (Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias, Fecha_Creacion,Estado) VALUES (?, ?, ?, ?, ?, NOW()), ?',
+        'INSERT INTO tbl_grado (Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias, Fecha_Creacion) VALUES (?, ?, ?, ?, ?, NOW())',
         {
-          replacements: [Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias,Estado],
+          replacements: [Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias],
           type: QueryTypes.INSERT,
         }
       );
@@ -42,13 +42,13 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Actualizar un grado
-    const { Id_Grado, Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias,Estado } = req.body;
+    const { Id_Grado, Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias } = req.body;
     try {
       // Actualizar el grado utilizando los parámetros recibidos
       await sequelize.query(
-        'UPDATE tbl_grado SET Nombre = ?, Descripcion = ?, Nivel_Academico = ?, Duracion = ?, Cantidad_Materias = ?, Fecha_Modificacion = NOW(), Estado=? WHERE Id_Grado = ?',
+        'UPDATE tbl_grado SET Nombre = ?, Descripcion = ?, Nivel_Academico = ?, Duracion = ?, Cantidad_Materias = ?, Fecha_Modificacion = NOW() WHERE Id_Grado = ?',
         {
-          replacements: [Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias,Estado, Id_Grado],
+          replacements: [Nombre, Descripcion, Nivel_Academico, Duracion, Cantidad_Materias, Id_Grado],
           type: QueryTypes.UPDATE,
         }
       );

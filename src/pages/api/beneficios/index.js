@@ -5,7 +5,9 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const lineas = await Beneficio.findAll();
+        const lineas = await Beneficio.findAll({
+          where: { Estado: 1 }
+        });
         res.status(200).json(lineas);
       } catch (error) {
         console.log(error);

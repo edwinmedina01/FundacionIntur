@@ -298,7 +298,10 @@ const handleSubmit = async (e) => {
   };
 
   const handleEdit = (modalidad) => {
-    setFormData(modalidad);
+    setFormData({
+      ...modalidad,
+      Estado: modalidad.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal("modalAddRow");
   
@@ -491,7 +494,10 @@ if (!permisos) {
     )}
     <button
       type="button"
-      onClick={resetForm}
+      onClick={() => {
+        resetForm();
+        closeModal("modalAddRow");
+      }}
       className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
     >
       Cancelar

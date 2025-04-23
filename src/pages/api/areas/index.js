@@ -5,7 +5,9 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const areas = await Area.findAll();
+        const areas = await Area.findAll({
+          where: { Estado: 1 }
+        });
         res.status(200).json(areas);
       } catch (error) {
         res.status(500).json({ error: 'Error al obtener áreas' });

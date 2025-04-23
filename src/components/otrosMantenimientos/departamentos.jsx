@@ -121,8 +121,13 @@ const DepartamentoManagement = () => {
   };
 
   const handleEdit = (dep) => {
-    setFormData(dep);
-    setIsEditing(true);
+   // setFormData(dep);
+   
+   setFormData({
+    ...dep,
+    Estado: dep.Estado?.toString() || "", // <- Asegura que sea string
+  });
+  setIsEditing(true);
     showModal("modalAddDepartamento");
   };
 

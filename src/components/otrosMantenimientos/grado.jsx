@@ -127,6 +127,7 @@ const GradoManagement = () => {
       Modificado_Por: user.id,
       Fecha_Creacion: obtenerFechaActual(),
       Fecha_Modificacion: obtenerFechaActual(),
+      Estado: Number(formData.Estado) ,
     };
 
     try {
@@ -146,7 +147,11 @@ const GradoManagement = () => {
   };
 
   const handleEdit = (grado) => {
-    setFormData(grado);
+   
+    setFormData({
+      ...grado,
+      Estado: grado.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal("modalAddGrado");
   };
@@ -183,7 +188,7 @@ const GradoManagement = () => {
       Nivel_Academico: g.Nivel_Academico,
       Duracion: g.Duracion,
       Cantidad_Materias: g.Cantidad_Materias,
-      Estado: estados.find((e) => e.Codigo_Estado === g.Estado)?.Nombre_Estado || "Desconocido",
+      Estado: estados.find((e) => Number(e.Codigo_Estado) === Number(g.Estado))?.Nombre_Estado || "Desconocido",
     }));
     await exportToExcel({ fileName: 'Grados.xlsx', title: 'Reporte de Grados', headers, data, searchQuery });
   };

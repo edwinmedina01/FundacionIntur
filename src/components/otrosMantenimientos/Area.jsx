@@ -131,7 +131,12 @@ const AreaManagement = () => {
   };
 
   const handleEdit = (area) => {
-    setFormData(area);
+   
+   
+    setFormData({
+      ...area,
+      Estado: area.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal("modalAddArea");
   };
@@ -226,7 +231,10 @@ const AreaManagement = () => {
           <div className="flex justify-end">
             {permisos?.Permiso_Actualizar === "1" && isEditing && <button type="submit" className="btn-guardar">Actualizar</button>}
             {permisos?.Permiso_Insertar === "1" && !isEditing && <button type="submit" className="btn-guardar">Agregar</button>}
-            <button type="button" onClick={resetForm} className="btn-cancelar">Cancelar</button>
+            <button type="button"   onClick={() => {
+        resetForm();
+        closeModal("modalAddArea");
+      }} className="btn-cancelar">Cancelar</button>
           </div>
         </form>
       </ModalGenerico>

@@ -130,6 +130,10 @@ const ManejoObjetos = () => {
     }
   };
 
+  const convertEstado = (estado) => {
+    return Number( estado )=== 1 ? "Activo" : "Inactivo";
+  };
+
   const handleExport = async () => {
     const headers = [
       // { header: "ID", key: "Id_Objeto", width: 10 },
@@ -144,7 +148,7 @@ const ManejoObjetos = () => {
       Objeto: obj.Objeto,
       Descripcion: obj.Descripcion,
       Tipo_Objeto: obj.Tipo_Objeto,
-      Estado: obj.Estado === "1" ? "Activo" : "Inactivo",
+      Estado: convertEstado( obj.Estado),
     }));
 
     await exportToExcel({

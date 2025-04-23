@@ -153,7 +153,11 @@ const LineaBeneficioManagement = () => {
   };
 
   const handleEdit = (beneficio) => {
-    setFormData(beneficio);
+  
+    setFormData({
+      ...beneficio,
+      Estado: beneficio.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal('modalAddBeneficio');
   };

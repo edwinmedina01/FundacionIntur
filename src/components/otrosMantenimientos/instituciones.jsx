@@ -136,7 +136,12 @@ const InstitucionManagement = () => {
   };
 
   const handleEdit = (instituto) => {
-    setFormData(instituto);
+    
+
+    setFormData({
+      ...instituto,
+      Estado: instituto.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal("modalAddInstitucion");
   };
@@ -242,7 +247,10 @@ const InstitucionManagement = () => {
           <div className="flex justify-end">
             {isEditing && permisos.Permiso_Actualizar === "1" && <button type="submit" className="btn-guardar">Actualizar</button>}
             {!isEditing && permisos.Permiso_Insertar === "1" && <button type="submit" className="btn-guardar">Agregar</button>}
-            <button type="button" onClick={resetForm} className="btn-cancelar">Cancelar</button>
+            <button type="button"   onClick={() => {
+        resetForm();
+        closeModal("modalAddInstitucion");
+      }}className="btn-cancelar">Cancelar</button>
           </div>
         </form>
       </ModalGenerico>

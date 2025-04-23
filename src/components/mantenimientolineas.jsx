@@ -76,6 +76,7 @@ const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
       { header: "Tipo", key: "Tipo", width: 20 },
       { header: "Monto", key: "Monto", width: 15 },
       { header: "Responsable", key: "Responsable", width: 30 },
+      { header: "Estado", key: "Estado", width: 30 },
     ];
   
     const data = filteredBeneficios.map((beneficio) => ({
@@ -85,6 +86,7 @@ const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
       Tipo: beneficio.Tipo_Beneficio,
       Monto: beneficio.Monto_Beneficio,
       Responsable: beneficio.Responsable_Beneficio,
+      Estado: estados.find((estado) => estado.Codigo_Estado === beneficio.Estado)?.Nombre_Estado || "Desconocido"
     }));
   
     await exportToExcel({
@@ -245,7 +247,11 @@ const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
   };
 
   const handleEdit = (beneficio) => {
-    setFormData(beneficio);
+  
+    setFormData({
+      ...beneficio,
+      Estado: beneficio.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal('modalAddBeneficio');
   };
@@ -392,7 +398,10 @@ const filteredBeneficios = beneficios.filter((m) => deepSearch(m, searchQuery));
                 Agregar
               </button>
             )}
-            <button type="button" onClick={resetForm} className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            <button type="button"   onClick={() => {
+        resetForm();
+        closeModal("modalAddBeneficio");
+      }} className="ml-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
               Cancelar
             </button>
           </div>

@@ -140,7 +140,11 @@ const filteredMunicipios = municipios.filter((m) => deepSearch(m, searchQuery));
   };
 
   const handleEdit = (m) => {
-    setFormData(m);
+   
+    setFormData({
+      ...m,
+      Estado: m.Estado?.toString() || "", // <- Asegura que sea string
+    });
     setIsEditing(true);
     showModal("modalAddMunicipio");
   };

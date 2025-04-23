@@ -5,7 +5,9 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const institutos = await Instituto.findAll();
+        const institutos = await Instituto.findAll({
+          where: { Estado: 1 }
+        });
         res.status(200).json(institutos);
       } catch (error) {
         res.status(500).json({ error: 'Error al obtener institutos' });

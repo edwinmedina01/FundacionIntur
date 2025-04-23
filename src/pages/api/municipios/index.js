@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         let municipios;
         if (Id_Departamento) {
           municipios = await Municipio.findAll({
-            where: { Id_Departamento: Id_Departamento },
+            where: { Id_Departamento: Id_Departamento,Estado: 1 },
           });
         } else {
           municipios = await Municipio.findAll();

@@ -252,7 +252,8 @@ const handleSubmit = async (e) => {
       Permiso_Insertar: permission.Permiso_Insertar === '1',
       Permiso_Actualizar: permission.Permiso_Actualizar === '1',
       Permiso_Eliminar: permission.Permiso_Eliminar === '1',
-      Permiso_Consultar: permission.Permiso_Consultar === '1'
+      Permiso_Consultar: permission.Permiso_Consultar === '1',
+      Estado: permission.Estado?.toString() || "", // <- Asegura que sea string
     });
     setIsEditing(true);
   };
@@ -384,7 +385,7 @@ const exportToExcelold = async () => {
 
   // 2️⃣ Definir encabezados de las columnas
   worksheet.columns = [
-    { header: "ID Rol", key: "Id_Rol", width: 15 },
+   
     { header: "Rol", key: "Rol", width: 25 },
     { header: "ID Objeto", key: "Id_Objeto", width: 15 },
     { header: "Objeto", key: "Objeto", width: 25 },
@@ -396,7 +397,7 @@ const exportToExcelold = async () => {
 
   // 3️⃣ Transformar los datos para el Excel
   const transformedPermissions = permissions.map(permission => ({
-    Id_Rol: permission.Id_Rol,
+  
     Rol: roleMap[permission.Id_Rol] || "Desconocido",
     Id_Objeto: permission.Id_Objeto,
     Objeto: objectMap[permission.Id_Objeto] || "Desconocido",
@@ -639,7 +640,7 @@ if (!permisos) {
 <table className="xls_style-excel-table"> 
   <thead className="bg-slate-200">
     <tr>
-      <th className="py-4 px-6 text-left">Id Permiso</th>
+      <th className="py-4 px-6 text-left">#</th>
       <th className="py-4 px-6 text-left">Rol</th>
       <th className="py-4 px-6 text-left">Objeto</th> {/* Nueva columna para objeto */}
       <th className="py-4 px-6 text-left">Consultar</th>
@@ -653,13 +654,13 @@ if (!permisos) {
 
   {permisos?.Permiso_Consultar === "1" && (
     <tbody>
-      {currentPermissions.map((permiso) => {
+      {currentPermissions.map((permiso,index) => {
         // Buscar el estado correspondiente en el diccionario de estados
         const estado = estados.find(e => e.Codigo_Estado === permiso.Estado);
 
         return (
           <tr key={permiso.Id_Permiso} className="border-b hover:bg-gray-100">
-            <td className="py-4 px-6">{permiso.Id_Permiso}</td>
+            <td className="py-4 px-6">{index+1}</td>
             <td className="py-4 px-6"><strong>{roleMap[permiso.Id_Rol]}</strong></td> {/* Mostrar nombre del rol */}
             <td className="py-4 px-6">{objectMap[permiso.Id_Objeto]}</td> {/* Mostrar nombre del objeto correctamente */}
             <td className="py-4 px-6">{permiso.Permiso_Consultar === "1" ? "Sí" : "No"}</td>
