@@ -96,7 +96,7 @@ const usuarios = await sequelize.query(
         console.log("✅ Datos recibidos en el backend:", req.body); // Debugging
   
         const existingUser = await sequelize.query(
-          'SELECT * FROM tbl_usuario WHERE Usuario = ?',
+          'SELECT * FROM tbl_usuario WHERE Usuario = ? and Id_EstadoUsuario <> 3',
           { replacements: [Usuario], type: QueryTypes.SELECT }
         );
   

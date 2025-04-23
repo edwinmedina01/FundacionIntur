@@ -7,6 +7,7 @@ import User from '../../../../models/Usuario'; // Asegúrate de que la ruta sea 
 import { use } from 'react';
 import fs from 'fs';
 import path from 'path';
+import { Op } from 'sequelize';
 
 // Configuración del transporte de nodemailer
 const transporter = nodemailer.createTransport({
@@ -61,10 +62,17 @@ export default async function handler(req, res) {
 
         try {
             // Verificar si el usuario existe en la base de datos
-            const user = await User.findOne({ where: { Correo: email } });
+            const user = await User.findOne({ where: { Correo: email,  Id_EstadoUsuario: {
+                [Op.ne]: 3, // Distinto de 3
+              }, } });
             if (!user) {
                 return res.status(404).json({ mensaje: 'Correo no encontrado.' });
             }
+
+            // Verificás si el estado del usuario es distinto de 1 (activo)
+if (user.Id_EstadoUsuario !== 1) {
+    return res.status(403).json({ mensaje: 'Usuario inactivo o no autorizado.' });
+  }
 
 
             const firmaBase64 = convertirImagenABase64('firma.png'); // Asegúrate de que la imagen está en /public/

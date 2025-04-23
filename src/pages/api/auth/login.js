@@ -6,6 +6,8 @@ import Rol from "../../../../models/Rol";
 import DiccionarioEstados from "../../../../models/DiccionarioEstados"; // Modelo actualizado
 import { enviarCorreo } from "../../../utils/emailSender";
 import LogIpFallidas from "../../../../models/LogIpFallidas";  
+import { Op } from 'sequelize';
+
 
 const MAX_ATTEMPTS = 5;
 
@@ -24,7 +26,9 @@ export default async function handler(req, res) {
     const SECRET_KEY = process.env.SECRET_KEY ;
     // Buscar usuario y obtener su estado
     const usuario = await Usuario.findOne({
-        where: { Usuario: email },
+        where: { Usuario: email,  Id_EstadoUsuario: {
+            [Op.notIn]: [ ESTADOS.ELIMINADO,3],
+          }, },
         include: [{
             model: Rol,
             as: "Rol",

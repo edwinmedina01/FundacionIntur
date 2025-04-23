@@ -26,6 +26,7 @@ import {
   RectangleGroupIcon,
   UserGroupIcon, Bars4Icon
 } from "@heroicons/react/24/outline"; // Importa íconos necesarios
+import { set } from "nprogress";
 
 const Layout = ({ children }) => {
   const [lastActivityTime, setLastActivityTime] = useState(Date.now());
@@ -148,6 +149,7 @@ const Layout = ({ children }) => {
   const [showApartadoDosNavbar, setShowApartadoDosNavbar] = useState(false); // Nuevo
   const [showApartadoTresNavbar, setShowApartadoTresNavbar] = useState(false); // Nuevo
   const [permisos, setPermisos] = useState([]);
+  const [permisosMenu, setPermisosMenu] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 //  const router = useRouter();
@@ -171,6 +173,8 @@ useEffect(() => {
     try {
       const response = await axios.get(`/api/permisos?rolId=${rolId}`);
       // Convierte la lista de permisos en un objeto de permisos
+      console.log("🧠 Response de permisos:", response.data);
+
       const permisosMap = response.data.reduce((acc, permiso) => {
         acc[permiso.Id_Objeto] = {
           insertar: permiso.Permiso_Insertar === "1",
@@ -180,6 +184,7 @@ useEffect(() => {
         };
         return acc;
       }, {});
+      setPermisosMenu(response.data); // Guardar permisos en el estado
       setPermisos(permisosMap);
     } catch (error) {
       console.error("Error al obtener permisos", error);
@@ -200,6 +205,13 @@ useEffect(() => {
     const intervalId = setInterval(updateClock, 1000); // Actualizar cada segundo
     return () => clearInterval(intervalId); // Limpiar intervalo al desmontar
   }, [user]);
+
+
+  const tienePermiso = (objeto, tipo = "Permiso_Consultar") => {
+    return permisosMenu.find(p => p.Objeto?.toUpperCase() === objeto.toUpperCase())?.[tipo] === "1";
+  };
+  
+  
 
   //console.log("Estado actual del usuario en el contexto:", user);
 
@@ -296,17 +308,18 @@ if (!isLoaded) {
     <Image src="/img/intur.png" alt="logo" width={150} height={50} priority />
   </div>
   <ul className="space-y-6">
-    <li>
-      <Link
-        href="/inicio"
-        className="flex items-center py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-      >
-        <HomeIcon className="h-6 w-6 mr-4" />
-        <strong>Inicio</strong>
-      </Link>
-    </li>
+  <li>
+    <Link
+      href="/inicio"
+      className="flex items-center py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+    >
+      <HomeIcon className="h-6 w-6 mr-4" />
+      <strong>Inicio</strong>
+    </Link>
+  </li>
 
-    {/* Sección Académico */}
+  {/* Sección Académico */}
+  {tienePermiso("ESTUDIANTES") || tienePermiso("BENEFACTORES") || tienePermiso("TUTOR/PADRE") || tienePermiso("MATRICULA") || tienePermiso("GRADUANDOS") ? (
     <li>
       <button
         onClick={toggleAcademicoNavBar}
@@ -317,56 +330,51 @@ if (!isLoaded) {
       </button>
       {showAcademicoNavBar && (
         <ul className="ml-8 mt-4 space-y-3 text-blue-200">
-          <li>
-            <Link
-              href="/estudiante/reporte"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <QueueListIcon className="h-5 w-5 mr-3 inline" />
-              Estudiantes
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/benefactores"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <QueueListIcon className="h-5 w-5 mr-3 inline" />
-              Benefactores
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/tutorpadre"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <QueueListIcon className="h-5 w-5 mr-3 inline" />
-              Tutores/Padres
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/matriculageneral"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <BookmarkSquareIcon className="h-5 w-5 mr-3 inline" />
-              Matrícula
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/graduandos"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <FolderIcon className="h-5 w-5 mr-3 inline" />
-              Graduandos
-            </Link>
-          </li>
+          {tienePermiso("ESTUDIANTES") && (
+            <li>
+              <Link href="/estudiante/reporte" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <QueueListIcon className="h-5 w-5 mr-3 inline" /> Estudiantes
+              </Link>
+            </li>
+          )}
+          {tienePermiso("BENEFACTORES") && (
+            <li>
+              <Link href="/benefactores" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <QueueListIcon className="h-5 w-5 mr-3 inline" /> Benefactores
+              </Link>
+            </li>
+          )}
+          {tienePermiso("TUTOR/PADRE") && (
+            <li>
+              <Link href="/tutorpadre" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <QueueListIcon className="h-5 w-5 mr-3 inline" /> Tutores/Padres
+              </Link>
+            </li>
+          )}
+          {tienePermiso("MATRICULA") && (
+            <li>
+              <Link href="/matriculageneral" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <BookmarkSquareIcon className="h-5 w-5 mr-3 inline" /> Matrícula
+              </Link>
+            </li>
+          )}
+          {tienePermiso("GRADUANDOS") && (
+            <li>
+              <Link href="/graduandos" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <FolderIcon className="h-5 w-5 mr-3 inline" /> Graduandos
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </li>
+  ) : null}
 
-    {/* Sección Mantenimientos */}
+  {/* Sección Mantenimientos */}
+  {[
+    "MODALIDADES", "GRADOS", "SECCION", "INSTITUCIONES",
+    "AREAS", "DEPARTAMENTOS", "MUNICIPIOS", "LINEAS BENEFICIO"
+  ].some(obj => tienePermiso(obj)) && (
     <li>
       <button
         onClick={toggleApartadoTresNavbar}
@@ -377,83 +385,69 @@ if (!isLoaded) {
       </button>
       {showApartadoTresNavbar && (
         <ul className="ml-8 mt-4 space-y-3 text-blue-200">
-          <li>
-            <Link
-              href="/mantenimientos/modalidades"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Modalidades
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/grado"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Grados
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/seccion"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Sección
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/instituciones"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Instituciones
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/area"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Áreas
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/departamentos"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Departamentos
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/mantenimientos/municipios"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Municipios
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/lineabeneficio"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <RectangleGroupIcon className="h-5 w-5 mr-3 inline" />
-              Beneficios
-            </Link>
-          </li>
+          {tienePermiso("MODALIDADES") && (
+            <li>
+              <Link href="/mantenimientos/modalidades" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Modalidades
+              </Link>
+            </li>
+          )}
+          {tienePermiso("GRADOS") && (
+            <li>
+              <Link href="/mantenimientos/grado" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Grados
+              </Link>
+            </li>
+          )}
+          {tienePermiso("SECCION") && (
+            <li>
+              <Link href="/mantenimientos/seccion" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Sección
+              </Link>
+            </li>
+          )}
+          {tienePermiso("INSTITUCIONES") && (
+            <li>
+              <Link href="/mantenimientos/instituciones" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Instituciones
+              </Link>
+            </li>
+          )}
+          {tienePermiso("AREAS") && (
+            <li>
+              <Link href="/mantenimientos/area" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Áreas
+              </Link>
+            </li>
+          )}
+          {tienePermiso("DEPARTAMENTOS") && (
+            <li>
+              <Link href="/mantenimientos/departamentos" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Departamentos
+              </Link>
+            </li>
+          )}
+          {tienePermiso("MUNICIPIOS") && (
+            <li>
+              <Link href="/mantenimientos/municipios" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Municipios
+              </Link>
+            </li>
+          )}
+          {tienePermiso("LINEAS BENEFICIO") && (
+            <li>
+              <Link href="/lineabeneficio" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <RectangleGroupIcon className="h-5 w-5 mr-3 inline" /> Beneficios
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </li>
+  )}
 
-    {/* Sección Seguridad */}
+  {/* Sección Seguridad */}
+  {["USUARIOS", "ROLES", "PERMISOS", "OBJETOS"].some(obj => tienePermiso(obj)) && (
     <li>
       <button
         onClick={toggleseguridadNavbar}
@@ -464,58 +458,47 @@ if (!isLoaded) {
       </button>
       {showseguridadNavbar && (
         <ul className="ml-8 mt-4 space-y-3 text-blue-200">
-          <li>
-            <Link
-              href="/usuarios"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <UserGroupIcon className="h-5 w-5 mr-3 inline" />
-              Usuarios
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/roles"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <TagIcon className="h-5 w-5 mr-3 inline" />
-              Roles
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/permisos"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <ClipboardDocumentListIcon className="h-5 w-5 mr-3 inline" />
-              Permisos
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/objetos"
-              className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              <CubeIcon className="h-5 w-5 mr-3 inline" />
-              Objetos
-            </Link>
-          </li>
-          {/* Solo visible para Super Administrador */}
-      {user?.nombrerol === "SuperAdministrador" && (
-        <li>
-          <Link
-            href="/configuracion"
-            className="block py-2 px-4 rounded-lg hover:bg-blue-600"
-          >
-            <WrenchScrewdriverIcon className="h-5 w-5 mr-3 inline" />
-            Configuración
-          </Link>
-        </li>
-      )}
+          {tienePermiso("USUARIOS") && (
+            <li>
+              <Link href="/usuarios" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <UserGroupIcon className="h-5 w-5 mr-3 inline" /> Usuarios
+              </Link>
+            </li>
+          )}
+          {tienePermiso("ROLES") && (
+            <li>
+              <Link href="/roles" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <TagIcon className="h-5 w-5 mr-3 inline" /> Roles
+              </Link>
+            </li>
+          )}
+          {tienePermiso("PERMISOS") && (
+            <li>
+              <Link href="/permisos" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <ClipboardDocumentListIcon className="h-5 w-5 mr-3 inline" /> Permisos
+              </Link>
+            </li>
+          )}
+          {tienePermiso("OBJETOS") && (
+            <li>
+              <Link href="/objetos" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <CubeIcon className="h-5 w-5 mr-3 inline" /> Objetos
+              </Link>
+            </li>
+          )}
+          {user?.nombrerol === "SuperAdministrador" && (
+            <li>
+              <Link href="/configuracion" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+                <WrenchScrewdriverIcon className="h-5 w-5 mr-3 inline" /> Configuración
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </li>
-  </ul>
+  )}
+</ul>
+
 </aside>
 
 )}

@@ -8,7 +8,10 @@ export default async function handler(req, res) {
       let permisos;
       if (rolId) {
         permisos = await sequelize.query(
-          `SELECT * FROM tbl_permisos WHERE Id_Rol = ?`,
+          `SELECT p.*, o.Objeto, o.Descripcion
+          FROM tbl_permisos p
+          INNER JOIN tbl_objetos o ON p.Id_Objeto = o.Id_Objeto
+          WHERE p.Id_Rol = ? AND p.Estado = 1`,
           { replacements: [rolId], type: QueryTypes.SELECT }
         );
       } else {
