@@ -69,19 +69,19 @@ const MatriculaForm = ({ formData, isEditing, setIsEditing, onClose, fetchMatric
   };
 
   const fetchModalidades = async () => {
-    const res = await fetch('/api/apis_mantenimientos/modalidades');
+    const res = await fetch('/api/modalidades');
     const data = await res.json();
     setModalidades(data);
   };
 
   const fetchGrados = async () => {
-    const res = await fetch('/api/apis_mantenimientos/grado');
+    const res = await fetch('/api/grado');
     const data = await res.json();
     setGrados(data);
   };
 
   const fetchSecciones = async () => {
-    const res = await fetch('/api/apis_mantenimientos/seccion');
+    const res = await fetch('/api/seccion');
     const data = await res.json();
     setSecciones(data);
   };

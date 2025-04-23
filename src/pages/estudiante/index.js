@@ -245,7 +245,7 @@ const prevStep = () => {
     y += 10;
   
     console.log("matriculaLocal",matriculaLocal)
- if (matriculaLocal) {
+ if (matriculaLocal?.Id_Matricula) {
       agregarCampo("Modalidad:", matriculaLocal.Modalidad || "Desconocido");
       agregarCampo("Grado:", matriculaLocal.Grado || "Desconocido");
       agregarCampo("Sección:", matriculaLocal.Seccion || "Desconocido");
@@ -297,7 +297,8 @@ const prevStep = () => {
     doc.setFont("times", "bold");
     doc.text("INFORMACION DE GRADUACION", 20, currentY);
     currentY += 10;
- 
+    if (graduacion?.Id_Graduando) {
+
     doc.setFont("times", "bold");
     doc.text("Año", 20, currentY);
     doc.text("Inicio", 60, currentY);
@@ -306,11 +307,15 @@ const prevStep = () => {
     currentY += 8;
     doc.setFont(undefined, 'normal');
     doc.setFontSize(12);
+    
     const estadoGraduacion = estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido";
     doc.text(`${graduacion.Anio || "-"}`, 20, currentY);
     doc.text(`${graduacion.Fecha_Inicio || "-"}`, 60, currentY);
     doc.text(`${graduacion.Fecha_Final || "No finalizada"}`, 100, currentY);
-    doc.text(estadoGraduacion, 150, currentY);
+    doc.text(estadoGraduacion, 150, currentY);}
+    else{
+      doc.text("Este alumno aún no está Graduado.", 20, currentY);
+    }
     currentY += 20;
   
     // Guardar el PDF
@@ -398,7 +403,8 @@ function renderRelacionesPorTipoPersona(doc, relaciones, tipoPersonaId, currentY
 
     }));
     
-    
+    closeModal("modalRelacion");  
+    closeModal("modalRelacionBenefactor")
   };
 
   const [personaDataRelacion, setPersonaDataRelacion] = useState({
@@ -471,14 +477,14 @@ const [benefactorData, setBenefactorData] = useState({
 
 
   const fetchGrados = async () => {
-    const res = await fetch('/api/apis_mantenimientos/grado');
+    const res = await fetch('/api/grado');
     const data = await res.json();
     setGrados(data);
   };
 
   
   const fetchModalidades = async () => {
-    const res = await fetch('/api/apis_mantenimientos/modalidades');
+    const res = await fetch('/api/modalidades');
     const data = await res.json();
     setModalidades(data);
   };
@@ -486,7 +492,7 @@ const [benefactorData, setBenefactorData] = useState({
 
 
   const fetchSecciones = async () => {
-    const res = await fetch('/api/apis_mantenimientos/seccion');
+    const res = await fetch('/api/seccion');
     const data = await res.json();
     setSecciones(data);
     // Filtrar secciones por grado  
@@ -633,6 +639,11 @@ const editGraduacion= ()=>{
 
   if(graduacion.Id_Graduando){
     setIsEditinggraduacion(true);
+    setGraduacion({
+      ...graduacion,
+      Estado: graduacion.Estado?.toString() || "", // <- Asegura que sea string
+    })
+
   }
   showModal("modalGraduacion")
 
@@ -741,9 +752,9 @@ const editGraduacion= ()=>{
            
           });
   
-          const permisosData = response.data;
+          const graduando = response.data;
   
-          setGraduacion(permisosData);
+          setGraduacion(graduando);
           setIsEditing(true);
     
       
@@ -1203,7 +1214,7 @@ const handleSubmitGraduacion = async (e) => {
 
  //   resetForm();
     // Recargar los graduandos después de agregar uno nuevo
-    const response = await axios.get('/api/graduando');
+    //const response = await axios.get('/api/graduando');
 
    // setGraduandos(response.data);
   } catch (error) {
@@ -1872,9 +1883,10 @@ if (!permisos) {
       <tr>
         <th className="">Identidad</th>
         <th className="">Nombre Completo</th>
-        <th className="">Estado</th>
+      
         <th className="">Dirección</th>
         <th className="">Teléfono</th>
+        <th className="">Estado</th>
         <th className="">Acciones</th>
       </tr>
     </thead>
@@ -1890,11 +1902,12 @@ if (!permisos) {
                 <td className="px-4 py-2 text-sm text-center border-b">
                   {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
                 </td>
+            
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
                 <td className="px-4 py-2 text-sm text-center border-b">
                   {estado ? estado.Nombre_Estado : "Desconocido"}
                 </td>
-                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
-                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
                 <td className="px-4 py-2 text-sm text-center border-b">
                   <div className="flex justify-center gap-2">
                     {permisos.Permiso_Actualizar === "1" && (
@@ -1922,7 +1935,7 @@ if (!permisos) {
           })
       ) : (
         <tr>
-          <td colSpan="5" className="px-4 py-4 text-center text-sm text-gray-500">
+          <td colSpan="6" className="px-4 py-4 text-center text-sm text-gray-500">
             No hay tutores registrados.
           </td>
         </tr>
@@ -2020,9 +2033,10 @@ if (!permisos) {
             <tr className="bg-gray-100">
             <th>Identidad</th>
               <th >Nombre Completo</th>
-              <th>Estado</th>
+         
               <th className="">Dirección</th>
               <th className="">Teléfono</th>
+              <th>Estado</th>
               <th>Acciones</th>
 
             </tr>
@@ -2039,11 +2053,12 @@ if (!permisos) {
                 <td className="px-4 py-2 text-sm text-center border-b">
                   {relacion.Persona?.Primer_Nombre} {relacion.Persona?.Primer_Apellido}
                 </td>
+            
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
+                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
                 <td className="px-4 py-2 text-sm text-center border-b">
                   {estado ? estado.Nombre_Estado : "Desconocido"}
                 </td>
-                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Direccion}</td>
-                <td className="px-4 py-2 text-sm text-center border-b">{relacion.Persona?.Telefono}</td>
                 <td className="px-4 py-2 text-sm text-center border-b">
                   <div className="flex justify-center gap-2">
                     {permisos.Permiso_Actualizar === "1" && (
@@ -2071,8 +2086,8 @@ if (!permisos) {
           })
       ) : (
     <tr>
-      <td colSpan="4" className="text-center border px-4 py-2">
-        No hay relaciones disponibles.
+     <td colSpan="6" className="text-center border px-4 py-2 text-gray-500">
+        No hay benefactores registrados.
       </td>
     </tr>
   )}
@@ -2110,10 +2125,11 @@ if (!permisos) {
       <th className="">Grado</th>
       <th className="">Sección</th>
       <th className="">Fecha de Matrícula</th>
+      <th className="">Estado</th>
     </tr>
   </thead>
   <tbody>
-    {matriculaLocal?
+    {matriculaLocal?.Id_Matricula ?  // Verifica si hay matrícula local
     (
 <tr className="text-center hover:bg-gray-50" >
       <td className="border px-4 py-2">{matriculaLocal?.Modalidad || "Desconocido"}</td>
@@ -2122,12 +2138,15 @@ if (!permisos) {
       <td className="border px-4 py-2">
         {matriculaLocal?.Fecha_Matricula || "Desconocido"}
       </td>
+      <td className="border px-4 py-2">{estados.find(
+          (estado) => estado.Codigo_Estado === matriculaLocal?.Estado
+        )?.Nombre_Estado || "Desconocido"}</td>
     </tr>
 
     ):(
       <tr>
-        <td colSpan="4" className="text-center border px-4 py-2">
-          No hay información de matrícula disponible.
+        <td colSpan="4" className="text-center border px-4 py-2 text-gray-500">
+          El estudiante no tiene matrícula registrada.
         </td>
       </tr>
     )} 
@@ -2151,28 +2170,33 @@ if (!permisos) {
   </div>
 
   <table className="xls_style-excel-table">
-    <thead className="bg-gray-100">
-      <tr>
-        <th className="">Año</th>
-        <th className="">Fecha de Inicio</th>
-        <th className="">Fecha de Finalización</th>
-        <th className="">Estado</th>
-      </tr>
-    </thead>
-    <tbody>
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="">Año</th>
+      <th className="">Fecha de Inicio</th>
+      <th className="">Fecha de Finalización</th>
+      <th className="">Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {graduacion && Object.keys(graduacion).length > 0 ? (
       <tr className="text-center hover:bg-gray-50">
-        <td className="border px-4 py-2">{graduacion.Anio}</td>
-        <td className="border px-4 py-2">{graduacion.Fecha_Inicio}</td>
+        <td className="border px-4 py-2">{graduacion.Anio || "Desconocido"}</td>
+        <td className="border px-4 py-2">{graduacion.Fecha_Inicio || "Desconocido"}</td>
         <td className="border px-4 py-2">{graduacion.Fecha_Final || "No finalizada"}</td>
         <td className="border px-4 py-2">
-          {
-            estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido"
-          }
+          {estados.find(e => e.Codigo_Estado === graduacion.Estado)?.Nombre_Estado || "Desconocido"}
         </td>
       </tr>
-    </tbody>
-  </table>
-
+    ) : (
+      <tr>
+        <td colSpan="4" className="text-center border px-4 py-2 text-gray-500">
+          No hay información de graduación disponible.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
 
 
 
