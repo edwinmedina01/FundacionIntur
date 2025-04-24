@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 //import GraduandoInner from '../../components/GraduandoInner';
 import { useRouter } from 'next/router';
 
-
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 
 import ModalConfirmacion from '../../utils/ModalConfirmacion';
@@ -46,6 +46,7 @@ const EstudiantesCrud = () => {
    // setModals(prev => ({ ...prev, [modalKey]: true }));
   };
 
+  const [loading, setLoading] = useState(false);
 
     
 
@@ -153,6 +154,7 @@ const prevStep = () => {
   const fetchMatricula = async () => {
     try {
       // Realizamos la solicitud a la API para obtener la matrícula
+      setLoading(true);  // Inicia el proceso de carga
       const response = await fetch(`/api/matriculabyestudianteid?id_estudiante=${idEstudiante}`);
 
       if (!response.ok) {
@@ -168,7 +170,7 @@ const prevStep = () => {
       setMatriculaLocal( {Id_Estudiante: idEstudiante, Id_Grado:0} ); // Si hay un error, lo almacenamos
       setError(err.message);  // Si hay un error, lo almacenamos
     } finally {
-     // setLoading(false);  // Finaliza el proceso de carga
+      setLoading(false);  // Finaliza el proceso de carga
     }
   };
 
@@ -192,7 +194,7 @@ const prevStep = () => {
   
     // Verificar si existe la foto del estudiante
     if (fotoActual) {
-      doc.addImage(fotoActual, "JPEG", 150, 10, 50, 30);
+      doc.addImage(fotoActual, "JPEG", 160, 10, 35, 30);
     } else {
       doc.rect(170, 30, 30, 30);
       doc.setFontSize(10);
@@ -452,6 +454,11 @@ const [benefactorData, setBenefactorData] = useState({
   const [editPersonaId, setEditPersonaId] = useState(null);
 
   useEffect(() => {
+    cargarTodo();
+  }, [user]);
+
+
+  const cargarTodo = async () => {
     cargarEstados();
     if (personaData.Id_Departamento) {
       fetchMunicipios(personaData.Id_Departamento);
@@ -459,18 +466,21 @@ const [benefactorData, setBenefactorData] = useState({
       setMunicipios([]); // Reinicia municipios si no hay departamento seleccionado
     }
     if (user && user.rol) {
-      fetchEstudiantes();
-      fetchInstitutos();
-      fetchAreas();
-      fetchBeneficios();
-      fetchDepartamentos();
-      fetchMatricula();
+   
+    setLoading(true);
+    await  fetchEstudiantes();
+    await  fetchInstitutos();
+    await  fetchAreas();
+    await  fetchBeneficios();
+    await  fetchDepartamentos();
+    await  fetchMatricula();
  
-      fetchPermisos(user.rol);
+    await   fetchPermisos(user.rol);
+    setLoading(false);
 
     }
-  }, [user]);
-
+    }
+  
 
   const [grados, setGrados] = useState([]);
   const [secciones, setSecciones] = useState([]);
@@ -555,10 +565,11 @@ const [benefactorData, setBenefactorData] = useState({
   }
 
       
-const openMatricula= (tipo=1)=>{
-  fetchModalidades();
-  fetchGrados();
-  fetchSecciones();
+const openMatricula= async (tipo=1)=>{
+setLoading(true);
+  await  fetchModalidades();
+  await fetchGrados();
+  await fetchSecciones();
 
   if(!matriculaLocal?.Id_Matricula){
     setMatriculaLocal({
@@ -577,7 +588,7 @@ const openMatricula= (tipo=1)=>{
   showModal("modalAddMatriculas");
 
 
- 
+ setLoading(false);
 
 
 }
@@ -869,6 +880,8 @@ const handleBenefactorInputChange = (event) => {
 
 
 const handlePersonaSubmit = async (e) => {
+
+
   e.preventDefault();
   try {
 console.log("handlePersonaSubmit")
@@ -901,7 +914,7 @@ console.log(personaDataRelacion)
       // }
 
 
-
+      setLoading(true);
       let res=    await axios.post("/api/relacion/relacion", { personaDataRelacion });
 
 
@@ -953,7 +966,7 @@ console.log(personaDataRelacion)
       esEstudiente:true,
       esNuevo:true
     });
-    
+    setLoading(false);
 
 
   } catch (error) {
@@ -1001,7 +1014,7 @@ const handleSubmit = async (e) => {
       // Enviar datos del formulario para crear un nuevo graduando
 
 
-
+      setLoading(true);
 
   try {
     if (editId) {
@@ -1092,7 +1105,7 @@ const handleSubmit = async (e) => {
     //   Relaciones: [],
     // });
 
-
+setLoading(false);
 
 
     // Recargar lista de estudiantes
@@ -1140,6 +1153,7 @@ const handleSubmitGraduacion = async (e) => {
   e.preventDefault();
 
 
+
   try {
 
     graduacion.Creado_Por=user.id;
@@ -1155,11 +1169,11 @@ const handleSubmitGraduacion = async (e) => {
     if (errores2.length > 0) {
    
       console.log("validarFormulario Estudiante");
-   //   console.log(estudianteData);
+      console.log(errores2);
     //  toast.error(errores2.join("\n"), error);
       return;
     }
-
+    setLoading(true);
 
     if (!isEditing){
 
@@ -1187,7 +1201,7 @@ const handleSubmitGraduacion = async (e) => {
 
       fetchGraduacion(idEstudiante)
       closeModal("modalGraduacion")
-      
+      setLoading(false);
 
     }else{
       await axios.put(`/api/graduando/${graduacion.Id_Graduando}`, graduacion);
@@ -1211,6 +1225,7 @@ const handleSubmitGraduacion = async (e) => {
       );
       
     }
+    setLoading(false);
 
  //   resetForm();
     // Recargar los graduandos después de agregar uno nuevo
@@ -1505,7 +1520,10 @@ const handleMatriculaChange = (e) => {
 // Enviar formulario
 const handleMatriculaSubmit = async (e) => {
   e.preventDefault();
+
   try {
+
+    setLoading(true);
     const url = isEditingmatricula 
       ? `/api/matriculas` 
       : '/api/matriculas';
@@ -1529,7 +1547,7 @@ const handleMatriculaSubmit = async (e) => {
     fetchMatricula(); // Actualizar lista
     closeModal('modalAddMatriculas');
     toast.success(isEditingmatricula ? 'Matrícula actualizada' : 'Matrícula creada');
-    
+    setLoading(false);
   } catch (error) {
     toast.error(error.message);
   }
@@ -1568,7 +1586,12 @@ if (!permisos) {
 
 
   return (
+
+
     <Layout>
+
+<LoadingOverlay loading={loading} setLoading={setLoading} />
+
 
 <div className="mb-1 flex justify-between items-center bg-gray-100 p-3 rounded-lg shadow-md">
   {/* Barra de búsqueda */}
@@ -1972,26 +1995,7 @@ if (!permisos) {
 
 </ModalGenerico> 
  
-  <ModalGenerico
-     id="modalGraduacion"
-  isOpen={modals["modalGraduacion"]}
-  onClose={() => closeModal("modalGraduacion")}
-  titulo={personaDataRelacion?.esNuevo ? "Agregar Graduación" : "Actualizar Graduación"}
-  tamano="max-w-4xl"
->
 
-
-<GraduacionForm
-          personaData={personaData}
-          graduacion={graduacion}
-          handleChange={handleChange}
-          handleSubmitGraduacion={handleSubmitGraduacion}
-          isEditing={isEditingGraduacion}
-          permisos={permisos}
-          resetForm={resetForm}
-          estados={estados}
-        />
-</ModalGenerico> 
 <ModalGenerico
   id="modalGraduacion"
   isOpen={modals["modalGraduacion"]}
@@ -2145,7 +2149,7 @@ if (!permisos) {
 
     ):(
       <tr>
-        <td colSpan="4" className="text-center border px-4 py-2 text-gray-500">
+        <td colSpan="5" className="text-center border px-4 py-2 text-gray-500">
           El estudiante no tiene matrícula registrada.
         </td>
       </tr>
@@ -2179,7 +2183,7 @@ if (!permisos) {
     </tr>
   </thead>
   <tbody>
-    {graduacion && Object.keys(graduacion).length > 0 ? (
+    {graduacion.Id_Graduando && Object.keys(graduacion).length > 0 ? (
       <tr className="text-center hover:bg-gray-50">
         <td className="border px-4 py-2">{graduacion.Anio || "Desconocido"}</td>
         <td className="border px-4 py-2">{graduacion.Fecha_Inicio || "Desconocido"}</td>
@@ -2191,7 +2195,7 @@ if (!permisos) {
     ) : (
       <tr>
         <td colSpan="4" className="text-center border px-4 py-2 text-gray-500">
-          No hay información de graduación disponible.
+          No hay información de graduación registrada.
         </td>
       </tr>
     )}

@@ -32,6 +32,7 @@ const Layout = ({ children }) => {
   const [lastActivityTime, setLastActivityTime] = useState(Date.now());
   const [token, setToken] = useState(null); // Inicializa el token como null
   const { user, loading } = useContext(AuthContext);
+  
   const router = useRouter();
   const [menuWidth, setMenuWidth] = useState("w-80"); // Ancho inicial del menú
   const [contentMargin, setContentMargin] = useState("ml-80"); // Margen del contenido
@@ -280,6 +281,16 @@ useEffect(() => {
     // }
   };
 
+
+    // 👇 Aquí insertás tu loader global justo antes del return
+    const renderGlobalLoader = () => (
+      <div className="fixed inset-0 z-[9999] bg-black bg-opacity-60 flex items-center justify-center pointer-events-auto">
+        <div className="bg-white rounded-xl shadow-lg px-8 py-6 flex flex-col items-center space-y-4 pointer-events-none">
+          <div className="w-10 h-10 border-4 border-t-transparent border-blue-600 rounded-full animate-spin"></div>
+          <p className="text-gray-700 font-medium text-base">Cargando, por favor espere...</p>
+        </div>
+      </div>
+    );
 
 if (!isLoaded) {
   return <div>Cargando...</div>;
@@ -564,6 +575,7 @@ if (!isLoaded) {
           </div>
         </nav>
         <main className="flex-1 p-6 bg-blue-50 overflow-y-auto">{children}</main>
+
         <footer className="bg-white p-4 text-center border-t border-gray-200">
           © 2024 Sistema Académico
         </footer>
@@ -573,3 +585,4 @@ if (!isLoaded) {
 };
 
 export default Layout;
+

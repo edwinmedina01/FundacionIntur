@@ -14,6 +14,7 @@ import {
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { deepSearch } from "../../utils/deepSearch";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 import ColumnSelection  from "../../components/basicos/ColumnSelection";
 
@@ -37,7 +38,7 @@ const EstudiantesReporte = ({token}) => {
   const handleColumnChange = (updatedColumns) => {
     setColumnsVisible(updatedColumns);
   };
-
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // Página actual
    const [recordsPerPage, setUsersPerPage] = useState(10); // Valor inicial
   const [permisos, setPermisos] = useState([]);
@@ -63,9 +64,10 @@ const handleClearSearch = () => {
 };
   const fetchEstudiantes = async () => {
     try {
+      setLoading(true);
       const response = await axios.get("/api/estudiantes");
       setEstudiantes(response.data);
-      
+      setLoading(false);
     } catch (error) {
       console.error("Error al obtener estudiantes", error);
     }
@@ -395,6 +397,9 @@ if(!token){
  console.log(token)
   return (
     <Layout>
+
+<LoadingOverlay loading={loading} setLoading={setLoading} />
+
     
     <div style={{with:'100%'}}>
     {/* Contenedor de acciones y encabezado */}
