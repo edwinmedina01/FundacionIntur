@@ -2,6 +2,7 @@ import Estudiante from '../../../../models/Estudiante';
 import Persona from '../../../../models/Persona';
 import {deepSort} from '../../../utils/deepSort';
 const Graduando = require('../../../../models/Graduando');
+import { registrarBitacora } from '../../../utils/bitacoraHelper';
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
       //  res.status(200).json(graduandos);
         
       //    console.log(estudiantes);
-      const estudiantesOrdenados = deepSort(graduandos, 'Fecha_Creacion', false);
+      const estudiantesOrdenados = deepSort(graduandos, 'Id_Graduando', false);
       console.log(estudiantesOrdenados);
         return res.status(200).json(estudiantesOrdenados);
         
@@ -47,6 +48,20 @@ export default async function handler(req, res) {
     case 'POST':
       try {
         const graduando = await Graduando.create(req.body);
+
+
+     await registrarBitacora({
+          Id_Usuario: req.body.Creado_Por,
+          Modulo: 'GRADUACION',
+          Tipo_Accion: 'INSERT',
+          Data_Antes: {},
+          Data_Despues: req.body,
+          Detalle: `Se Agrego el graduando al estudiante ID ${req.body.Id_Estudiante}`,
+          IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+          Navegador: req.headers['user-agent'],
+        });
+
+
         res.status(201).json(graduando);
       } catch (error) {
         res.status(400).json({ error: 'Error al crear el graduando' });

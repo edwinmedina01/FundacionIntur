@@ -8,7 +8,8 @@ import { deepSearch } from '../utils/deepSearch';
 import { exportToExcel } from '../utils/exportToExcel';
 import SearchBar from "./basicos/SearchBar";
 import Pagination from "../components/basicos/Pagination";
-
+import LoadingOverlay from "../components/LoadingOverlay";
+import { set } from 'nprogress';
 const BitacoraManagement = () => {
   const { user } = useContext(AuthContext);
   const [bitacora, setBitacora] = useState([]);
@@ -17,6 +18,7 @@ const BitacoraManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchBitacora();
@@ -25,6 +27,7 @@ const BitacoraManagement = () => {
   const fetchBitacora = async () => {
     try {
       const token = localStorage.getItem("token");
+      setLoading(true);
       const response = await axios.get('/api/bitacora', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -38,6 +41,7 @@ const BitacoraManagement = () => {
 
 
       setBitacora(bitacoraFormateada);
+      setLoading(false);
     } catch (error) {
       setError("No se pudo cargar la bitácora");
     }
@@ -104,7 +108,12 @@ const BitacoraManagement = () => {
   }
 
   return (
+    
+    
+    
     <div>
+<LoadingOverlay loading={loading} setLoading={setLoading} />
+
       <SearchBar
         title="Registro de Bitácora"
         searchQuery={search}

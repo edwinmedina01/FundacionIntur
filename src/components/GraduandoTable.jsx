@@ -91,6 +91,11 @@ const GraduandoForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+alert("aqui")
+    formData.Creado_Por = user.id;
+    formData.Modificado_Por = user.id;
+    formData.Fecha_Creacion = new Date().toISOString();
+    formData.Fecha_Modificacion = new Date().toISOString(); 
     const errores = validarFormulario(formData, reglasValidacionGraduando);
     if (errores.length > 0) return;// toast.error(errores.join('\n'));
 
