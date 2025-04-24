@@ -10,6 +10,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       // Traer TODA la bitácora sin filtros ni paginación
       const bitacora = await BitacoraAccion.findAll({
+        attributes: ['Id_Bitacora', 'Id_Usuario', 'Modulo', 'Tipo_Accion', 'Detalle', 'IP_Usuario', 'Fecha'],
         order: [['Fecha', 'DESC']]
       });
       return res.status(200).json(bitacora);

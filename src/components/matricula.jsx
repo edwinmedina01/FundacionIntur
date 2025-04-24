@@ -65,7 +65,7 @@ const MatriculaManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/matriculas`, { data: { Id_Matricula: id } });
+      await axios.delete(`/api/matriculas`, { data: { Id_Matricula: id , Modificado_Por: user.id } });
       fetchMatriculas();
       closeModal('modalConfirmacion');
     } catch (error) {
@@ -217,7 +217,7 @@ const MatriculaManagement = () => {
           setIsEditing={setIsEditing}
           onClose={() => closeModal('modalAddMatricula')}
           fetchMatriculas={fetchMatriculas}
-          Usuario={user?.Id_Usuario}
+          Usuario={user?.id}
         />
       </ModalGenerico>
 

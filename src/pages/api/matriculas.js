@@ -1,14 +1,28 @@
 const sequelize = require('../../../database/database'); 
 const { QueryTypes } = require('sequelize');
+const Matricula = require('../../../models/Matricula');
+const { registrarBitacora } = require('../../utils/bitacoraHelper');
 
-const Matricula = require('../../../models/Matricula'); // Asegúrate de tener la ruta correcta
+function compararCambios(original, actualizado) {
+  const cambios = [];
+  for (const key in actualizado) {
+    if (
+      Object.prototype.hasOwnProperty.call(original, key) &&
+      original[key] !== actualizado[key] &&
+      key !== 'Modificado_Por' &&
+      key !== 'Creado_Por'
+    ) {
+      cambios.push(`${key}: '${original[key]}' → '${actualizado[key]}'`);
+    }
+  }
+  return cambios.length > 0 ? cambios.join(', ') : 'Sin cambios relevantes';
+}
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const matriculas = await sequelize.query(
-        `
-        SELECT 
+        `SELECT 
           m.Id_Matricula,
           m.Estado,
           mo.Id_Modalidad,
@@ -28,11 +42,8 @@ export default async function handler(req, res) {
         LEFT JOIN tbl_modalidad mo ON m.Id_Modalidad = mo.Id_Modalidad
         LEFT JOIN tbl_grado g ON m.Id_Grado = g.Id_Grado
         LEFT JOIN tbl_seccion s ON m.Id_Seccion = s.Id_Seccion
-        order by m.Fecha_Matricula DESC;
-        `,
-        {
-          type: QueryTypes.SELECT,
-        }
+        ORDER BY m.Fecha_Matricula DESC;`,
+        { type: QueryTypes.SELECT }
       );
 
       if (matriculas.length === 0) {
@@ -46,25 +57,21 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     try {
-      const {
-        Id_Estudiante,
-        Id_Modalidad,
-        Id_Grado,
-        Id_Seccion,
-        Fecha_Matricula,
-        Estado,
-        Creado_Por
-      } = req.body;
-
+      const datos = req.body;
       const nuevaMatricula = await Matricula.create({
-        Id_Estudiante,
-        Id_Modalidad,
-        Id_Grado,
-        Id_Seccion,
-        Fecha_Matricula,
-        Estado,
-        Creado_Por,
-        Fecha_Creacion: new Date().toISOString().split('T')[0]
+        ...datos,
+        Fecha_Creacion: new Date().toISOString().split('T')[0],
+      });
+
+      await registrarBitacora({
+        Id_Usuario: datos.Creado_Por,
+        Modulo: 'MATRICULA',
+        Tipo_Accion: 'INSERT',
+        Data_Antes: null,
+        Data_Despues: nuevaMatricula,
+        Detalle: `Se registró una nueva matrícula para el estudiante ID: ${datos.Id_Estudiante}`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
       });
 
       res.status(201).json({ message: 'Matrícula creada correctamente', matricula: nuevaMatricula });
@@ -74,32 +81,31 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     try {
-      const {
-        Id_Matricula,
-        Id_Estudiante,
-        Id_Modalidad,
-        Id_Grado,
-        Id_Seccion,
-        Fecha_Matricula,
-        Estado,
-        Modificado_Por
-      } = req.body;
-
-      const matricula = await Matricula.findByPk(Id_Matricula);
+      const datos = req.body;
+      const matricula = await Matricula.findByPk(datos.Id_Matricula);
 
       if (!matricula) {
         return res.status(404).json({ error: 'Matrícula no encontrada.' });
       }
 
+      const dataAntes = matricula.toJSON();
+
       await matricula.update({
-        Id_Estudiante,
-        Id_Modalidad,
-        Id_Grado,
-        Id_Seccion,
-        Fecha_Matricula,
-        Estado,
-        Modificado_Por,
-        Fecha_Modificacion: new Date().toISOString().split('T')[0]
+        ...datos,
+        Fecha_Modificacion: new Date().toISOString().split('T')[0],
+      });
+
+      const detalle = compararCambios(dataAntes, datos);
+
+      await registrarBitacora({
+        Id_Usuario: datos.Modificado_Por,
+        Modulo: 'MATRICULA',
+        Tipo_Accion: 'UPDATE',
+        Data_Antes: dataAntes,
+        Data_Despues: datos,
+        Detalle: `Se actualizaron los campos: ${detalle} en la matrícula ID: ${datos.Id_Matricula}` ,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
       });
 
       res.status(200).json({ message: 'Matrícula actualizada correctamente', matricula });
@@ -109,7 +115,7 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'DELETE') {
     try {
-      const { Id_Matricula } = req.body;
+      const { Id_Matricula, Modificado_Por } = req.body;
 
       if (!Id_Matricula) {
         return res.status(400).json({ error: 'ID de matrícula es requerido.' });
@@ -134,6 +140,17 @@ export default async function handler(req, res) {
           type: QueryTypes.DELETE,
         }
       );
+
+      await registrarBitacora({
+        Id_Usuario: Modificado_Por,
+        Modulo: 'MATRICULA',
+        Tipo_Accion: 'DELETE',
+        Data_Antes: matricula,
+        Data_Despues: null,
+        Detalle: `Se eliminó la matrícula con ID: ${Id_Matricula}`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
+      });
 
       res.status(200).json({ message: 'Matrícula eliminada exitosamente.' });
     } catch (error) {

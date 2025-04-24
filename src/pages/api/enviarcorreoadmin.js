@@ -3,6 +3,8 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import User from '../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
 import { cryptPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
+import { registrarBitacora } from '../../utils/bitacoraHelper';
+
 // Configuración del transporte de nodemailer
 import fs from 'fs';
 import path from 'path';
@@ -138,8 +140,22 @@ export default async function handler(req, res) {
                 // }]
             };
 
+
+
             // Enviar el correo
             await transporter.sendMail(mailOptions);
+            await registrarBitacora({
+                Id_Usuario: adminId,
+                Modulo: 'USUARIOS',
+                Tipo_Accion: 'UPDATE',
+                Data_Antes: null,
+                Data_Despues: null,
+                Detalle: `El administrador reinicio de contraseña para el usuario '${userId}'`,
+                IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+                Navegador: req.headers['user-agent'],
+            });
+
+
             res.status(200).json({ message: 'Correo enviado con éxito.', success: true });
         } catch (error) {
             console.error('Error al enviar el correo:', error);

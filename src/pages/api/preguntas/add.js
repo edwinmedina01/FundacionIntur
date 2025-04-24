@@ -1,4 +1,5 @@
 import Pregunta from "../../../../models/Pregunta";
+import { registrarBitacora } from "../../../utils/bitacoraHelper";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -13,7 +14,18 @@ export default async function handler(req, res) {
         Pregunta: pregunta,
         Creado_Por: creado_por || "admin",
         Fecha_Creacion: new Date(),
-        Estado: 1, // Activa por defecto
+        Estado: 1,
+      });
+
+      await registrarBitacora({
+        Id_Usuario: creado_por,
+        Modulo: 'PREGUNTAS_SECRETAS',
+        Tipo_Accion: 'INSERT',
+        Data_Antes: null,
+        Data_Despues: nuevaPregunta.toJSON(),
+        Detalle: `Se creó una nueva pregunta secreta: "${pregunta}"`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent']
       });
 
       res.status(201).json({ message: "Pregunta creada con éxito", pregunta: nuevaPregunta });

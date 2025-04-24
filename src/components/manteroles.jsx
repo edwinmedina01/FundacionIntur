@@ -251,7 +251,7 @@ const handleSubmit = async (e) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`, // 🛡️ Enviar el token en la cabecera
         },
-        body: JSON.stringify({ Id_Rol }),
+        body: JSON.stringify({ Id_Rol, Modificado_Por: user.id }),
       });
 
       if (!response.ok) {

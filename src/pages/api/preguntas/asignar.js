@@ -1,4 +1,5 @@
 import PreguntaUsuario from "../../../../models/PreguntaUsuario";
+import { registrarBitacora } from '../../../utils/bitacoraHelper';
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -9,17 +10,32 @@ export default async function handler(req, res) {
     }
 
     try {
+      const dataAntes = [];
+      const dataDespues = [];
+
       await Promise.all(
         respuestas.map(async ({ idPregunta, respuesta }) => {
-          await PreguntaUsuario.create({
+          const registro = await PreguntaUsuario.create({
             Id_Pregunta: idPregunta,
             Id_Usuario: idUsuario,
             Respuesta: respuesta,
             Creado_Por: "admin",
             Fecha_Creacion: new Date(),
           });
+          dataDespues.push(registro.toJSON());
         })
       );
+
+      await registrarBitacora({
+        Id_Usuario: idUsuario,
+        Modulo: 'PREGUNTAS_SECRETAS',
+        Tipo_Accion: 'INSERT',
+        Data_Antes: null,
+        Data_Despues: dataDespues,
+        Detalle: `Registro de respuestas a preguntas secretas para el usuario con ID ${idUsuario}`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
+      });
 
       res.status(201).json({ message: "Respuestas guardadas con éxito." });
     } catch (error) {
