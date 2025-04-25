@@ -9,7 +9,7 @@ import { exportToExcel } from '../utils/exportToExcel';
 import SearchBar from "./basicos/SearchBar";
 import Pagination from "../components/basicos/Pagination";
 import LoadingOverlay from "../components/LoadingOverlay";
-
+import { registrarBitacora } from '../utils/bitacoraHelper';
 const BackupRestoreManagement = () => {
   const { user } = useContext(AuthContext);
   const [bitacora, setBitacora] = useState([]);
@@ -70,8 +70,18 @@ const BackupRestoreManagement = () => {
   const handleBackup = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/backup');
+      const res = await axios.get('https://nodedump-production.up.railway.app/');
       toast.success(`✅ Backup generado: ${res.data.file || 'archivo'}`);
+
+      await registrarBitacora({
+        Id_Usuario: user.id,
+        Modulo: 'BACKUP',
+        Tipo_Accion: 'RESTORE',
+        Detalle: `Se restauró una base desde archivo cargado`,
+        IP_Usuario: ip,
+        Navegador: navegador,
+      });
+
       fetchBitacora();
     } catch (err) {
       console.error(err);
@@ -84,7 +94,9 @@ const BackupRestoreManagement = () => {
   const handleDownload = async () => {
     setLoading(true);
     try {
-      const res = await axios.put('/api/backup', {}, { responseType: 'blob' });
+      const res = await axios.get('https://nodedump-production.up.railway.app/download', {
+        responseType: 'blob'
+      });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -102,17 +114,28 @@ const BackupRestoreManagement = () => {
 
   const handleRestore = async () => {
     if (!archivo) return toast.warn('⚠️ Debes seleccionar un archivo .sql');
-  
+
     const confirmar = window.confirm('¿Estás seguro de que deseas restaurar la base de datos? Esta acción no se puede deshacer.');
     if (!confirmar) return;
-  
+
     const formData = new FormData();
     formData.append('sqlfile', archivo);
-    formData.append('base', "testdb");
-  
+
     setLoading(true);
     try {
-      await axios.post('/api/backup', formData);
+      await axios.post(`https://nodedump-production.up.railway.app/restore-manual?db=${base}`, formData);
+
+
+     await registrarBitacora({
+        Id_Usuario: user.id,
+        Modulo: 'BACKUP',
+        Tipo_Accion: 'RESTORE',
+        Detalle: `Se restauró una base desde archivo cargado`,
+        IP_Usuario: ip,
+        Navegador: navegador,
+      });
+
+
       toast.success('✅ Restauración completada');
       fetchBitacora();
     } catch (err) {
@@ -122,7 +145,6 @@ const BackupRestoreManagement = () => {
       setLoading(false);
     }
   };
-  
 
   const filteredBitacora = bitacora.filter((entry) => deepSearch(entry, search, 0, 3));
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -184,17 +206,9 @@ const BackupRestoreManagement = () => {
             Descargar Último Backup
           </button>
           <input type="file" accept=".sql" onChange={(e) => setArchivo(e.target.files[0])} />
-          {/* <select value={base} onChange={(e) => setBase(e.target.value)} className="ml-4 border rounded px-2 py-1">
-            <option value="testdb">testdb</option>
-            <option value="produccion">produccion</option>
-          </select> */}
           <button onClick={handleRestore} className="ml-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
             Restaurar Backup
           </button>
-        </div>
-
-        <div className="mb-4">
-      
         </div>
       </div>
 
