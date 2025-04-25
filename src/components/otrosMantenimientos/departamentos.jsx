@@ -97,7 +97,8 @@ const DepartamentoManagement = () => {
       Creado_Por: user.id,
       Modificado_Por: user.id,
       Fecha_Creacion: new Date().toISOString().split('T')[0],
-      Fecha_Modificacion: new Date().toISOString().split('T')[0]
+      Fecha_Modificacion: new Date().toISOString().split('T')[0],
+      Estado:Number(formData.Estado)
     };
 
     const errores = validarFormulario(payload, reglasValidacionDepartamento);
