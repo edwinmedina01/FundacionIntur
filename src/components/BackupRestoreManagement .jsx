@@ -9,7 +9,7 @@ import { exportToExcel } from '../utils/exportToExcel';
 import SearchBar from "./basicos/SearchBar";
 import Pagination from "../components/basicos/Pagination";
 import LoadingOverlay from "../components/LoadingOverlay";
-import { registrarBitacora } from '../utils/bitacoraHelper';
+
 const BackupRestoreManagement = () => {
   const { user } = useContext(AuthContext);
   const [bitacora, setBitacora] = useState([]);
@@ -73,14 +73,16 @@ const BackupRestoreManagement = () => {
       const res = await axios.get('https://nodedump-production.up.railway.app/');
       toast.success(`✅ Backup generado: ${res.data.file || 'archivo'}`);
 
-      await registrarBitacora({
+      
+const nombreArchivo = res.data.file.split('/').pop(); // Extrae solo el nombre
+
+      await axios.post('/api/bitacora/backup', {
         Id_Usuario: user.id,
         Modulo: 'BACKUP',
-        Tipo_Accion: 'RESTORE',
-        Detalle: `Se restauró una base desde archivo cargado`,
-        IP_Usuario: ip,
-        Navegador: navegador,
+        Tipo_Accion: 'GENERAR',
+        Detalle: `Se generó el backup: ${nombreArchivo}`,
       });
+      
 
       fetchBitacora();
     } catch (err) {
@@ -91,18 +93,38 @@ const BackupRestoreManagement = () => {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownloadv1 = async () => {
     setLoading(true);
     try {
       const res = await axios.get('https://nodedump-production.up.railway.app/download', {
         responseType: 'blob'
       });
+      
+     
+
+
+
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'backup.sql');
+
+
+      const disposition = res.headers['content-disposition'];
+      const match = disposition && disposition.match(/filename=(.+)/);
+      const nombreArchivo = match ? match[1] : 'backup.sql';
+      
+      link.setAttribute('download', nombreArchivo);
       document.body.appendChild(link);
       link.click();
+
+      await axios.post('/api/bitacora/backup', {
+        Id_Usuario: user.id,
+        Modulo: 'BACKUP',
+        Tipo_Accion: 'DESCARGAR',
+        Detalle: `Se descargó el backup: ${nombreArchivo}`,
+      });
+      
+
       fetchBitacora();
     } catch (err) {
       console.error(err);
@@ -111,6 +133,49 @@ const BackupRestoreManagement = () => {
       setLoading(false);
     }
   };
+  const handleDownload = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('https://nodedump-production.up.railway.app/download', {
+        responseType: 'blob'
+      });
+  
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+  
+      // 📦 Extraer nombre de archivo de forma segura
+      const disposition = res.headers['content-disposition'];
+      let nombreArchivo = 'backup.sql'; // Valor por defecto
+  
+      if (disposition) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          nombreArchivo = match[1];
+        }
+      }
+  
+      link.setAttribute('download', nombreArchivo);
+      document.body.appendChild(link);
+      link.click();
+  
+      // ✅ Ahora registramos el nombre correcto en la bitácora
+      await axios.post('/api/bitacora/backup', {
+        Id_Usuario: user.id,
+        Modulo: 'BACKUP',
+        Tipo_Accion: 'DESCARGAR',
+        Detalle: `Se descargó el backup`,
+      });
+  
+      fetchBitacora();
+    } catch (err) {
+      console.error(err);
+      toast.error('❌ Error al descargar backup');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   const handleRestore = async () => {
     if (!archivo) return toast.warn('⚠️ Debes seleccionar un archivo .sql');
@@ -125,15 +190,14 @@ const BackupRestoreManagement = () => {
     try {
       await axios.post(`https://nodedump-production.up.railway.app/restore-manual?db=${base}`, formData);
 
-
-     await registrarBitacora({
+      const nombreArchivo = archivo.name;
+      await axios.post('/api/bitacora/backup', {
         Id_Usuario: user.id,
         Modulo: 'BACKUP',
         Tipo_Accion: 'RESTORE',
-        Detalle: `Se restauró una base desde archivo cargado`,
-        IP_Usuario: ip,
-        Navegador: navegador,
+        Detalle: `Se restauró la base de datos usando el backup: ${nombreArchivo}`,
       });
+      
 
 
       toast.success('✅ Restauración completada');
