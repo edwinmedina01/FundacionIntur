@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
+import formidable from 'formidable';
+import { registrarBitacora } from '../../../utils/bitacoraHelper';
 import axios from 'axios';
-import { registrarBitacora } from '../../utils/bitacoraHelper';
 
 export const config = {
   api: {
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
         Id_Usuario: usuarioId,
         Modulo: 'BACKUP',
         Tipo_Accion: 'GENERAR',
-        Detalle: `Se generó un backup con respuesta: ${response.data.file || 'sin nombre de archivo'}`,
+        Detalle: `Se generó un backup en Railway con respuesta: ${response.data.file || 'sin nombre de archivo'}`,
         IP_Usuario: ip,
         Navegador: navegador,
       });
@@ -44,36 +45,40 @@ export default async function handler(req, res) {
       console.error('❌ Error al generar backup:', error);
       return res.status(500).json({ error: 'Error al generar backup remoto' });
     }
-  }
 
-  if (method === 'POST') {
-    try {
-      const response = await axios({
-        method: 'post',
-        url: `${REALWAY_URL}/restore-manual`,
-        headers: {
-          'Content-Type': req.headers['content-type'],
-        },
-        data: req,
-      });
+  } else if (method === 'POST') {
+    const form = new formidable.IncomingForm({ multiples: false, uploadDir: '/tmp', keepExtensions: true });
+    form.parse(req, async (err, fields, files) => {
+      if (err || !files.sqlfile) {
+        return res.status(400).json({ error: '❌ Archivo inválido o faltante' });
+      }
 
-      await registrarBitacora({
-        Id_Usuario: usuarioId,
-        Modulo: 'BACKUP',
-        Tipo_Accion: 'RESTORE',
-        Detalle: `Se restauró una base desde archivo cargado`,
-        IP_Usuario: ip,
-        Navegador: navegador,
-      });
+      const fileStream = fs.createReadStream(files.sqlfile.filepath);
+      const formData = new FormData();
+      formData.append("sqlfile", fileStream, files.sqlfile.originalFilename);
 
-      res.status(200).json({ mensaje: '✅ Restauración enviada a Railway', response: response.data });
-    } catch (error) {
-      console.error('❌ Error al restaurar backup remoto:', error);
-      return res.status(500).json({ error: 'Error al restaurar backup remoto' });
-    }
-  }
+      try {
+        const response = await axios.post(`${REALWAY_URL}/restore-manual?db=${fields.base || 'testdb'}`, formData, {
+          headers: formData.getHeaders(),
+        });
 
-  if (method === 'PUT') {
+        await registrarBitacora({
+          Id_Usuario: usuarioId,
+          Modulo: 'BACKUP',
+          Tipo_Accion: 'RESTORE',
+          Detalle: `Se restauró la base ${fields.base || 'testdb'} desde el archivo ${files.sqlfile.originalFilename}`,
+          IP_Usuario: ip,
+          Navegador: navegador,
+        });
+
+        return res.status(200).json(response.data);
+      } catch (error) {
+        console.error('❌ Error al restaurar backup:', error);
+        return res.status(500).json({ error: 'Error al restaurar backup remoto' });
+      }
+    });
+
+  } else if (method === 'PUT') {
     try {
       const response = await axios.get(`${REALWAY_URL}/download`, {
         responseType: 'stream',
@@ -95,8 +100,9 @@ export default async function handler(req, res) {
       console.error('❌ Error al descargar backup:', error);
       return res.status(500).json({ error: 'Error al descargar backup remoto' });
     }
-  }
 
-  res.setHeader('Allow', ['GET', 'POST', 'PUT']);
-  return res.status(405).end(`Método ${method} no permitido`);
+  } else {
+    res.setHeader('Allow', ['GET', 'POST', 'PUT']);
+    return res.status(405).end(`Método ${method} no permitido`);
+  }
 }

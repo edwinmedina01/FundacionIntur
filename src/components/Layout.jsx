@@ -24,7 +24,7 @@ import {
   ClipboardDocumentListIcon,
   FolderIcon,
   RectangleGroupIcon,
-  UserGroupIcon, Bars4Icon
+  UserGroupIcon, Bars4Icon,ServerStackIcon,KeyIcon 
 } from "@heroicons/react/24/outline"; // Importa íconos necesarios
 import { set } from "nprogress";
 
@@ -486,7 +486,7 @@ if (!isLoaded) {
           {tienePermiso("PERMISOS") && (
             <li>
               <Link href="/permisos" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
-                <ClipboardDocumentListIcon className="h-5 w-5 mr-3 inline" /> Permisos
+                <KeyIcon  className="h-5 w-5 mr-3 inline" /> Permisos
               </Link>
             </li>
           )}
@@ -501,6 +501,13 @@ if (!isLoaded) {
   <li>
     <Link href="/bitacora" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
       <ClipboardDocumentListIcon className="h-5 w-5 mr-3 inline" /> Bitácora
+    </Link>
+  </li>
+)}
+       {tienePermiso("BACKUPRESTORE") && (
+  <li>
+    <Link href="/backuprestore" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
+      <ServerStackIcon className="h-5 w-5 mr-3 inline" /> BACKUP/RESTORE
     </Link>
   </li>
 )}
