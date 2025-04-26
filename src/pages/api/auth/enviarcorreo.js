@@ -7,14 +7,18 @@ import fs from 'fs';
 import path from 'path';
 import { Op } from 'sequelize';
 import { registrarBitacora } from '../../../utils/bitacoraHelper';
-
+import { getConfiguracion } from '../../../utils/configuracionHelper'; // Ajusta la ruta según tu estructura
+const emailUser = await getConfiguracion('CORREO_SOPORTE');
+const emailPass = await getConfiguracion('EMAIL_APP_PASS');
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASS,
+        user: emailUser,
+      //  user: process.env.EMAIL_USER,
+        pass: emailPass,
+      //  pass: process.env.EMAIL_APP_PASS,
     },
     tls: {
         rejectUnauthorized: false,
