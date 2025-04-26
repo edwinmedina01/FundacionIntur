@@ -122,7 +122,7 @@ const ConfiguracionManagement = () => {
   const handleDelete = async (Id_Configuracion) => {
     try {
       await axios.delete("/api/configuracion", {
-        data: { Id_Configuracion },
+        data: { Id_Configuracion,Modificado_Por:user.id  },
       });
       toast.error("Configuración eliminada exitosamente");
       fetchConfiguraciones();

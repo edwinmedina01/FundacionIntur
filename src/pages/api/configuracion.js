@@ -1,5 +1,7 @@
 const sequelize = require('../../../database/database'); 
 const { QueryTypes } = require('sequelize');
+const { registrarBitacora } = require('../../utils/bitacoraHelper');
+
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -44,6 +46,16 @@ export default async function handler(req, res) {
         { replacements: [Clave, Valor, Descripcion || null, Creado_Por, fechaCreacion], type: QueryTypes.INSERT }
       );
 
+      await registrarBitacora({
+        Id_Usuario: Creado_Por,
+        Modulo: 'CONFIGURACION',
+        Tipo_Accion: 'INSERT',
+        Data_Antes: null,
+        Data_Despues: req.body,
+        Detalle: `Se creó el Variable de Configuracion: ${Valor}`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
+      });
       return res.status(201).json({ message: 'Configuración agregada exitosamente' });
 
     } catch (error) {
@@ -53,7 +65,7 @@ export default async function handler(req, res) {
   } 
   else if (req.method === 'DELETE') {
     // ✅ Eliminar una configuración por `Id_Configuracion`
-    const { Id_Configuracion } = req.body;
+    const { Id_Configuracion,Modificado_Por } = req.body;
 
     try {
       if (!Id_Configuracion) {
@@ -73,6 +85,17 @@ export default async function handler(req, res) {
         'DELETE FROM tbl_configuracion WHERE Id_Configuracion = ?', 
         { replacements: [Id_Configuracion], type: QueryTypes.DELETE }
       );
+
+      await registrarBitacora({
+        Id_Usuario: Modificado_Por,
+        Modulo: 'CONFIGURACION',
+        Tipo_Accion: 'DELETE',
+        Data_Antes: null,
+        Data_Despues: req.body,
+        Detalle: `Se eliminino la Variable de Configuracion: ${Id_Configuracion}`,
+        IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Navegador: req.headers['user-agent'],
+      });
 
       return res.status(200).json({ message: 'Configuración eliminada exitosamente' });
 
@@ -112,6 +135,17 @@ export default async function handler(req, res) {
              WHERE Id_Configuracion = ?`,
             { replacements: [Clave, Valor, Descripcion || null, Modificado_Por, fechaModificacion, Id_Configuracion], type: QueryTypes.UPDATE }
         );
+
+           await registrarBitacora({
+                Id_Usuario: Modificado_Por,
+                Modulo: 'CONFIGURACION',
+                Tipo_Accion: 'UPDATE',
+                Data_Antes: null,
+                Data_Despues: req.body,
+                Detalle: `Se actualizo el Variable de Configuracion: ${Valor}`,
+                IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+                Navegador: req.headers['user-agent'],
+              });
 
         return res.status(200).json({ message: 'Configuración actualizada con éxito' });
 

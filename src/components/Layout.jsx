@@ -512,7 +512,7 @@ if (!isLoaded) {
   </li>
 )}
 
-          {user?.nombrerol === "SuperAdministrador" && (
+{tienePermiso("CONFIGURACION") && (
             <li>
               <Link href="/configuracion" className="block py-2 px-4 rounded-lg hover:bg-blue-600">
                 <WrenchScrewdriverIcon className="h-5 w-5 mr-3 inline" /> Configuración

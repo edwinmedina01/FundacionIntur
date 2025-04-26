@@ -4,17 +4,25 @@ import crypto from 'crypto';
 import User from '../../../models/Usuario'; // Asegúrate de que la ruta sea correcta
 import { cryptPassword } from '../../lib/helpers'; // Ajusta la ruta según donde esté tu módulo
 import { registrarBitacora } from '../../utils/bitacoraHelper';
+import { getConfiguracion } from '../../utils/configuracionHelper'; // Ajusta la ruta según tu estructura
+
 
 // Configuración del transporte de nodemailer
 import fs from 'fs';
 import path from 'path';
+
+const emailUser = await getConfiguracion('CORREO_SOPORTE');
+const emailPass = await getConfiguracion('EMAIL_APP_PASS');
+
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-        user: process.env.EMAIL_USER, // Tu usuario de email
-        pass: process.env.EMAIL_APP_PASS, // Usa la contraseña de aplicación aquí
+      //  user: process.env.EMAIL_USER, // Tu usuario de email
+       user: emailUser, // Tu usuario de email
+       // pass: process.env.EMAIL_APP_PASS, // Usa la contraseña de aplicación aquí
+        pass: emailPass //process.env.EMAIL_APP_PASS, // Usa la contraseña de aplicación aquí
     },
     tls: {
         rejectUnauthorized: false,
