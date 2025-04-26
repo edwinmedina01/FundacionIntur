@@ -10,6 +10,8 @@ import SearchBar from "./basicos/SearchBar";
 import Pagination from "../components/basicos/Pagination";
 import LoadingOverlay from "../components/LoadingOverlay";
 import { set } from 'nprogress';
+import ModalConfirmacion from '../utils/ModalConfirmacion';
+import useModal from "../hooks/useModal";
 const BitacoraManagement = () => {
   const { user } = useContext(AuthContext);
   const [bitacora, setBitacora] = useState([]);
@@ -18,10 +20,25 @@ const BitacoraManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [error, setError] = useState(null);
   const [sinPermisos, setSinPermisos] = useState(false);
+  const [permisos, setPermisos] = useState(null);
+      
+      const [formData, setFormData] = useState({
+        Id_Permiso: '',
+        Id_Rol: '',
+        Creado_Por: '', 
+        Modificado_Por:'',
+        // Añadir el Id_Objeto en el estado
+        Permiso_Insertar: false,
+        Permiso_Actualizar: false,
+        Permiso_Eliminar: false,
+        Permiso_Consultar: false,
+      });
+  const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchBitacora();
+    fetchPermisos();
   }, [user]);
 
   const fetchBitacora = async () => {
@@ -62,12 +79,96 @@ const BitacoraManagement = () => {
       hour12: true,
     });
   };
+
+  const fetchPermisos = async () => {
+    try {
+      if (user) {
+        const res = await axios.post('/api/api_permiso', {
+          idRol: user.rol,
+          idObjeto: 45, // 👈🏼 Asegúrate que 99 es el ID_Objeto de Bitácora
+        });
+        const permisosData = res.data;
+        if (
+          permisosData.Permiso_Insertar !== '1' &&
+          permisosData.Permiso_Actualizar !== '1' &&
+          permisosData.Permiso_Eliminar !== '1' &&
+          permisosData.Permiso_Consultar !== '1'
+        ) {
+          setSinPermisos(true);
+        } else {
+          setPermisos(permisosData);
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al obtener permisos');
+    }
+  };
+  
+
+    const handleDelete = async (Id_Bitacora) => {
+      try {
+        const response = await fetch('/api/bitacora', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ Id_Bitacora, Modificado_Por: user.id }), // Enviar el ID del permiso a eliminar
+        });
+  
+        if (!response.ok) {
+          throw new Error('Error al eliminar el permiso');
+        }
+  
+        fetchBitacora();
+
+      //  resetForm();
+        toast.error('Permiso eliminado exitosamente', {
+          style: {
+            backgroundColor: '#ffebee', // Fondo suave rojo
+            color: '#d32f2f', // Texto rojo oscuro
+            fontWeight: 'bold',
+            border: '1px solid #f5c6cb',
+            padding: '16px',
+            borderRadius: '12px',
+          },
+          position: 'bottom-right',
+          autoClose: 5000,
+          hideProgressBar: true,
+        });
+        closeModal("modalConfirmacion")
+      } catch (error) {
+        console.error('Error al eliminar el permiso:', error);
+      }
+    };
+  
   
 
   const filteredBitacora = bitacora.filter((entry) => deepSearch(entry, search, 0, 3));
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredBitacora.slice(indexOfFirstItem, indexOfLastItem);
+
+
+  const eliminarBitacora = async (id) => {
+    if (!confirm('¿Estás seguro de eliminar este registro de bitácora? Esta acción no se puede deshacer.')) {
+      return;
+    }
+  
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/bitacora?id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success('Registro eliminado exitosamente');
+      fetchBitacora(); // Recarga la bitácora
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      toast.error('Error al eliminar el registro');
+    }
+  };
+  
 
   const handleExport = async () => {
     const headers = [
@@ -123,6 +224,20 @@ const BitacoraManagement = () => {
         showAddButton={false}
       />
 
+      
+
+<ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(formData?.Id_Bitacora)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar a"
+  entidad={""}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
+
+
       <table className="xls_style-excel-table">
         <thead className="bg-slate-200">
           <tr>
@@ -135,6 +250,7 @@ const BitacoraManagement = () => {
             <th>IP</th>
             {/* <th>Navegador</th> */}
             <th>Fecha</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -149,11 +265,25 @@ const BitacoraManagement = () => {
               <td>{entry.IP_Usuario}</td>
               {/* <td>{entry.Navegador}</td> */}
               <td>{entry.Fecha}</td>
+              <td>
+              {permisos.Permiso_Eliminar === "1" && (
+                <button
+                  onClick={() => {
+                    setFormData(entry);
+                    showModal("modalConfirmacion");
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  X
+                </button>
+              )}
+</td>
+
             </tr>
           ))}
           {filteredBitacora.length === 0 && (
             <tr>
-              <td colSpan="7" className="text-center text-gray-500 py-4">
+              <td colSpan="8" className="text-center text-gray-500 py-4">
                 ❌ No se encontraron registros en la bitácora
               </td>
             </tr>
