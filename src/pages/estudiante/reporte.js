@@ -5,6 +5,8 @@ import Link from "next/link";
 //import * as XLSX from "xlsx"; // Importar la librería xlsx
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+
+import useModal from "../../hooks/useModal";
 import AuthContext from "../../context/AuthContext";
 import { useRouter } from 'next/router';
 import {
@@ -17,6 +19,7 @@ import { deepSearch } from "../../utils/deepSearch";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
 import ColumnSelection  from "../../components/basicos/ColumnSelection";
+import ModalConfirmacion from '../../utils/ModalConfirmacion';
 
 const EstudiantesReporte = ({token}) => {
   const { user } = useContext(AuthContext);
@@ -25,6 +28,16 @@ const EstudiantesReporte = ({token}) => {
    
 
   });
+
+
+const [estudianteData, setEstudianteData] = useState({
+    Id_Beneficio: "",
+    Id_Area: "",
+    Id_Instituto: "",
+    Creado_Por: "",
+    Relaciones: []
+  });
+
 
   const [columnsVisible, setColumnsVisible] = useState({
     estudiante: true,
@@ -45,6 +58,8 @@ const EstudiantesReporte = ({token}) => {
   const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
  // const [currentEstudiantes, setCurrentEstudiantes] = useState([]);
  const [filteredEstudiantes, setFilteredEstudiantes] = useState([]);
+ const { modals, showModal, closeModal } = useModal(); // Hook para manejar modales
+
   useEffect(() => {
     document.title = "Estudiantes";
 }, []);
@@ -107,6 +122,7 @@ const handleClearSearch = () => {
         autoClose: 5000,
         hideProgressBar: true,
       });
+      closeModal("modalConfirmacion")
       fetchEstudiantes();
     } catch (error) {
       toast.error("Error al eliminar estudiante", error);
@@ -476,6 +492,16 @@ if(!token){
 
 </div>
 
+ <ModalConfirmacion
+  isOpen={modals["modalConfirmacion"]}
+       onClose={() => closeModal("modalConfirmacion")}
+  onConfirm={() => handleDelete(estudianteData?.Id_Estudiante)}
+  titulo="❌ Confirmar Eliminación"
+  mensaje="¿Estás seguro de que deseas eliminar todos los datos del estudiante :"
+  entidad={estudianteData?.Persona?.Primer_Nombre}
+  confirmText="Eliminar"
+  confirmColor="bg-red-600 hover:bg-red-700"
+/>
 
 
         {permisos[1]?.consultar ? (
@@ -627,7 +653,12 @@ if(!token){
 
                       {permisos[1]?.eliminar && (
                         <button
-                          onClick={() => handleDelete(estudiante.Id_Estudiante)}
+                      
+
+                          onClick={() => {
+                            setEstudianteData(estudiante);
+                            showModal("modalConfirmacion");
+                          }}
                           className="px-1 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                         >
                           <TrashIcon className="h-5 w-6" />

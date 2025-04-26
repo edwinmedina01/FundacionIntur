@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import Estudiante from '../../../../models/Estudiante';
 import Persona from '../../../../models/Persona';
 import { registrarBitacora } from '../../../utils/bitacoraHelper';
+import Matricula from '../../../../models/Matricula';
+import Graduando from '../../../../models/Graduando';
+import Relacion from '../../../../models/Relacion';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'tu_clave_secreta';
 
@@ -88,35 +91,44 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Error al actualizar estudiante' });
       }
 
-    case 'DELETE':
-      try {
-        const estudiante = await Estudiante.findByPk(id);
-        const persona = await Persona.findByPk(estudiante.Id_Persona);
-
-        if (!estudiante || !persona) {
-          return res.status(404).json({ message: 'Estudiante no encontrado' });
+      case 'DELETE':
+        try {
+          const estudiante = await Estudiante.findByPk(id);
+          if (!estudiante) {
+            return res.status(404).json({ message: 'Estudiante no encontrado' });
+          }
+      
+          // 🔥 1. Eliminar relaciones
+          await Relacion.destroy({
+            where: { Id_estudiante: id }
+          });
+      
+          // 🔥 2. Eliminar matrícula
+          await Matricula.destroy({
+            where: { Id_Estudiante: id }
+          });
+      
+          // 🔥 3. Eliminar graduación
+          await Graduando.destroy({
+            where: { Id_Estudiante: id }
+          });
+      
+          // 🔥 4. Eliminar estudiante
+          await estudiante.destroy();
+      
+          // 🔥 5. Eliminar persona (opcional si no quieres que huérfanos queden)
+          const persona = await Persona.findByPk(estudiante.Id_Persona);
+          if (persona) {
+            await persona.destroy();
+          }
+      
+          return res.status(200).json({ message: 'Estudiante y datos relacionados eliminados' });
+      
+        } catch (error) {
+          console.error('Error al eliminar estudiante y relaciones:', error);
+          return res.status(500).json({ error: error.message });
         }
-
-        const dataAntes = { ...estudiante.toJSON(), ...persona.toJSON() };
-
-        await estudiante.destroy();
-        await persona.destroy();
-
-        await registrarBitacora({
-          Id_Usuario: decodedUser.id,
-          Modulo: 'ESTUDIANTES',
-          Tipo_Accion: 'DELETE',
-          Data_Antes: dataAntes,
-          Data_Despues: null,
-          Detalle: `Se eliminó el estudiante con ID ${id}`,
-          IP_Usuario: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
-          Navegador: req.headers['user-agent'],
-        });
-
-        return res.status(200).json({ message: 'Estudiante eliminado' });
-      } catch (error) {
-        return res.status(500).json({ error: 'Error al eliminar estudiante' });
-      }
+      
 
     default:
       res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);

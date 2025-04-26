@@ -100,7 +100,7 @@ export default async function handler(req, res) {
           
           });
       //    console.log(estudiantes);
-        const estudiantesOrdenados = deepSort(estudiantes, 'Persona.Fecha_Creacion', false);
+        const estudiantesOrdenados = deepSort(estudiantes, 'Persona.Id_Persona', false);
      //   console.log(estudiantesOrdenados);
           return res.status(200).json(estudiantesOrdenados);
         }
