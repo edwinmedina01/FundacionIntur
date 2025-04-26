@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Error al obtener los departamentos' });
     }
   } else if (req.method === 'POST') {
-    const { Nombre_Departamento, Creado_Por } = req.body;
+    const { Nombre_Departamento, Creado_Por,Estado } = req.body;
 
     if (!Nombre_Departamento) {
       return res.status(400).json({ error: 'Falta el nombre del departamento' });
@@ -34,9 +34,9 @@ export default async function handler(req, res) {
       }
 
       await sequelize.query(
-        'INSERT INTO tbl_departamento (Nombre_Departamento, Fecha_Creacion, Fecha_Modificacion) VALUES (?, NOW(), NOW())',
+        'INSERT INTO tbl_departamento (Nombre_Departamento, Fecha_Creacion, Fecha_Modificacion,Estado) VALUES (?, NOW(), NOW(), ?)',
         {
-          replacements: [Nombre_Departamento],
+          replacements: [Nombre_Departamento,Estado],
           type: QueryTypes.INSERT,
         }
       );
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
 
       res.status(201).json({ message: 'Departamento creado con éxito' });
     } catch (error) {
-      console.error('Error al crear el departamento:', error);
+      console.error('Error al crear el departamento:', error);  
       res.status(500).json({ error: 'Error al crear el departamento' });
     }
   } else if (req.method === 'PUT') {

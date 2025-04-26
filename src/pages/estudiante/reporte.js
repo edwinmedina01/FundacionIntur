@@ -120,11 +120,11 @@ const handleClearSearch = () => {
 
   const handleEdit = (item) => {
     router.push({
-      pathname: '/estudiante', // Ruta de la página destino
-      query: {
-        tab: 1,
-        idEstudiante: item.Id_Estudiante,
-      },
+      pathname: '/estudiante/'+item.Id_Estudiante// Ruta de la página destino
+      // query: {
+      //   tab: 1,
+      //   idEstudiante: item.Id_Estudiante,
+      // },
     });
   };
 
@@ -450,7 +450,7 @@ if(!token){
   <div className="flex gap-x-2">
     {permisos[1]?.insertar && (
       <button
-        onClick={() => (window.location.href = "/estudiante")}
+        onClick={() => (window.location.href = "/estudiante/0")}
         className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-md"
       >
         <UserPlusIcon className="h-5 w-5 mr-2" /> Agregar

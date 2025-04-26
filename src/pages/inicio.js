@@ -105,7 +105,7 @@ const Inicio = () => {
         <p className="text-gray-600 mb-4">
           Agregar un nuevo registro al sistema sobre el alumno, su benefactor, y su tutor.
         </p>
-        <Link href="/estudiante">
+        <Link href="/estudiante/0">
           <button className="w-full bg-blue-500 text-white py-2 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300">
             Nuevo Registro
           </button>

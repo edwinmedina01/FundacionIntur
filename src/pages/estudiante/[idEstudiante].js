@@ -85,11 +85,15 @@ const EstudiantesCrud = () => {
   //const [activeTab, setActiveTab] = useState(1); // para las pestañas en el mismo formulario
   const { user } = useContext(AuthContext);
   const [estudiantes, setEstudiantes] = useState([]);
+//  const [IdEstudiante, setIdEstudiante] = useState([]);
   const [graduacion, setGraduacion] = useState([]);
   const [estudianteTemp, setEstudianteTemp] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null); // Mantener el estudiante seleccionado
+  const [selectedStudent, setSelectedStudent] = useState({}); // Mantener el estudiante seleccionado
 // ------------------- FUNCIONALIDAD PERMISOS----------------------//
 const [permisos, setPermisos] = useState([]);
+
+const [IdEstudiante, setIdEstudiante] = useState([]);
+
 const [error, setError] = useState(null); //mostrar error de permiso
 const [sinPermisos, setSinPermisos] = useState(false); //mostrar que no tiene permiso
 // ------------------------------------------------------------//
@@ -155,7 +159,7 @@ const prevStep = () => {
     try {
       // Realizamos la solicitud a la API para obtener la matrícula
       setLoading(true);  // Inicia el proceso de carga
-      const response = await fetch(`/api/matriculabyestudianteid?id_estudiante=${idEstudiante}`);
+      const response = await fetch(`/api/matriculabyestudianteid?id_estudiante=${IdEstudiante}`);
 
       if (!response.ok) {
         //throw new Error('No se encontró la matrícula para este estudiante.');
@@ -167,7 +171,7 @@ const prevStep = () => {
       // Almacenamos los datos de la matrícula
       setMatriculaLocal(data);
     } catch (err) {
-      setMatriculaLocal( {Id_Estudiante: idEstudiante, Id_Grado:0} ); // Si hay un error, lo almacenamos
+      setMatriculaLocal( {Id_Estudiante: IdEstudiante, Id_Grado:0} ); // Si hay un error, lo almacenamos
       setError(err.message);  // Si hay un error, lo almacenamos
     } finally {
       setLoading(false);  // Finaliza el proceso de carga
@@ -453,9 +457,33 @@ const [benefactorData, setBenefactorData] = useState({
   const [editId, setEditId] = useState(null);
   const [editPersonaId, setEditPersonaId] = useState(null);
 
+
   useEffect(() => {
-    cargarTodo();
-  }, [user]);
+    if (router.isReady) {
+      const id = Number(router.query.idEstudiante);
+      console.log("🔥 ID recibido desde URL dinámica:", id);
+      setIdEstudiante(id);
+    }
+  }, [router.isReady, router.query.idEstudiante]);
+
+  useEffect(() => {
+   // if (IdEstudiante) {
+      console.log("🚀 Cargando información para estudiante:", IdEstudiante);
+      cargarTodo();
+   // }
+  }, [IdEstudiante]);
+  
+
+  // useEffect(() => {
+  //   if (router.isReady && router.query.idEstudiante) {
+  //     setIdEstudiante(Number(router.query.idEstudiante));
+  //   }
+  // }, [router]);
+
+  // useEffect(() => {
+  //  // setIdEstudiante(idEstudiante);
+  //   cargarTodo();
+  // }, [user,idEstudiante]);
 
 
   const cargarTodo = async () => {
@@ -529,10 +557,10 @@ const [benefactorData, setBenefactorData] = useState({
  
 
        // Si hay un estudiante seleccionado, actualizarlo
-    if (selectedStudent||idEstudiante) {
+    if (selectedStudent||IdEstudiante) {
 
       const updatedStudent = response.data.find(
-        (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( idEstudiante)
+        (e) => e.Id_Estudiante === selectedStudent?.Id_Estudiante ||  e.Id_Estudiante === Number( IdEstudiante)
       );
       console.log("updatedStudent")
       console.log(updatedStudent)
@@ -1079,7 +1107,8 @@ const handleSubmit = async (e) => {
           hideProgressBar: true, // Ocultar barra de progreso
         });
       }
-      idEstudiante = res?.data?.Id_Estudiante;
+   //   IdEstudiante = res?.data?.Id_Estudiante;
+      setIdEstudiante( res?.data?.Id_Estudiante)
     }
 
     // Resetear los formularios
@@ -1199,13 +1228,13 @@ const handleSubmitGraduacion = async (e) => {
       
       );
 
-      fetchGraduacion(idEstudiante)
+      fetchGraduacion(IdEstudiante)
       closeModal("modalGraduacion")
       setLoading(false);
 
     }else{
       await axios.put(`/api/graduando/${graduacion.Id_Graduando}`, graduacion);
-      fetchGraduacion(idEstudiante)
+      fetchGraduacion(IdEstudiante)
       closeModal("modalGraduacion")
       
       toast.success('graduando actualizado exitosamente',
@@ -1278,6 +1307,13 @@ const handleSubmitGraduacion = async (e) => {
 
 
   const handleEdit = (estudiante) => {
+
+
+    if (!estudiante) {
+      console.error('🚨 Estudiante es nulo o indefinido');
+      return;
+    }
+  
 
     setPersonaDataRelacion({
       ...personaDataRelacion,
@@ -1487,7 +1523,7 @@ const openMatriculaModal = () => {
   } else {
     setMatriculaLocal({
       ...matriculaLocal,
-      Id_Estudiante: idEstudiante,
+      Id_Estudiante: IdEstudiante,
       Fecha_Matricula: new Date().toISOString().split('T')[0],
       Estado: '1'
     });
